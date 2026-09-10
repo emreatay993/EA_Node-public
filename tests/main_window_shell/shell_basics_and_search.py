@@ -314,7 +314,7 @@ class MainWindowShellBasicsAndSearchTests(SharedMainWindowShellTestBase):
             )
             self.assertEqual(
                 entries[("Panel", "Right-click")],
-                "Open Parse numbers automatically, Copy, and Copy as tree actions.",
+                "Open Edit values and interpretation..., Copy, and Copy as tree actions.",
             )
             self.assertEqual(
                 entries[("Media Panel (PDF mode)", "Left or Right")],

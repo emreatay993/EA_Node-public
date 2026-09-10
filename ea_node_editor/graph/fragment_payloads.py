@@ -4,6 +4,8 @@ import copy
 from collections.abc import Mapping
 from typing import Any
 
+from ea_node_editor.common.node_property_migrations import migrate_panel_properties
+
 from ea_node_editor.graph.effective_ports import (
     effective_ports,
     find_port,
@@ -169,6 +171,7 @@ def _normalize_fragment_node_entry(raw_node: Any) -> dict[str, Any] | None:
     if node is None:
         return None
     payload = node_instance_to_mapping(node, node_id_key="ref_id")
+    payload["properties"] = migrate_panel_properties(node.type_id, payload["properties"])
     payload["visual_style"] = normalize_visual_style_payload(raw_node.get("visual_style"))
     return payload
 
@@ -362,6 +365,10 @@ def _normalize_visual_style_value(value: Any) -> Any:
 
 
 def fragment_node_from_payload(node_payload: Mapping[str, Any]) -> NodeInstance:
+    if isinstance(node_payload.get("properties"), Mapping):
+        node_payload = dict(node_payload, properties=migrate_panel_properties(
+            str(node_payload.get("type_id", "")), node_payload["properties"]
+        ))
     node = node_instance_from_mapping(node_payload, node_id_key="ref_id", strict_payload=True)
     if node is None:
         raise ValueError("Invalid graph fragment node payload.")

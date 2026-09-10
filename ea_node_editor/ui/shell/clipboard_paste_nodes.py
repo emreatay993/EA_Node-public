@@ -543,7 +543,7 @@ def _source_with_text_choices(
             replace(artifact, property_key=_TEXT_PROPERTY) if artifact is not None else None,
         ), explanation),
         CanvasImportChoice("panel", "Panel", ClipboardPasteItem(
-            "data.panel", {"value": literal, "mode": PANEL_MODE_TEXT, "parse_numbers": False},
+            "data.panel", {"value": literal, "mode": PANEL_MODE_TEXT, "interpretation": "text"},
             replace(artifact, property_key="value") if artifact is not None else None,
         ), explanation),
         CanvasImportChoice("skip", "Skip", None),

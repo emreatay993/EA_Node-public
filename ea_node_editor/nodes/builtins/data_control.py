@@ -112,12 +112,12 @@ def execute_select(ctx: ExecutionContext) -> NodeResult:
     return NodeResult(outputs={"selected_value": DataTree.from_item(selected_value)})
 
 
-def _panel_item(value: str, *, parse_numbers: bool) -> Any:
+def _panel_item(value: str, *, interpretation: str) -> Any:
+    if interpretation == "text":
+        return value
     value = value.strip()
-    if not parse_numbers:
-        return value
     if not value:
-        return value
+        return None if interpretation == "number" else value
     try:
         return int(value)
     except ValueError:
@@ -125,8 +125,12 @@ def _panel_item(value: str, *, parse_numbers: bool) -> Any:
     try:
         number = float(value)
     except ValueError:
-        return value
-    return number if math.isfinite(number) else value
+        number = None
+    if number is not None and math.isfinite(number):
+        return number
+    if interpretation == "number":
+        raise ValueError(f"{value!r} is not a finite number")
+    return value
 
 
 def _panel_path(header: str) -> tuple[int, ...]:
@@ -139,21 +143,29 @@ def _panel_path(header: str) -> tuple[int, ...]:
         raise ValueError(f"Invalid Panel branch header: {header!r}") from exc
 
 
-def parse_panel_data(value: str, *, parse_numbers: bool = False) -> DataTree:
+def parse_panel_data(value: str, *, interpretation: str = "text") -> DataTree:
+    if interpretation not in {"text", "auto", "number"}:
+        raise ValueError(f"Invalid Panel interpretation: {interpretation!r}")
     text = str(value or "")
     if not text:
         return DataTree()
     branches: dict[tuple[int, ...], list[Any]] = {}
     path = (0,)
-    for line in text.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+    for line_number, line in enumerate(text.replace("\r\n", "\n").replace("\r", "\n").split("\n"), 1):
         stripped = line.strip()
         if stripped.startswith("*"):
             path = _panel_path(stripped)
             branches.setdefault(path, [])
             continue
-        branches.setdefault(path, []).append(
-            _panel_item(line, parse_numbers=parse_numbers)
-        )
+        try:
+            item = _panel_item(line, interpretation=interpretation)
+        except ValueError as exc:
+            branch = ";".join(str(part) for part in path)
+            raise ValueError(
+                f"Panel Number (strict): line {line_number}, branch {branch}: {exc}. "
+                "Enter a number or change Interpret values as to Automatic or Text (exact)."
+            ) from exc
+        branches.setdefault(path, []).append(item)
     return DataTree(branches)
 
 
@@ -167,7 +179,7 @@ def execute_panel(ctx: ExecutionContext) -> NodeResult:
     if ctx.properties.get("mode", PANEL_MODE_TEXT) == PANEL_MODE_DATA:
         output = parse_panel_data(
             value,
-            parse_numbers=bool(ctx.properties.get("parse_numbers", False)),
+            interpretation=ctx.properties.get("interpretation", "text"),
         )
     else:
         output = DataTree.from_item(value)

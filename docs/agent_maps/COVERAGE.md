@@ -22,6 +22,8 @@ implementation studies are intentionally excluded.
 
 ## Cross-layer feature routes
 
+Panel value interpretation spans the passive surface editor/badge, data-control runtime, and project/fragment property migration. The passive surfaces map owns UI/runtime evidence; serialization migration owns the legacy flag conversion.
+
 Shared node-toolbar Expand/Collapse and Run-options icons are owned by the floating-toolbar route and the shell icon registry.
 The surface loader retains action owners for active collapsed-node toolbars; hidden body input and native viewer/plot activity remain disabled.
 Ordinary active/compile-only cards fit current content even with saved custom dimensions; dedicated and passive surfaces retain manual sizing. Standard widths separate top-level port columns from settings headers and expanded controls. Graph Scene Payload owns sizing/anchor coverage and the real-canvas toggle regression.

@@ -341,7 +341,7 @@ Item {
 
     function _handlePanelContextAction(actionId) {
         var normalized = String(actionId || "");
-        if (normalized !== "panel_parse_numbers"
+        if (normalized !== "panel_edit"
                 && normalized !== "panel_copy"
                 && normalized !== "panel_copy_tree")
             return false;
@@ -563,8 +563,6 @@ Item {
         readonly property bool isPanelNode: nodeContextPopup.nodePayload
             ? String(nodeContextPopup.nodePayload.type_id || "") === "data.panel"
             : false
-        readonly property bool panelParseNumbers: nodeContextPopup.isPanelNode
-            && Boolean((nodeContextPopup.nodePayload.properties || ({})).parse_numbers)
         readonly property string viewerBackground: {
             if (!nodeContextPopup.nodePayload)
                 return "theme";
@@ -584,7 +582,7 @@ Item {
             nodeContextPopup._viewerBackgroundEntry("white", "White"),
             nodeContextPopup._viewerBackgroundEntry("black", "Black"),
             nodeContextPopup._viewerBackgroundEntry("gray", "Gray"),
-            { "actionId": "panel_parse_numbers", "text": "Parse numbers automatically", "checked": nodeContextPopup.panelParseNumbers, "visible": nodeContextPopup.isPanelNode },
+            { "actionId": "panel_edit", "text": "Edit values and interpretation...", "visible": nodeContextPopup.isPanelNode && !nodeContextPopup.isReadOnlyNode },
             { "actionId": "panel_copy", "text": "Copy", "visible": nodeContextPopup.isPanelNode },
             { "actionId": "panel_copy_tree", "text": "Copy as tree", "visible": nodeContextPopup.isPanelNode },
             { "actionId": root._nodeActionId("run_selected"), "text": "Run Selected", "visible": nodeContextPopup.isRunnableNode },

@@ -3878,12 +3878,16 @@
           "list_item_step": 0.0
         },
         {
-          "key": "parse_numbers",
-          "type": "bool",
-          "default": false,
-          "label": "Parse Numbers",
+          "key": "interpretation",
+          "type": "enum",
+          "default": "text",
+          "label": "Interpret values as",
           "expose_port_toggle": false,
-          "enum_values": [],
+          "enum_values": [
+            "text",
+            "auto",
+            "number"
+          ],
           "enum_codes": [],
           "minimum": null,
           "maximum": null,
@@ -3910,7 +3914,7 @@
         }
       ],
       "collapsible": false,
-      "description": "Panel for the input of text that can be converted into other types automatically, such as integers, numbers and boolean values.",
+      "description": "Enter text or branched data. Keep exact text, infer finite numbers automatically, or require numeric values. Connected input passes through unchanged.",
       "is_async": false,
       "runtime_behavior": "active",
       "solution_reuse_scope": "session",

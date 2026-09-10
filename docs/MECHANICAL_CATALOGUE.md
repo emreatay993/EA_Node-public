@@ -9,7 +9,7 @@ Initial support and live acceptance target Ansys 2026 R1 (`261`) on Windows. Rel
 Install COREX with the Mechanical dependencies in the project virtual environment:
 
 ```powershell
-py -3.10 -m venv venv
+py -3.11 -m venv venv
 .\venv\Scripts\python.exe -m pip install --upgrade pip
 .\venv\Scripts\python.exe -m pip install -e ".[ansys]"
 ```

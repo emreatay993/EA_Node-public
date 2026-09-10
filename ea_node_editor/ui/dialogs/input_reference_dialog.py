@@ -149,7 +149,7 @@ INPUT_REFERENCE_SECTIONS: tuple[InputReferenceSection, ...] = (
             ),
             InputReferenceEntry("Node body", "Double-click", "Open the node default action or an inline edit target."),
             InputReferenceEntry("Panel", "Double-click", "Open the Panel Text/Data editor."),
-            InputReferenceEntry("Panel", "Right-click", "Open Parse numbers automatically, Copy, and Copy as tree actions."),
+            InputReferenceEntry("Panel", "Right-click", "Open Edit values and interpretation..., Copy, and Copy as tree actions."),
             InputReferenceEntry("Node title edit", "Enter or focus loss", "Commit the edited node title."),
             InputReferenceEntry("Node title edit", "Esc", "Cancel the edited node title."),
             InputReferenceEntry("Floating node toolbar", "Enter Subnode", "Enter the subnode scope."),

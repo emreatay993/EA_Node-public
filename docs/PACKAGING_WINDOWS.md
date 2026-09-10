@@ -96,8 +96,8 @@ There is no separate tabular package profile. Tabular availability is decided by
 the installed Python modules in the packaging venv: `numpy`, `pandas`, `polars`,
 `pyarrow`, `duckdb`, `openpyxl`, `h5py`, and `tables`. The full profile also
 requires the `numba` acceleration extra and its `llvmlite` runtime companion.
-Python 3.10 package builds use the `tables>=3.10.1,<3.11` marker from
-`pyproject.toml`; Python 3.11+ builds use `tables>=3.11`. The `full` profile
+Package builds require Python 3.11 or newer and use `tables>=3.11` from
+`pyproject.toml`. The `full` profile
 makes this whole tabular and acceleration stack strict instead of
 dependency-gated.
 

@@ -127,7 +127,7 @@ TestCase {
                     "font_size": 12,
                     "alignment": 2,
                     "auto_resize": true,
-                    "parse_numbers": false
+                    "interpretation": "text"
                 })
                 property var calls: []
                 function acceptPanelSettings(value) {

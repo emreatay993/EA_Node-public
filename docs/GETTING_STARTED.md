@@ -6,7 +6,7 @@ current Windows-first workflow.
 ## Prerequisites
 
 - Windows 10 or Windows 11
-- Python 3.10 or newer
+- Python 3.11 or newer
 - Git
 - Network access for `pip install` and optional architecture-diagram export
 
@@ -15,7 +15,7 @@ current Windows-first workflow.
 From the repository root:
 
 ```powershell
-py -3.10 -m venv venv
+py -3.11 -m venv venv
 .\venv\Scripts\python.exe -m pip install --upgrade pip
 .\venv\Scripts\python.exe -m pip install -e ".[all,dev]"
 ```
@@ -24,7 +24,7 @@ Notes:
 
 - `.[all,dev]` installs the optional spreadsheet, Ansys, viewer, and tabular dependencies, including PyMechanical, PyVista, DuckDB, Pandas, Polars, PyArrow, and PyTables, plus dependencies for standalone engineering utilities and the local dev tools used in this repo.
 - QWebEngine-backed nodes such as `Excalidraw Board` and `Web Page Viewer` require a working `PyQt6-WebEngine` install. If they show a `QtWebEngineCore` DLL-load fallback after copying the repo to another machine or intranet share, follow [`docs/QT_WEBENGINE_INSTALLATION.md`](./QT_WEBENGINE_INSTALLATION.md).
-- If you only need the dependency-gated `Data > Tabular Data Input` node, install `.[tabular]` instead. On Python 3.10, that extra intentionally resolves `tables>=3.10.1,<3.11`; Python 3.11+ uses `tables>=3.11`.
+- If you only need the dependency-gated `Data > Tabular Data Input` node, install `.[tabular]` instead. The current dependency contract requires `tables>=3.11`.
 - The repo uses a Windows-style virtualenv layout even when opened from `bash`, so prefer `./venv/Scripts/python.exe` over a shell-default `python`.
 - The examples below use native PowerShell path syntax. If you are in `bash`, use the same interpreter path with `./venv/Scripts/python.exe`.
 - Editable install also exposes the `corex-node-editor` console entry point inside `venv/Scripts/`.
@@ -86,6 +86,21 @@ under `QT_QPA_PLATFORM=offscreen` with startup autoquit enabled. The smoke must
 exit cleanly before its timeout, so modal startup error dialogs fail the build.
 
 ## Useful First Checks
+
+To compare Model Viewer environments across machines, run the
+[viewer environment diagnostic script](../scripts/diagnose_viewer_environment.py)
+from the repository root:
+
+```powershell
+.\venv\Scripts\python.exe .\scripts\diagnose_viewer_environment.py
+```
+
+Use the same Python executable that launches COREX; replace the interpreter path
+above if needed. Copy the complete output, including the Python executable and
+version, free-threaded build flag, viewer package versions, repository revision,
+and `pip check` results. The script uses only the standard library and does not
+install packages, load the viewer, or change configuration. Exit code `1` means
+`pip check` failed or could not run; the rest of the report is still printed.
 
 Start an implementation with the smallest route-owned test that proves the
 changed behavior. Use `scripts/nav.py` to find the owning tests and commands:

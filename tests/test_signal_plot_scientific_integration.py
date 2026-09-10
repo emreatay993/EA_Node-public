@@ -43,6 +43,31 @@ def test_native_scientific_signal_pipeline_repeats_with_complete_source(kind, ba
     )
 
 
+@pytest.mark.parametrize("interpretation,value", [("auto", "1\n2\n3\n7"), ("number", "1\n2\n\n7")])
+def test_panel_interpretation_signal_plot_media_pipeline(interpretation, value):
+    registry = build_default_registry(include_public_plugins=False)
+    model = GraphModel()
+    workspace_id = model.active_workspace.workspace_id
+    mutation = model.validated_mutations(workspace_id, registry)
+    panel = mutation.add_node(type_id="data.panel", title="Panel", x=0, y=0,
+        properties={"mode": 1, "value": value, "interpretation": interpretation})
+    plot = mutation.add_node(type_id="plot.signal", title="Signal", x=300, y=0)
+    media = mutation.add_node(type_id="media.panel", title="Media", x=600, y=0)
+    mutation.add_edge(source_node_id=panel.node_id, source_port_key="output",
+        target_node_id=plot.node_id, target_port_key="values")
+    mutation.add_edge(source_node_id=plot.node_id, source_port_key="image",
+        target_node_id=media.node_id, target_port_key="source")
+    runtime = CorexRuntime(registry=registry)
+    try:
+        result = runtime.run(ExecutionRequest(workspace_id=workspace_id,
+            runtime_snapshot=build_runtime_snapshot(model.project, workspace_id=workspace_id, registry=registry)), timeout=60)
+        assert result.status == "completed", (result.error, result.traceback)
+        settled = {event["node_id"]: event for event in result.events if event.get("type") == "node_settled"}
+        assert isinstance(settled_item(settled[media.node_id], "_surface_source", registry.data_types), ImageValue)
+    finally:
+        runtime.shutdown()
+
+
 def test_generated_csv_numpy_pandas_project_loads_and_runs(tmp_path):
     project_path = generate_example(tmp_path / "scientific.cxproj")
     registry = build_default_registry(include_public_plugins=False)

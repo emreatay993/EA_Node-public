@@ -14,7 +14,10 @@ GraphShared.GraphSurfaceBase {
     readonly property int panelFontSize: Math.max(8, Math.min(72, Math.round(propNumber("font_size", 12))))
     readonly property int panelAlignment: Math.max(0, Math.min(2, Math.round(propNumber("alignment", 2))))
     readonly property bool panelAutoResize: propBool("auto_resize", true)
-    readonly property bool panelParseNumbers: propBool("parse_numbers", false)
+    readonly property string panelInterpretation: propString("interpretation", "text")
+    readonly property string interpretationLabel: inputConnected ? "Input"
+        : panelInterpretation === "number" ? "Number"
+        : panelInterpretation === "auto" ? "Auto" : "Text"
     readonly property real panelFontPixelSize: Math.round(surface.panelFontSize * 4 / 3)
     readonly property bool panelEditable: !!host && !host.graphReadOnly
         && !host.authorLocked && !host.surfaceInteractionLocked
@@ -35,7 +38,8 @@ GraphShared.GraphSurfaceBase {
         "font_size": surface.panelFontSize,
         "alignment": surface.panelAlignment,
         "auto_resize": surface.panelAutoResize,
-        "parse_numbers": surface.panelParseNumbers
+        "interpretation": surface.panelInterpretation,
+        "input_connected": surface.inputConnected
     })
 
     property bool panelEditorOpen: false
@@ -174,7 +178,8 @@ GraphShared.GraphSurfaceBase {
                     rows.push({"kind": "branch", "path": path});
                     branchStarted = true;
                 }
-                rows.push({"kind": "item", "path": path, "index": itemIndex, "text": trimmed});
+                rows.push({"kind": "item", "path": path, "index": itemIndex,
+                    "text": surface.panelInterpretation === "text" ? line : trimmed});
                 ++itemIndex;
             }
         }
@@ -267,7 +272,7 @@ GraphShared.GraphSurfaceBase {
     function _requiredContentHeight() {
         if (!surface.structuredMode)
             return Math.max(surface._minimumHeight(), Number(unwrappedTextMeasure.implicitHeight || 0) + 18);
-        var required = 16;
+        var required = 16 + interpretationHeader.height;
         for (var index = 0; index < surface.displayRows.length; ++index) {
             var row = surface.displayRows[index] || ({});
             required += String(row.kind || "") === "branch"
@@ -332,6 +337,8 @@ GraphShared.GraphSurfaceBase {
     function dispatchSurfaceAction(actionId) {
         var normalized = String(actionId || "");
         if (normalized === "panel_edit") {
+            if (!surface.panelEditable)
+                return false;
             surface.panelEditorOpen = true;
             return true;
         }
@@ -347,8 +354,6 @@ GraphShared.GraphSurfaceBase {
             return surface._fitWidth();
         if (normalized === "panel_fit_height")
             return surface._fitHeight();
-        if (normalized === "panel_parse_numbers")
-            return surface._commitProperty("parse_numbers", !surface.panelParseNumbers);
         if (normalized === "panel_copy")
             return surface._copyPanelText(false);
         if (normalized === "panel_copy_tree")
@@ -358,7 +363,7 @@ GraphShared.GraphSurfaceBase {
 
     function acceptPanelSettings(payload) {
         surface.panelEditorOpen = false;
-        if (!surface.host || !surface.host.canvasItem || !surface.nodeId.length)
+        if (!surface.panelEditable || !surface.host.canvasItem || !surface.nodeId.length)
             return false;
         var canvasItem = surface.host.canvasItem;
         if (!canvasItem.commitNodeSurfaceProperties)
@@ -376,9 +381,9 @@ GraphShared.GraphSurfaceBase {
             "auto_resize": source.auto_resize === undefined
                 ? surface.panelAutoResize
                 : Boolean(source.auto_resize),
-            "parse_numbers": source.parse_numbers === undefined
-                ? surface.panelParseNumbers
-                : Boolean(source.parse_numbers)
+            "interpretation": source.interpretation === undefined
+                ? surface.panelInterpretation
+                : String(source.interpretation)
         };
         var applied = Boolean(canvasItem.commitNodeSurfaceProperties(surface.nodeId, updates));
         if (applied && updates.auto_resize)
@@ -407,6 +412,36 @@ GraphShared.GraphSurfaceBase {
         objectName: "graphPanelBody"
         anchors.fill: parent
 
+        Item {
+            id: interpretationHeader
+            objectName: "graphPanelInterpretationHeader"
+            anchors.top: parent.top
+            width: parent.width
+            height: visible ? 34 : 0
+            visible: surface.structuredMode
+
+            Rectangle {
+                objectName: "graphPanelInterpretationBadge"
+                anchors.centerIn: parent
+                width: badgeLabel.implicitWidth + 16
+                height: 22
+                radius: 11
+                color: surface.host ? Qt.alpha(surface.host.inlineInputTextColor, 0.08) : "#20333d"
+                border.color: surface.host ? Qt.alpha(surface.host.inlineInputTextColor, 0.16) : "#46555e"
+                border.width: 1
+
+                Text {
+                    id: badgeLabel
+                    anchors.centerIn: parent
+                    text: surface.interpretationLabel
+                    color: surface.host ? surface.host.inlineInputTextColor : "#f0f2f5"
+                    font.pixelSize: 11
+                    font.weight: Font.DemiBold
+                    renderType: surface.host ? surface.host.nodeTextRenderType : Text.CurveRendering
+                }
+            }
+        }
+
         Text {
             id: textContent
             objectName: "graphPanelTextContent"
@@ -428,6 +463,7 @@ GraphShared.GraphSurfaceBase {
             id: dataList
             objectName: "graphPanelDataList"
             anchors.fill: parent
+            anchors.topMargin: interpretationHeader.height
             visible: surface.structuredMode && surface.displayRows.length > 0
             clip: true
             model: surface.displayRows
@@ -534,8 +570,15 @@ GraphShared.GraphSurfaceBase {
 
         Text {
             objectName: "graphPanelStructuredPlaceholder"
-            anchors.centerIn: parent
+            anchors.fill: parent
+            anchors.topMargin: interpretationHeader.height
+            anchors.leftMargin: 8
+            anchors.rightMargin: 8
             visible: surface.structuredMode && surface.displayRows.length === 0
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideRight
+            clip: true
             text: surface.placeholderText
             color: surface.host ? Qt.alpha(surface.host.inlineInputTextColor, 0.56) : "#8f96a3"
             font.pointSize: surface.panelFontSize

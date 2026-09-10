@@ -6496,11 +6496,13 @@
         "ea_node_editor/common/payload_tools.py",
         "ea_node_editor/graph/project_state.py",
         "ea_node_editor/graph/workspace_state.py",
-        "ea_node_editor/graph/record_payloads.py"
+        "ea_node_editor/graph/record_payloads.py",
+        "ea_node_editor/common/node_property_migrations.py"
       ],
       "test_candidates": [
         "tests/test_serializer.py",
-        "tests/test_serializer_schema_migration.py"
+        "tests/test_serializer_schema_migration.py",
+        "tests/test_panel_node.py"
       ],
       "qml_candidates": [],
       "keywords": [
@@ -6527,6 +6529,16 @@
         "tests",
         "test",
         "schema",
+        "parse",
+        "numbers",
+        "interpretation",
+        "false",
+        "text",
+        "true",
+        "auto",
+        "property",
+        "migrations",
+        "panel",
         "links",
         "target",
         "plot",
@@ -6561,7 +6573,6 @@
         "compile",
         "only",
         "media",
-        "panel",
         "powershell",
         "venv",
         "scripts",
@@ -7340,7 +7351,6 @@
         "graphnodehost",
         "dispatchsurfaceaction",
         "edit",
-        "listview",
         "core",
         "trigger",
         "host",
@@ -26628,7 +26638,9 @@
         "ea_node_editor/ui/dialogs/input_reference_dialog.py"
       ],
       "test_candidates": [
-        "tests/test_panel_surface.py"
+        "tests/test_panel_surface.py",
+        "tests/test_panel_node.py",
+        "tests/test_signal_plot_scientific_integration.py"
       ],
       "qml_candidates": [
         "ea_node_editor/ui_qml/components/graph/passive/GraphMediaVideoPlaybackCore.qml"
@@ -26671,6 +26683,13 @@
         "graphpanelsurface",
         "tests",
         "test",
+        "auto",
+        "number",
+        "graphpaneleditorpopover",
+        "signal",
+        "plot",
+        "scientific",
+        "integration",
         "selected",
         "object",
         "columns",
@@ -26702,7 +26721,6 @@
         "cxproj",
         "contentfullscreenoverlay",
         "page",
-        "number",
         "pdf",
         "render",
         "image",

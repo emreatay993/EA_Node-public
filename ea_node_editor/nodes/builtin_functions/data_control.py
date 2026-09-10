@@ -85,7 +85,7 @@ def number_slider(ctx, settings):
     name="Panel",
     category=("Data", "Control"),
     icon="core/article.svg",
-    description="Panel for the input of text that can be converted into other types automatically, such as integers, numbers and boolean values.",
+    description="Enter text or branched data. Keep exact text, infer finite numbers automatically, or require numeric values. Connected input passes through unchanged.",
     keywords=('"', "text", "watch"),
     _collapsible=False,
     _surface_variant="panel",
@@ -116,7 +116,7 @@ def number_slider(ctx, settings):
 @corex.number("font_size", default=12, label="Font Size", _inline_editor="")
 @corex.number("alignment", default=2, label="Alignment", _inline_editor="")
 @corex.switch("auto_resize", default=True, label="Auto Resize", _inline_editor="")
-@corex.switch("parse_numbers", default=False, label="Parse Numbers", _inline_editor="")
+@corex.dropdown("interpretation", default="text", options=("text", "auto", "number"), label="Interpret values as", _inline_editor="")
 def panel(ctx, input, settings):
     result = execute_panel(ctx)
     for warning in result.warnings:

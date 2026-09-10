@@ -64,7 +64,7 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                 "font_size": 12,
                 "alignment": 2,
                 "auto_resize": True,
-                "parse_numbers": False,
+                "interpretation": "text",
             }
             payload["ports"] = [
                 {
@@ -210,7 +210,7 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                             "font_size": 12,
                             "alignment": 2,
                             "auto_resize": false,
-                            "parse_numbers": false
+                            "interpretation": "text"
                         }
                     })
                     property var inputPorts: [{"key": "input", "connected": true}]
@@ -276,6 +276,7 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                 {"kind": "item", "path": "9", "index": 0, "text": "complete"},
             ]
             assert bool(runtime_surface.property("inputConnected"))
+            assert runtime_surface.property("interpretationLabel") == "Input"
             assert bool(runtime_surface.dispatchSurfaceAction("panel_copy_tree"))
             canvas_stub = fake_host.property("canvasItem")
             bridge_stub = canvas_stub.property("canvasStateBridge")
@@ -289,7 +290,7 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
             assert QApplication.clipboard().text() == "ignored"
             fake_host.setProperty("inputPorts", [{"key": "input", "connected": True}])
             settle_events(3)
-            assert bool(runtime_surface.dispatchSurfaceAction("panel_parse_numbers"))
+            assert bool(runtime_surface.dispatchSurfaceAction("panel_edit"))
 
             assert bool(runtime_surface.acceptPanelSettings({
                 "value": "draft",
@@ -297,7 +298,7 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                 "font_size": 14,
                 "alignment": 0,
                 "auto_resize": False,
-                "parse_numbers": True,
+                "interpretation": "auto",
             }))
             committed_payload = variant_value(canvas_stub.property("lastPayload"))
             assert committed_payload == {
@@ -306,7 +307,7 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                 "font_size": 14,
                 "alignment": 0,
                 "auto_resize": False,
-                "parse_numbers": True,
+                "interpretation": "auto",
             }
 
             editor_qml_path = components_dir / "graph" / "passive" / "GraphPanelEditorPopover.qml"
@@ -323,9 +324,11 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                 "font_size": 12,
                 "alignment": 2,
                 "auto_resize": True,
-                "parse_numbers": False,
+                "interpretation": "text",
             }
             editor.openWithSettings(settings)
+            interpretation_selector = named_item(editor, "graphPanelEditorInterpretationSelector")
+            assert not bool(interpretation_selector.property("visible")), "Text mode selector visible"
             value_field = named_item(editor, "graphPanelEditorValueField")
             value_field.setProperty("text", "discarded")
             editor.cancelEdit()
@@ -335,6 +338,7 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
             editor.openWithSettings(settings)
             value_field.setProperty("text", "accepted")
             editor.setProperty("modeDraft", 1)
+            editor.setProperty("interpretationDraft", "number")
             editor.setProperty("autoResizeDraft", False)
             editor.acceptEdit()
             assert accepted == [{
@@ -343,8 +347,16 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                 "font_size": 12,
                 "alignment": 2,
                 "auto_resize": False,
-                "parse_numbers": False,
+                "interpretation": "number",
             }]
+            editor.openWithSettings(settings)
+            assert editor.property("interpretationDraft") == "text"
+            editor.setProperty("modeDraft", 1)
+            editor.setProperty("interpretationDraft", "auto")
+            editor.cancelEdit()
+            editor.openWithSettings(dict(settings, mode=1, input_connected=True))
+            assert not bool(interpretation_selector.property("enabled")), "Connected selector enabled"
+            editor.cancelEdit()
 
             root_layers_qml_path = components_dir / "graph_canvas" / "GraphCanvasRootLayers.qml"
             root_layers_component = QQmlComponent(engine, QUrl.fromLocalFile(str(root_layers_qml_path)))
@@ -382,7 +394,7 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                     "font_size": 12,
                     "alignment": 2,
                     "auto_resize": False,
-                    "parse_numbers": False,
+                    "interpretation": "text",
                 },
                 "inline_properties": [],
             })
@@ -417,6 +429,8 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
             assert QApplication.clipboard().text() == "* 0\n10\n20", repr(QApplication.clipboard().text())
             assert not bool(read_only_host.dispatchSurfaceAction("panel_font_increase")), "read-only format changed"
             assert not bool(read_only_surface.property("panelEditable")), "read-only surface reported editable"
+            assert not bool(read_only_surface.dispatchSurfaceAction("panel_edit"))
+            assert not bool(read_only_surface.acceptPanelSettings({"interpretation": "number"}))
             settle_events(5)
             branch_path = named_item(surface, "graphPanelBranchPath")
             item_index = named_item(surface, "graphPanelItemIndex")
@@ -454,7 +468,14 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
             "panel-real-double-click",
             r'''
             from PyQt6.QtCore import QPoint
+            from PyQt6.QtGui import QFont, QFontDatabase
             from PyQt6.QtTest import QTest
+            from ea_node_editor.ui.shell.runtime_history import RuntimeGraphHistory
+
+            # The offscreen Windows platform does not discover system fonts.
+            for font_file in ("segoeui.ttf", "seguisb.ttf", "seguisym.ttf", "consola.ttf"):
+                QFontDatabase.addApplicationFont("C:/Windows/Fonts/" + font_file)
+            app.setFont(QFont("Segoe UI", 10))
 
             model = GraphModel()
             registry = build_default_registry()
@@ -526,7 +547,13 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                 assert bool(named_item(surface, "graphPanelDataList").property("visible")), "Data rows did not render"
                 fitted = next(item for item in scene.nodes_model if item["node_id"] == panel_node_id)
                 assert fitted["width"] == 120.0, fitted
-                assert fitted["height"] == 102.0, fitted
+                assert fitted["height"] == 136.0, fitted
+                badge = named_item(surface, "graphPanelInterpretationBadge")
+                data_list = named_item(surface, "graphPanelDataList")
+                assert badge.mapToScene(QPointF(0, badge.height())).y() < data_list.mapToScene(QPointF(0, 0)).y()
+                proof_dir = repo_root / "artifacts" / "panel_interpretation"
+                proof_dir.mkdir(parents=True, exist_ok=True)
+                assert window.grabWindow().save(str(proof_dir / "compact-data-panel.png"))
 
                 drag_start = item_scene_point(panel_body)
                 drag_end = QPoint(drag_start.x() + 40, drag_start.y() + 30)
@@ -537,6 +564,9 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                 moved = next(item for item in scene.nodes_model if item["node_id"] == panel_node_id)
                 assert moved["x"] == 160.0, moved
                 assert moved["y"] == 150.0, moved
+                history = RuntimeGraphHistory()
+                scene.bind_runtime_history(history)
+                depth_before_edit = history.undo_depth(workspace_id)
 
                 QTest.mouseDClick(
                     window,
@@ -549,6 +579,21 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                 assert bool(editor.property("visible")), "Data Panel editor did not open"
 
                 value_field = named_item(editor, "graphPanelEditorValueField")
+                selector = named_item(editor, "graphPanelEditorInterpretationSelector")
+                assert bool(selector.property("visible"))
+                selector.forceActiveFocus()
+                QTest.keyClick(window, Qt.Key.Key_End)
+                settle_events(4)
+                assert editor.property("interpretationDraft") == "number", "Keyboard selection did not update the draft"
+                editor.setProperty("autoResizeDraft", False)
+                for theme_name, palette in (
+                    ("dark", {"panel_bg": "#202530", "panel_title_fg": "#eef3ff", "muted_fg": "#a6b3c8", "input_bg": "#171e29", "input_border": "#465066", "accent": "#268cca"}),
+                    ("light", {"panel_bg": "#f6f8fb", "panel_title_fg": "#182431", "muted_fg": "#526174", "input_bg": "#ffffff", "input_border": "#b2bdcc", "accent": "#167cab"}),
+                ):
+                    editor.setProperty("themePalette", palette)
+                    QTest.qWait(220)
+                    assert window.grabWindow().save(str(proof_dir / ("editor-" + theme_name + ".png")))
+                value_field.forceActiveFocus()
                 assert bool(value_field.property("activeFocus"))
                 value_field.setProperty("text", "edited")
                 value_field.setProperty("cursorPosition", len("edited"))
@@ -560,14 +605,23 @@ class PanelSurfaceTests(PassiveGraphSurfaceHostTestBase):
                 assert not bool(editor.property("visible")), "Enter did not accept Panel editor"
                 saved = next(item for item in scene.nodes_model if item["node_id"] == panel_node_id)
                 assert saved["properties"]["value"] == "edited\nline"
+                assert saved["properties"]["interpretation"] == "number"
+                assert history.undo_depth(workspace_id) == depth_before_edit + 1
 
                 mouse_double_click(window, item_scene_point(panel_body))
                 settle_events(8)
                 value_field.setProperty("text", "discarded")
+                editor.setProperty("interpretationDraft", "auto")
                 QTest.keyClick(window, Qt.Key.Key_Escape)
                 settle_events(8)
                 saved = next(item for item in scene.nodes_model if item["node_id"] == panel_node_id)
                 assert saved["properties"]["value"] == "edited\nline"
+                assert saved["properties"]["interpretation"] == "number"
+                assert history.undo_depth(workspace_id) == depth_before_edit + 1
+                history.undo_workspace(workspace_id, model.active_workspace)
+                restored = model.active_workspace.nodes[panel_node_id]
+                assert restored.properties["interpretation"] == "text"
+                assert restored.properties["value"] == "* 0\n10\n20"
             finally:
                 dispose_host_window(canvas, window)
                 scene.deleteLater()

@@ -190,7 +190,7 @@ def test_literal_choice_preserves_whitespace_and_panel_text_mode(import_host, ke
     assert node.properties[property_key] == mime.text()
     if key == "panel":
         assert node.properties["mode"] == 0
-        assert node.properties["parse_numbers"] is False
+        assert node.properties["interpretation"] == "text"
 
 
 @pytest.mark.parametrize("change", ["cancel", "skip", "scope", "project"])

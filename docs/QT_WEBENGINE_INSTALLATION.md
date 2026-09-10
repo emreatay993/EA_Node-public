@@ -17,15 +17,15 @@ search-path problem, not a graph/node configuration problem.
 The project declares WebEngine support through `pyproject.toml`:
 
 ```text
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 PyQt6>=6.5
 PyQt6-WebEngine>=6.10
 ```
 
-Python 3.12 is allowed by that metadata. The examples below use Python 3.10
-because it is the project-standard source/dev interpreter, but a Python 3.12
+Python 3.12 and newer releases are allowed by that metadata. The examples below use Python 3.11
+because it is the project-standard source/dev interpreter, but a newer supported
 environment can also work when the venv and any offline wheelhouse are created
-for Python 3.12 on the target machine.
+with the same Python version on the target machine.
 
 For a stable Windows source/dev environment, keep these four packages on the
 same version:
@@ -78,7 +78,7 @@ path. Treat it as informational unless the venv cannot run at all.
 
 Two VDI-specific rules matter more:
 
-- Use one Python version consistently. The project supports Python `>=3.10`.
+- Use one Python version consistently. The project supports Python `>=3.11`.
   If your VDI standard is Python 3.12, create the venv with
   `py -3.12 -m venv venv` and build/download any offline wheels with
   `py -3.12 -m pip download ...`.
@@ -98,14 +98,14 @@ Remove-Item -Recurse -Force .\venv
 
 Do not copy a `venv` from another machine. Recreate it on the target machine:
 
-If your machine is standardized on Python 3.12, replace `py -3.10` with
+If your machine is standardized on Python 3.12, replace `py -3.11` with
 `py -3.12` in the commands below.
 
 ```powershell
 Stop-Process -Name python, py, pythonw -Force -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force .\venv
 
-py -3.10 -m venv venv
+py -3.11 -m venv venv
 .\venv\Scripts\python.exe -m pip install --upgrade pip
 
 .\venv\Scripts\python.exe -m pip install --force-reinstall --no-cache-dir `
@@ -134,10 +134,10 @@ Then launch:
 On a machine with internet access, create a WebEngine wheelhouse:
 
 Build the wheelhouse with the same Python version you will use on the intranet
-machine. For Python 3.12, replace `py -3.10` with `py -3.12`.
+machine. For Python 3.12, replace `py -3.11` with `py -3.12`.
 
 ```powershell
-py -3.10 -m pip download -d wheelhouse `
+py -3.11 -m pip download -d wheelhouse `
   PyQt6==6.11.0 `
   PyQt6-Qt6==6.11.0 `
   PyQt6-WebEngine==6.11.0 `
@@ -151,7 +151,7 @@ local wheels:
 Stop-Process -Name python, py, pythonw -Force -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force .\venv
 
-py -3.10 -m venv venv
+py -3.11 -m venv venv
 .\venv\Scripts\python.exe -m pip install --upgrade pip
 
 .\venv\Scripts\python.exe -m pip install --no-index --find-links .\wheelhouse `

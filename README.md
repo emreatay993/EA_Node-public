@@ -29,7 +29,7 @@ Recent UI/UX architecture highlights:
 
 ```powershell
 # 1. Create the project virtual environment (Windows-first layout)
-py -3.10 -m venv venv
+py -3.11 -m venv venv
 
 # 2. Install runtime + developer dependencies into that venv
 .\venv\Scripts\python.exe -m pip install --upgrade pip
@@ -480,7 +480,7 @@ environment and the repo packaging scripts:
 
 ```powershell
 # From a fresh clone
-py -3.10 -m venv venv
+py -3.11 -m venv venv
 .\venv\Scripts\python.exe -m pip install --upgrade pip
 .\venv\Scripts\python.exe -m pip install -e ".[all,dev]"
 

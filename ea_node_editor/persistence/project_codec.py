@@ -203,9 +203,13 @@ class JsonProjectCodec:
 
     @staticmethod
     def _normalize_owned_node_mapping(mapping: dict[str, Any]) -> dict[str, Any]:
+        from ea_node_editor.common.node_property_migrations import migrate_panel_properties
+
         for key in _GROUP_BACKDROP_RUNTIME_MEMBERSHIP_KEYS:
             mapping.pop(key, None)
         type_id = str(mapping.get("type_id", "")).strip()
+        if type_id == "data.panel" and isinstance(mapping.get("properties"), Mapping):
+            mapping["properties"] = migrate_panel_properties(type_id, mapping["properties"])
         if type_id == WEB_PAGE_VIEWER_TYPE_ID:
             properties = mapping.get("properties")
             if isinstance(properties, Mapping):

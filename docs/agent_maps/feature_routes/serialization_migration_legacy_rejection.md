@@ -15,6 +15,7 @@ Use this for `.cxproj` serialization, coordinated format cutovers, legacy reject
 - `tests/test_serializer_schema_migration.py`
 
 ## Notes
+- Panel's retired `parse_numbers` flag converts to `interpretation` (`false` to `text`, `true` to `auto`, explicit current mode wins). `ea_node_editor/common/node_property_migrations.py` is a leaf conversion shared by the project codec and graph-fragment import boundaries; runtime and QML consume only the current property. `tests/test_panel_node.py` proves project round-trip and fragment migration.
 - Durable node links are part of the node payload codec path. Documents without link payloads should load with `links: []`, and serializer tests should cover round-trip preservation.
 - Node-link payloads stay flat: `target` remains a string, while node links emit `target_node_id` and `target_workspace_id`. Legacy node links that only contain `target` should load with `target_node_id = target` and `target_workspace_id` set to the owning workspace.
 - Deprecated plot-session layout data is accepted on old documents but stripped during migration/save; do not re-add `plot_session_layout` to the current schema.

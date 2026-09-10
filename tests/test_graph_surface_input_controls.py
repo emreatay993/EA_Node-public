@@ -2986,7 +2986,7 @@ class GraphSurfaceLockedNodeCanvasRoutingTests(GraphSurfaceInputContractTestBase
             ]
             panel_payload = dict(editable_payload)
             panel_payload["type_id"] = "data.panel"
-            panel_payload["properties"] = {"parse_numbers": True}
+            panel_payload["properties"] = {"interpretation": "auto"}
             locked_payload = dict(editable_payload)
             locked_payload["read_only"] = True
             locked_payload["unresolved"] = True
@@ -3145,13 +3145,13 @@ class GraphSurfaceLockedNodeCanvasRoutingTests(GraphSurfaceInputContractTestBase
                 if str(action.get("actionId", "")).startswith("panel_")
             ]
             assert [(action["actionId"], action["text"]) for action in panel_actions] == [
-                ("panel_parse_numbers", "Parse numbers automatically"),
+                ("panel_edit", "Edit values and interpretation..."),
                 ("panel_copy", "Copy"),
                 ("panel_copy_tree", "Copy as tree"),
             ], panel_actions
-            assert bool(panel_actions[0].get("checked")) is True, panel_actions[0]
+            assert "checked" not in panel_actions[0], panel_actions[0]
 
-            for index, action_id in enumerate(("panel_parse_numbers", "panel_copy", "panel_copy_tree"), start=1):
+            for index, action_id in enumerate(("panel_edit", "panel_copy", "panel_copy_tree"), start=1):
                 popup.actionTriggered.emit(action_id)
                 settle_events(2)
                 assert str(canvas_item.property("hostLookupNodeId")) == "node_locked_context"
@@ -3160,7 +3160,7 @@ class GraphSurfaceLockedNodeCanvasRoutingTests(GraphSurfaceInputContractTestBase
                     canvas_item.setProperty("nodeContextVisible", True)
 
             assert str(canvas_item.property("surfaceActions")) == (
-                "panel_parse_numbers,panel_copy,panel_copy_tree"
+                "panel_edit,panel_copy,panel_copy_tree"
             )
 
             canvas_item.setProperty("payload", editable_payload)

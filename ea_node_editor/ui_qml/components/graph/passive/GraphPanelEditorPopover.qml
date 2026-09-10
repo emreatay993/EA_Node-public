@@ -18,6 +18,8 @@ FocusScope {
     property var _originalSettings: ({})
     property int modeDraft: 0
     property bool autoResizeDraft: true
+    property string interpretationDraft: "text"
+    property bool inputConnected: false
 
     readonly property var embeddedInteractiveRects: []
     readonly property color panelTextColor: root.themePalette.panel_title_fg || "#eef3ff"
@@ -40,6 +42,8 @@ FocusScope {
         var normalized = settings && typeof settings === "object" ? settings : {};
         root._originalSettings = normalized;
         root.modeDraft = Math.round(Number(normalized.mode)) === 1 ? 1 : 0;
+        root.interpretationDraft = String(normalized.interpretation || "text");
+        root.inputConnected = Boolean(normalized.input_connected);
         root.autoResizeDraft = normalized.auto_resize === undefined
             ? true
             : Boolean(normalized.auto_resize);
@@ -62,9 +66,7 @@ FocusScope {
             "font_size": original.font_size === undefined ? 12 : original.font_size,
             "alignment": original.alignment === undefined ? 2 : original.alignment,
             "auto_resize": root.autoResizeDraft,
-            "parse_numbers": original.parse_numbers === undefined
-                ? false
-                : Boolean(original.parse_numbers)
+            "interpretation": root.interpretationDraft
         });
     }
 
@@ -83,7 +85,7 @@ FocusScope {
         id: dialogSurface
         anchors.fill: parent
         themePalette: root.themePalette
-        title: ""
+        title: "Edit Panel"
         closeButtonVisible: true
         onCloseRequested: root.cancelEdit()
 
@@ -104,7 +106,7 @@ FocusScope {
                 }
 
                 RowLayout {
-                    Layout.preferredWidth: 96
+                    Layout.preferredWidth: 144
                     spacing: 0
 
                     ToolButton {
@@ -118,13 +120,12 @@ FocusScope {
                         Accessible.name: "Text mode"
                         onClicked: root.modeDraft = 0
 
-                        contentItem: Image {
-                            source: typeof uiIcons !== "undefined" && uiIcons
-                                ? uiIcons.sourceSized("file-text", 18, String(root.panelTextColor))
-                                : ""
-                            sourceSize.width: 18
-                            sourceSize.height: 18
-                            fillMode: Image.PreserveAspectFit
+                        contentItem: Text {
+                            text: "Text"
+                            color: textModeButton.checked ? "white" : root.panelTextColor
+                            font.pixelSize: 12
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
                         background: Rectangle {
                             radius: 5
@@ -155,13 +156,12 @@ FocusScope {
                         onClicked: root.modeDraft = 1
 
 
-                        contentItem: Image {
-                            source: typeof uiIcons !== "undefined" && uiIcons
-                                ? uiIcons.sourceSized("format-list-bulleted", 18, String(root.panelTextColor))
-                                : ""
-                            sourceSize.width: 18
-                            sourceSize.height: 18
-                            fillMode: Image.PreserveAspectFit
+                        contentItem: Text {
+                            text: "Data"
+                            color: dataModeButton.checked ? "white" : root.panelTextColor
+                            font.pixelSize: 12
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
                         background: Rectangle {
                             radius: 5
@@ -182,14 +182,67 @@ FocusScope {
                 }
             }
 
+            ColumnLayout {
+                Layout.fillWidth: true
+                visible: root.modeDraft === 1
+                spacing: 6
+
+                Text {
+                    text: "Interpret values as"
+                    color: root.panelTextColor
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
+                }
+
+                SurfaceControls.GraphSurfaceComboBox {
+                    id: interpretationSelector
+                    objectName: "graphPanelEditorInterpretationSelector"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 34
+                    host: root.host
+                    textColor: root.panelTextColor
+                    fillColor: root.themePalette.input_bg || "#22242a"
+                    borderColor: root.themePalette.input_border || "#4a4f5a"
+                    accentColor: root.themePalette.accent || "#60cdff"
+                    focusBorderColor: accentColor
+                    font.pixelSize: 13
+                    model: ["Text (exact)", "Automatic", "Number (strict)"]
+                    currentIndex: ["text", "auto", "number"].indexOf(root.interpretationDraft)
+                    enabled: !root.inputConnected
+                    Accessible.name: "Interpret values as"
+                    onActivated: function(index) {
+                        root.interpretationDraft = ["text", "auto", "number"][index];
+                    }
+                }
+
+                Text {
+                    objectName: "graphPanelEditorInterpretationHelp"
+                    Layout.fillWidth: true
+                    text: root.inputConnected
+                        ? "Upstream input passes through unchanged. Disconnect it to use authored values."
+                        : root.interpretationDraft === "text"
+                            ? "Preserve each line, including leading zeros and spaces."
+                            : root.interpretationDraft === "auto"
+                                ? "Read integers and finite decimals as numbers. Other values stay text."
+                                : "Every non-empty line must be a finite number. Invalid values report their line and branch. Blank lines become missing values."
+                    color: root.mutedTextColor
+                    font.pixelSize: 11
+                    wrapMode: Text.WordWrap
+                }
+            }
+
             SurfaceControls.GraphSurfaceTextArea {
                 id: valueEditor
                 objectName: "graphPanelEditorValueField"
                 Layout.fillWidth: true
                 Layout.preferredHeight: 146
                 host: root.host
+                textColor: root.panelTextColor
+                fillColor: root.themePalette.input_bg || "#22242a"
+                borderColor: root.themePalette.input_border || "#4a4f5a"
+                focusBorderColor: root.themePalette.accent || "#60cdff"
                 font.family: "Consolas"
-                font.pointSize: 12
+                font.pixelSize: 14
                 placeholderText: root.modeDraft === 1
                     ? "One item per line; use * 0;1 to start a branch"
                     : "Enter text"

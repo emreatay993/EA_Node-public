@@ -59,7 +59,7 @@ def test_local_file_mapping_and_literal_choices_match_both_gestures(tmp_path, na
         assert Path(literal) == Path(path)
         assert source.choice("text").item.properties["format"] == "plain"
         assert source.choice("panel").item.properties == {
-            "value": literal, "mode": PANEL_MODE_TEXT, "parse_numbers": False,
+            "value": literal, "mode": PANEL_MODE_TEXT, "interpretation": "text",
         }
         assert source.choice("skip").item is None
 
@@ -320,7 +320,7 @@ def test_plain_text_and_malformed_urls_are_preserved_without_number_parsing(text
     source, = classify_canvas_import(capture_canvas_drop(text=text))
     assert source.detected_choice == "text"
     assert _detected(source).properties == {"text": text, "format": "plain"}
-    assert source.choice("panel").item.properties == {"value": text, "mode": PANEL_MODE_TEXT, "parse_numbers": False}
+    assert source.choice("panel").item.properties == {"value": text, "mode": PANEL_MODE_TEXT, "interpretation": "text"}
 
 
 @pytest.mark.parametrize("graph_bytes", [b"not-json", b"", b"\xff", b'{"kind":"invalid"}'])
