@@ -1,0 +1,184 @@
+{
+  "active_workspace_id": "ws_corex_plot_live_line",
+  "metadata": {
+    "artifact_store": {
+      "artifacts": {},
+      "staged": {}
+    },
+    "custom_workflows": [],
+    "ui": {
+      "passive_style_presets": {
+        "edge_presets": [],
+        "node_presets": []
+      },
+      "script_editor": {
+        "floating": false,
+        "visible": false,
+        "width": 0.0
+      }
+    },
+    "workflow_settings": {
+      "environment": {
+        "python_path": "",
+        "working_directory": ""
+      },
+      "general": {
+        "author": "",
+        "description": "COREX plot data-port example",
+        "project_name": "COREX Plot - Live Line"
+      },
+      "logging": {
+        "capture_console": true,
+        "level": "info"
+      },
+      "plugins": {
+        "enabled": []
+      },
+      "solver_config": {
+        "enable_parallel": true,
+        "memory_limit_gb": 12,
+        "thread_count": 8
+      }
+    },
+    "workspace_order": [
+      "ws_corex_plot_live_line"
+    ]
+  },
+  "name": "COREX Plot - Live Line",
+  "project_id": "proj_corex_plot_live_line",
+  "schema_version": 5,
+  "workspace_order": [
+    "ws_corex_plot_live_line"
+  ],
+  "workspaces": [
+    {
+      "active_view_id": "view_corex_plot_live_line",
+      "dirty": true,
+      "edges": [
+        {
+          "edge_id": "edge_series_plot",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_series",
+          "source_port_key": "value",
+          "target_node_id": "node_line_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        }
+      ],
+      "name": "COREX Plot - Live Line",
+      "nodes": [
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 260.0,
+          "custom_width": 420.0,
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_line_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": false,
+            "data_export_format": "csv",
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "title": "Monthly revenue",
+            "x_label": "Month",
+            "y_label": "Revenue"
+          },
+          "title": "Line Plot - live canvas",
+          "type_id": "plot.line",
+          "visual_style": {},
+          "x": 480.0,
+          "y": 80.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 300.0,
+          "exposed_ports": {
+            "as_text": true,
+            "value": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_series",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "value": [
+              {
+                "label": "North",
+                "x": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ],
+                "y": [
+                  8.0,
+                  12.0,
+                  15.0,
+                  18.0,
+                  23.0,
+                  31.0
+                ]
+              },
+              {
+                "label": "South",
+                "x": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ],
+                "y": [
+                  5.0,
+                  7.0,
+                  11.0,
+                  13.0,
+                  17.0,
+                  20.0
+                ]
+              }
+            ]
+          },
+          "title": "Line series data",
+          "type_id": "core.constant",
+          "visual_style": {},
+          "x": 120.0,
+          "y": 130.0
+        }
+      ],
+      "views": [
+        {
+          "hide_optional_ports": false,
+          "name": "V1",
+          "pan_x": 120.0,
+          "pan_y": 120.0,
+          "scope_path": [],
+          "view_id": "view_corex_plot_live_line",
+          "zoom": 0.86
+        }
+      ],
+      "workspace_id": "ws_corex_plot_live_line"
+    }
+  ]
+}

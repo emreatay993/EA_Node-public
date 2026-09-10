@@ -1,0 +1,22 @@
+{
+  "graph.minimap.collapse": {
+    "text": "Collapse minimap",
+    "category": "tutorial"
+  },
+  "graph.minimap.expand": {
+    "text": "Expand minimap",
+    "category": "tutorial"
+  },
+  "graph.node_context.toggle_settings": {
+    "text": "Show or hide this node's execution settings. The choice is saved with the node; connections and execution behavior are unchanged.",
+    "category": "general"
+  },
+  "graph.selection.actions": {
+    "text": "Selection Actions",
+    "category": "general"
+  },
+  "graph.surface_color.pick_color": {
+    "text": "Pick color",
+    "category": "general"
+  }
+}

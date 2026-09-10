@@ -1,0 +1,268 @@
+{
+  "active_workspace_id": "ws_mechanical_mutation",
+  "metadata": {
+    "artifact_store": {
+      "artifacts": {},
+      "staged": {}
+    },
+    "custom_workflows": [],
+    "ui": {
+      "passive_style_presets": {
+        "edge_presets": [],
+        "node_presets": []
+      },
+      "script_editor": {
+        "floating": false,
+        "visible": false,
+        "width": 0.0
+      }
+    },
+    "workflow_settings": {
+      "environment": {
+        "python_path": "",
+        "working_directory": ""
+      },
+      "general": {
+        "author": "COREX",
+        "description": "Runnable Mechanical catalogue example",
+        "project_name": "Mechanical Mutate, Snippet, and Save"
+      },
+      "logging": {
+        "capture_console": true,
+        "level": "info"
+      },
+      "plugins": {
+        "enabled": []
+      },
+      "solver_config": {
+        "enable_parallel": true,
+        "memory_limit_gb": 12,
+        "thread_count": 8
+      }
+    },
+    "workspace_order": [
+      "ws_mechanical_mutation"
+    ]
+  },
+  "name": "Mechanical Mutate, Snippet, and Save",
+  "project_id": "proj_mechanical_mutation",
+  "schema_version": 5,
+  "workspace_order": [
+    "ws_mechanical_mutation"
+  ],
+  "workspaces": [
+    {
+      "active_view_id": "view_mechanical_mutation",
+      "dirty": false,
+      "edges": [
+        {
+          "edge_id": "edge_03_mutation_snippet_mutation_save",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "mutation_snippet",
+          "source_port_key": "model",
+          "target_node_id": "mutation_save",
+          "target_port_key": "source_model",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_01_mutation_open_mutation_script",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "mutation_open",
+          "source_port_key": "model",
+          "target_node_id": "mutation_script",
+          "target_port_key": "source_model",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_02_mutation_script_mutation_snippet",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "mutation_script",
+          "source_port_key": "model",
+          "target_node_id": "mutation_snippet",
+          "target_port_key": "source_model",
+          "visual_style": {}
+        }
+      ],
+      "name": "Mechanical Mutate, Snippet, and Save",
+      "nodes": [
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "expanded_settings_group_ids": [
+            "open_options"
+          ],
+          "exposed_ports": {
+            "file": true,
+            "info": true,
+            "mode": true,
+            "model": true,
+            "system": true,
+            "timeout_s": true,
+            "version": true,
+            "working_folder": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "mutation_open",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "file": "",
+            "mode": "background",
+            "system": "",
+            "timeout_s": 600.0,
+            "version": 0,
+            "working_folder": ""
+          },
+          "title": "Open Mechanical Model",
+          "type_id": "mechanical.open_model",
+          "x": 0.0,
+          "y": 80.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "expanded_settings_group_ids": [
+            "destination"
+          ],
+          "exposed_ports": {
+            "file": true,
+            "files": true,
+            "format": true,
+            "include_external_imported_files": true,
+            "include_results": true,
+            "include_user_files": true,
+            "model": true,
+            "overwrite": true,
+            "report": true,
+            "source_model": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "mutation_save",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "file": "",
+            "format": "auto",
+            "include_external_imported_files": true,
+            "include_results": true,
+            "include_user_files": true,
+            "overwrite": false
+          },
+          "title": "Save Mechanical Model",
+          "type_id": "mechanical.save_model",
+          "x": 1080.0,
+          "y": 80.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "expanded_settings_group_ids": [
+            "script"
+          ],
+          "exposed_ports": {
+            "code": true,
+            "environments": true,
+            "model": true,
+            "report": true,
+            "scope": true,
+            "source_model": true,
+            "stop_on_error": true,
+            "timeout_s": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "mutation_script",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "code": "if analysis is None or str(analysis.Name) != 'COREX structural A':\n    raise Exception('Expected exactly COREX structural A')\nmatches = list(DataModel.GetObjectsByName('COREX constant load'))\nif len(matches) != 1:\n    raise Exception('Expected exactly one COREX constant load')\noutput = matches[0].XComponent.Output\nif str(output.DefinitionType).split('.')[-1] != 'Discrete':\n    raise Exception('Expected a one-value Discrete definition')\nsamples = list(output.DiscreteValues)\nif int(output.DiscreteValueCount) != 1 or len(samples) != 1:\n    raise Exception('Expected one scalar load value')\ncurrent_n = samples[0].ConvertUnit('N')\nif str(current_n.Unit) != 'N':\n    raise Exception('Could not read the load in N')\nfrom Ansys.Core.Units import Quantity\noutput.DiscreteValues = [Quantity(float(current_n.Value) + 100.0, 'N')]\nresult = analysis.ObjectId\n",
+            "environments": [
+              "COREX structural A"
+            ],
+            "scope": "each_environment",
+            "stop_on_error": true,
+            "timeout_s": 600.0
+          },
+          "title": "Run Mechanical Script",
+          "type_id": "mechanical.run_script",
+          "x": 360.0,
+          "y": 20.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "expanded_settings_group_ids": [
+            "command_snippet"
+          ],
+          "exposed_ports": {
+            "commands": true,
+            "environments": true,
+            "issue_solve_command": true,
+            "model": true,
+            "name": true,
+            "report": true,
+            "selected_steps": true,
+            "snippets": true,
+            "source_model": true,
+            "steps": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "mutation_snippet",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "commands": "/prep7\n  ! all body v1  \n/COM,all-end\n",
+            "environments": [],
+            "issue_solve_command": false,
+            "name": "COREX all commands",
+            "selected_steps": [
+              1
+            ],
+            "steps": "all"
+          },
+          "title": "Mechanical APDL Snippet",
+          "type_id": "mechanical.apdl_snippet",
+          "x": 720.0,
+          "y": 20.0
+        }
+      ],
+      "views": [
+        {
+          "hide_optional_ports": false,
+          "name": "Workflow",
+          "pan_x": 80.0,
+          "pan_y": 100.0,
+          "scope_path": [],
+          "view_id": "view_mechanical_mutation",
+          "zoom": 0.85
+        }
+      ],
+      "workspace_id": "ws_mechanical_mutation"
+    }
+  ]
+}

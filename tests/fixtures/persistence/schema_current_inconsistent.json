@@ -1,0 +1,108 @@
+{
+  "schema_version": 4,
+  "project_id": "proj_current_inconsistent",
+  "name": "Current Inconsistent",
+  "active_workspace_id": "ws_legacy",
+  "workspaces": [
+    {
+      "workspace_id": "ws_legacy",
+      "name": "Legacy Workspace",
+      "active_view_id": "view_legacy",
+      "views": [
+        {
+          "view_id": "view_legacy",
+          "name": "V1",
+          "zoom": 1.0,
+          "pan_x": 0.0,
+          "pan_y": 0.0
+        }
+      ],
+      "nodes": [
+        {
+          "node_id": "node_start",
+          "type_id": "core.start",
+          "title": "Start",
+          "x": 0.0,
+          "y": 0.0,
+          "collapsed": false,
+          "properties": {},
+          "exposed_ports": {
+            "exec_out": true,
+            "trigger": true
+          },
+          "parent_node_id": null
+        },
+        {
+          "node_id": "node_logger",
+          "type_id": "core.logger",
+          "title": "Logger",
+          "x": 160.0,
+          "y": 0.0,
+          "collapsed": false,
+          "properties": {},
+          "exposed_ports": {
+            "exec_in": false,
+            "message": true,
+            "exec_out": true
+          },
+          "parent_node_id": null
+        },
+        {
+          "node_id": "node_unknown",
+          "type_id": "plugin.missing_logger",
+          "title": "Unknown",
+          "x": 320.0,
+          "y": 0.0,
+          "collapsed": false,
+          "properties": {},
+          "exposed_ports": {},
+          "parent_node_id": null,
+          "plugin_state": {
+            "mode": "offline",
+            "retries": [
+              1,
+              2
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "edge_id": "edge_hidden",
+          "source_node_id": "node_start",
+          "source_port_key": "exec_out",
+          "target_node_id": "node_logger",
+          "target_port_key": "exec_in"
+        },
+        {
+          "edge_id": "edge_valid",
+          "source_node_id": "node_start",
+          "source_port_key": "trigger",
+          "target_node_id": "node_logger",
+          "target_port_key": "message"
+        },
+        {
+          "edge_id": "edge_duplicate",
+          "source_node_id": "node_start",
+          "source_port_key": "exec_out",
+          "target_node_id": "node_logger",
+          "target_port_key": "message"
+        },
+        {
+          "edge_id": "edge_unknown",
+          "source_node_id": "node_unknown",
+          "source_port_key": "exec_out",
+          "target_node_id": "node_logger",
+          "target_port_key": "message",
+          "label": "Unknown link",
+          "visual_style": {
+            "stroke": "dot"
+          },
+          "plugin_edge_state": {
+            "route": "fallback"
+          }
+        }
+      ]
+    }
+  ]
+}

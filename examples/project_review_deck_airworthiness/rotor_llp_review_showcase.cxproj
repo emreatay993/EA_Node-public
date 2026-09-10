@@ -1,0 +1,992 @@
+{
+  "active_workspace_id": "ws-certification-review-map",
+  "metadata": {
+    "artifact_store": {
+      "artifacts": {
+        "compliance_memo_pdf": {
+          "artifact_kind": "pdf",
+          "io_dir": "out",
+          "label": "EASA CM-PIFS-007 PDF",
+          "node_id": "node_2e30548914",
+          "node_title": "EASA CM-PIFS-007 PDF - page 3",
+          "node_type": "media.panel",
+          "relative_path": "workspaces/ws-binder/nodes/compliance-memo-pdf-page-3-01/out/pdf/cm-pifs-007-page-pdf-1.pdf",
+          "source_asset": "public-sources/originals/easa/cm-pifs-007-page-pdf-1.pdf",
+          "source_note": "Copied original PDF from the skill public-source corpus.",
+          "source_origin": "airworthiness-compliance-engineer",
+          "source_url": "https://www.easa.europa.eu/en/document-library/product-certification-consultations/easa-cm-pifs-007",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        },
+        "displacement_envelope_png": {
+          "artifact_kind": "image",
+          "io_dir": "out",
+          "label": "PyAnsys Rotor 67 total deformation",
+          "node_id": "node_47146b37f5",
+          "node_title": "PyAnsys Rotor 67 Total Deformation",
+          "node_type": "media.panel",
+          "relative_path": "workspaces/ws-binder/nodes/displacement-envelope-01/out/images/displacement-envelope.png",
+          "source_asset": "https://embedding.examples.mechanical.docs.pyansys.com/_images/sphx_glr_Rotor_Blade_Inverse_solve_005.png",
+          "source_note": "Downloaded from the public PyMechanical Embedding example page and copied into the managed project sidecar.",
+          "source_origin": "web:pyansys-docs",
+          "source_url": "https://embedding.examples.mechanical.docs.pyansys.com/examples/02_technology_showcase/Rotor_Blade_Inverse_solve.html",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        },
+        "fea_appendix_pdf": {
+          "artifact_kind": "pdf",
+          "io_dir": "out",
+          "label": "FAA AC 33.70-1 PDF",
+          "node_id": "node_4d7fafda85",
+          "node_title": "FAA AC 33.70-1 PDF - page 2",
+          "node_type": "media.panel",
+          "relative_path": "workspaces/ws-binder/nodes/fea-appendix-pdf-page-2-01/out/pdf/ac-33-70-1-life-limited-parts-chg-1.pdf",
+          "source_asset": "public-sources/originals/faa/ac-33-70-1-life-limited-parts-chg-1.pdf",
+          "source_note": "Copied original PDF from the skill public-source corpus.",
+          "source_origin": "airworthiness-compliance-engineer",
+          "source_url": "https://www.faa.gov/airports/resources/advisory_circulars/index.cfm/go/document.information/documentNumber/33.70-1",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        },
+        "local_traceability_guide_html": {
+          "artifact_kind": "html",
+          "io_dir": "out",
+          "label": "Local FEA traceability guide",
+          "node_id": "node_6a6ba25d7a",
+          "node_title": "Local Guide: FEA Evidence to CS-E Traceability",
+          "node_type": "web.page_viewer",
+          "relative_path": "workspaces/ws-binder/nodes/local-guide-fea-evidence-to-cs-e-t-01/out/web/fea-evidence-to-cs-e-traceability.html",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        },
+        "local_traceability_guide_preview_png": {
+          "artifact_kind": "web_preview",
+          "io_dir": "out",
+          "label": "Local guide preview",
+          "node_id": "node_6a6ba25d7a",
+          "node_title": "Local Guide: FEA Evidence to CS-E Traceability",
+          "node_type": "web.page_viewer",
+          "relative_path": "workspaces/ws-binder/nodes/local-guide-fea-evidence-to-cs-e-t-01/out/web-previews/local-fea-traceability-guide-preview.png",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        },
+        "margin_summary_chart_png": {
+          "artifact_kind": "image",
+          "io_dir": "out",
+          "label": "Margin summary chart",
+          "node_id": "node_e9df4daa24",
+          "node_title": "Margin Summary Chart",
+          "node_type": "media.panel",
+          "relative_path": "workspaces/ws-binder/nodes/margin-summary-chart-01/out/images/margin-summary-chart.png",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        },
+        "stress_hotspot_map_png": {
+          "artifact_kind": "image",
+          "io_dir": "out",
+          "label": "PyAnsys Rotor 67 thermal strain",
+          "node_id": "node_48af63e487",
+          "node_title": "PyAnsys Rotor 67 Thermal Strain",
+          "node_type": "media.panel",
+          "relative_path": "workspaces/ws-binder/nodes/stress-hotspot-map-01/out/images/stress-hotspot-map.png",
+          "source_asset": "https://embedding.examples.mechanical.docs.pyansys.com/_images/sphx_glr_Rotor_Blade_Inverse_solve_006.png",
+          "source_note": "Downloaded from the public PyMechanical Embedding example page and copied into the managed project sidecar.",
+          "source_origin": "web:pyansys-docs",
+          "source_url": "https://embedding.examples.mechanical.docs.pyansys.com/examples/02_technology_showcase/Rotor_Blade_Inverse_solve.html",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        },
+        "unsupported_evidence_register_csv": {
+          "artifact_kind": "table",
+          "io_dir": "out",
+          "label": "Unsupported CSV evidence register",
+          "node_id": "node_204447210f",
+          "node_title": "Unsupported CSV Evidence Register",
+          "node_type": "media.panel",
+          "relative_path": "workspaces/ws-binder/nodes/unsupported-csv-evidence-register-01/out/register/evidence-register.csv",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        },
+        "unsupported_review_notes_md": {
+          "artifact_kind": "markdown",
+          "io_dir": "out",
+          "label": "Unsupported Markdown review notes",
+          "node_id": "node_393a44fc55",
+          "node_title": "Unsupported Markdown Review Notes",
+          "node_type": "media.panel",
+          "relative_path": "workspaces/ws-binder/nodes/unsupported-markdown-review-notes-01/out/register/review-notes.md",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        },
+        "web_01_preview_png": {
+          "artifact_kind": "web_preview",
+          "io_dir": "out",
+          "label": "EASA CS-E Easy Access Rules",
+          "node_id": "node_81bbb20799",
+          "node_title": "EASA CS-E Easy Access Rules",
+          "node_type": "web.page_viewer",
+          "relative_path": "workspaces/ws-review/nodes/easa-cs-e-easy-access-rules-01/out/web-previews/01-easa-cs-e-easy-access-rules.png",
+          "source_asset": "public-sources/extracts/visual-markdown/cs-e-amendment-8_assets/figure-p171-002.png",
+          "source_note": "Copied visual extract from the skill public-source corpus.",
+          "source_origin": "airworthiness-compliance-engineer",
+          "source_url": "https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-engines-cs-e",
+          "workspace_id": "ws-certification-review-map",
+          "workspace_name": "Certification Review Map"
+        },
+        "web_02_preview_png": {
+          "artifact_kind": "web_preview",
+          "io_dir": "out",
+          "label": "EASA CM-PIFS-007",
+          "node_id": "node_92955b125d",
+          "node_title": "EASA CM-PIFS-007",
+          "node_type": "web.page_viewer",
+          "relative_path": "workspaces/ws-review/nodes/easa-cm-pifs-007-01/out/web-previews/02-easa-cm-pifs-007.png",
+          "source_asset": "public-sources/originals/easa/cm-pifs-007-page-pdf-1.pdf#page=3",
+          "source_note": "Rendered from source PDF page 3 of 8.",
+          "source_origin": "airworthiness-compliance-engineer",
+          "source_url": "https://www.easa.europa.eu/en/document-library/product-certification-consultations/easa-cm-pifs-007",
+          "workspace_id": "ws-certification-review-map",
+          "workspace_name": "Certification Review Map"
+        },
+        "web_03_preview_png": {
+          "artifact_kind": "web_preview",
+          "io_dir": "out",
+          "label": "EASA CM-PIFS-013",
+          "node_id": "node_039a076d88",
+          "node_title": "EASA CM-PIFS-013",
+          "node_type": "web.page_viewer",
+          "relative_path": "workspaces/ws-review/nodes/easa-cm-pifs-013-01/out/web-previews/03-easa-cm-pifs-013.png",
+          "source_asset": "public-sources/extracts/visual-markdown/cm-pifs-013-page-pdf-1_assets/figure-p005-006.png",
+          "source_note": "Copied visual extract from the skill public-source corpus.",
+          "source_origin": "airworthiness-compliance-engineer",
+          "source_url": "https://www.easa.europa.eu/en/document-library/product-certification-consultations/integrity-nickel-powder-metallurgy-rotating",
+          "workspace_id": "ws-certification-review-map",
+          "workspace_name": "Certification Review Map"
+        },
+        "web_04_preview_png": {
+          "artifact_kind": "web_preview",
+          "io_dir": "out",
+          "label": "eCFR 14 CFR 33.70",
+          "node_id": "node_e7a929a916",
+          "node_title": "eCFR 14 CFR 33.70",
+          "node_type": "web.page_viewer",
+          "relative_path": "workspaces/ws-review/nodes/ecfr-14-cfr-33-70-01/out/web-previews/04-ecfr-14-cfr-3370.png",
+          "source_asset": "public-sources/originals/faa/ecfr-title-14-part-33.xml#33.70",
+          "source_note": "Source-derived preview card.",
+          "source_origin": "airworthiness-compliance-engineer",
+          "source_url": "https://www.ecfr.gov/current/title-14/chapter-I/subchapter-C/part-33/subpart-E/section-33.70",
+          "workspace_id": "ws-certification-review-map",
+          "workspace_name": "Certification Review Map"
+        },
+        "web_05_preview_png": {
+          "artifact_kind": "web_preview",
+          "io_dir": "out",
+          "label": "FAA AC 33.70-1",
+          "node_id": "node_fda219e2fc",
+          "node_title": "FAA AC 33.70-1",
+          "node_type": "web.page_viewer",
+          "relative_path": "workspaces/ws-binder/nodes/faa-ac-33-70-1-01/out/web-previews/05-faa-ac-3370-1.png",
+          "source_asset": "public-sources/extracts/visual-markdown/ac-33-70-1-life-limited-parts-chg-1_assets/figure-p009-004.png",
+          "source_note": "Copied visual extract from the skill public-source corpus.",
+          "source_origin": "airworthiness-compliance-engineer",
+          "source_url": "https://www.faa.gov/airports/resources/advisory_circulars/index.cfm/go/document.information/documentNumber/33.70-1",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        },
+        "web_06_preview_png": {
+          "artifact_kind": "web_preview",
+          "io_dir": "out",
+          "label": "FAA AC 33.70-4",
+          "node_id": "node_4c920a487c",
+          "node_title": "FAA AC 33.70-4",
+          "node_type": "web.page_viewer",
+          "relative_path": "workspaces/ws-binder/nodes/faa-ac-33-70-4-01/out/web-previews/06-faa-ac-3370-4.png",
+          "source_asset": "public-sources/extracts/visual-markdown/ac-33-70-4-nickel-powder-rotating-life-limited-parts-page-pdf-1_assets/figure-p009-003.png",
+          "source_note": "Copied visual extract from the skill public-source corpus.",
+          "source_origin": "airworthiness-compliance-engineer",
+          "source_url": "https://www.faa.gov/regulations_policies/advisory_circulars/index.cfm/go/document.information/documentID/1042036",
+          "workspace_id": "ws-evidence-binder",
+          "workspace_name": "Evidence Binder"
+        }
+      },
+      "staged": {}
+    },
+    "custom_workflows": [],
+    "description": "Demonstration project for Project Review Deck export using an airworthiness rotor life-limited part FEA review scenario.",
+    "scenario": {
+      "basis": "EASA-first CS-E framing with FAA Part 33.70 comparison",
+      "topic": "Rotor LLP airworthiness review"
+    },
+    "ui": {
+      "passive_style_presets": {
+        "edge_presets": [],
+        "node_presets": []
+      },
+      "script_editor": {
+        "floating": false,
+        "visible": false,
+        "width": 0
+      }
+    },
+    "workflow_settings": {
+      "environment": {
+        "python_path": "",
+        "working_directory": ""
+      },
+      "general": {
+        "author": "",
+        "description": "",
+        "project_name": ""
+      },
+      "logging": {
+        "capture_console": true,
+        "level": "info"
+      },
+      "plugins": {
+        "enabled": []
+      },
+      "solver_config": {
+        "enable_parallel": true,
+        "memory_limit_gb": 12,
+        "thread_count": 8
+      }
+    },
+    "workspace_order": [
+      "ws-certification-review-map",
+      "ws-evidence-binder"
+    ]
+  },
+  "name": "Rotor LLP Airworthiness FEA Review Showcase",
+  "project_id": "project-review-airworthiness-fea-showcase",
+  "schema_version": 5,
+  "workspace_order": [
+    "ws-certification-review-map",
+    "ws-evidence-binder"
+  ],
+  "workspaces": [
+    {
+      "active_view_id": "view_7185506706",
+      "dirty": true,
+      "edges": [],
+      "name": "Certification Review Map",
+      "nodes": [
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220,
+          "custom_width": 330,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_039a076d88",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "browser_state": {},
+            "display_mode": "fit_width",
+            "persist_browser_state": true,
+            "preview_ref": {
+              "artifact_ref": "saved://web_03_preview_png",
+              "captured_title": "EASA CM-PIFS-013",
+              "captured_url": "https://www.easa.europa.eu/en/document-library/product-certification-consultations/integrity-nickel-powder-metallurgy-rotating"
+            },
+            "show_frame": true,
+            "show_title": true,
+            "start_location": "https://www.easa.europa.eu/en/document-library/product-certification-consultations/integrity-nickel-powder-metallurgy-rotating"
+          },
+          "title": "EASA CM-PIFS-013",
+          "type_id": "web.page_viewer",
+          "visual_style": {},
+          "x": 20,
+          "y": 220
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 300,
+          "custom_width": 470,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_315df11854",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "background_color": "",
+            "font_family": "",
+            "font_size": 18,
+            "font_weight": "normal",
+            "format": "markdown",
+            "horizontal_alignment": "center",
+            "italic": false,
+            "letter_spacing": 0,
+            "line_height": 1.2,
+            "opacity": 100,
+            "padding": 4,
+            "strikeout": false,
+            "text": "### Synthesis note\n\nThe deck exporter captures this canvas as a review snapshot. The text is intentionally styled with **bold labels**, short paragraphs, and bullet lists so the snapshot slide demonstrates how engineering rationale can travel with linked evidence.\n\n- Certification map: regulatory evidence and review rationale\n- Evidence binder: image, PDF, web previews, unsupported files\n- Deck curation: global slide ordering exercised by the exported PPTX",
+            "text_color": "",
+            "underline": false,
+            "vertical_alignment": "middle",
+            "wrap_mode": "word"
+          },
+          "title": "Styled Markdown Paragraph",
+          "type_id": "passive.annotation.text",
+          "visual_style": {},
+          "x": 260,
+          "y": -170
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 300,
+          "custom_width": 430,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_71209a42de",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "body": "**Traceability questions**\n\n- Which CS-E and FAA rules drive the life declaration?\n- Which load cases and temperatures bound the FEA evidence?\n- Where are open assumptions recorded for DER/DOA review?\n\n**Planned reviewer action:** compare each FEA figure to the PDF memo and web-source cards.",
+            "body_background_color": "",
+            "body_font_family": "",
+            "body_font_size": 0,
+            "body_font_weight": "",
+            "body_format": "markdown",
+            "body_horizontal_alignment": "",
+            "body_italic": false,
+            "body_letter_spacing": -999,
+            "body_line_height": 0,
+            "body_opacity": -1,
+            "body_padding": -1,
+            "body_strikeout": false,
+            "body_text_color": "",
+            "body_underline": false,
+            "body_vertical_alignment": "",
+            "body_wrap_mode": "",
+            "title": "Sticky Note"
+          },
+          "title": "Compliance Thread",
+          "type_id": "passive.annotation.sticky_note",
+          "visual_style": {},
+          "x": -250,
+          "y": -170
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220,
+          "custom_width": 330,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_81bbb20799",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "browser_state": {},
+            "display_mode": "fit_width",
+            "persist_browser_state": true,
+            "preview_ref": {
+              "artifact_ref": "saved://web_01_preview_png",
+              "captured_title": "EASA CS-E Easy Access Rules",
+              "captured_url": "https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-engines-cs-e"
+            },
+            "show_frame": true,
+            "show_title": true,
+            "start_location": "https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-engines-cs-e"
+          },
+          "title": "EASA CS-E Easy Access Rules",
+          "type_id": "web.page_viewer",
+          "visual_style": {},
+          "x": -760,
+          "y": 220
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220,
+          "custom_width": 330,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_92955b125d",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "browser_state": {},
+            "display_mode": "fit_width",
+            "persist_browser_state": true,
+            "preview_ref": {
+              "artifact_ref": "saved://web_02_preview_png",
+              "captured_title": "EASA CM-PIFS-007",
+              "captured_url": "https://www.easa.europa.eu/en/document-library/product-certification-consultations/easa-cm-pifs-007"
+            },
+            "show_frame": true,
+            "show_title": true,
+            "start_location": "https://www.easa.europa.eu/en/document-library/product-certification-consultations/easa-cm-pifs-007"
+          },
+          "title": "EASA CM-PIFS-007",
+          "type_id": "web.page_viewer",
+          "visual_style": {},
+          "x": -370,
+          "y": 220
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 180,
+          "custom_width": 620,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_d63cdc5b9a",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "subtitle": "EASA-first CS-E 515/840 framing with FAA Part 33.70 comparison",
+            "subtitle_background_color": "",
+            "subtitle_font_family": "",
+            "subtitle_font_size": 0,
+            "subtitle_font_weight": "",
+            "subtitle_format": "plain",
+            "subtitle_horizontal_alignment": "",
+            "subtitle_italic": false,
+            "subtitle_letter_spacing": -999,
+            "subtitle_line_height": 0,
+            "subtitle_opacity": -1,
+            "subtitle_padding": -1,
+            "subtitle_strikeout": false,
+            "subtitle_text_color": "",
+            "subtitle_underline": false,
+            "subtitle_vertical_alignment": "",
+            "subtitle_wrap_mode": "",
+            "title": "Section Header"
+          },
+          "title": "Rotor LLP Certification Review Map",
+          "type_id": "passive.annotation.section_header",
+          "visual_style": {},
+          "x": -760,
+          "y": -420
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220,
+          "custom_width": 330,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_e7a929a916",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "browser_state": {},
+            "display_mode": "fit_width",
+            "persist_browser_state": true,
+            "preview_ref": {
+              "artifact_ref": "saved://web_04_preview_png",
+              "captured_title": "eCFR 14 CFR 33.70",
+              "captured_url": "https://www.ecfr.gov/current/title-14/chapter-I/subchapter-C/part-33/subpart-E/section-33.70"
+            },
+            "show_frame": true,
+            "show_title": true,
+            "start_location": "https://www.ecfr.gov/current/title-14/chapter-I/subchapter-C/part-33/subpart-E/section-33.70"
+          },
+          "title": "eCFR 14 CFR 33.70",
+          "type_id": "web.page_viewer",
+          "visual_style": {},
+          "x": 410,
+          "y": 220
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 300,
+          "custom_width": 430,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_eaf4a3b1fe",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "body": "**Scope**\n\nRotor life-limited part review package for a design review export demonstration.\n\n- Image panels preserve portable PyAnsys Rotor 67 result evidence.\n- Generated PDFs preserve non-page-1 Media Panel state in the exported deck.\n- Unsupported CSV/Markdown register files are expected to appear on an issues slide.",
+            "body_background_color": "",
+            "body_font_family": "",
+            "body_font_size": 0,
+            "body_font_weight": "",
+            "body_format": "markdown",
+            "body_horizontal_alignment": "",
+            "body_italic": false,
+            "body_letter_spacing": -999,
+            "body_line_height": 0,
+            "body_opacity": -1,
+            "body_padding": -1,
+            "body_strikeout": false,
+            "body_text_color": "",
+            "body_underline": false,
+            "body_vertical_alignment": "",
+            "body_wrap_mode": "",
+            "title": "Sticky Note"
+          },
+          "title": "Review Scope and Assumptions",
+          "type_id": "passive.annotation.sticky_note",
+          "visual_style": {},
+          "x": -760,
+          "y": -170
+        }
+      ],
+      "views": [
+        {
+          "hide_optional_ports": false,
+          "name": "Certification Review Map",
+          "pan_x": 120,
+          "pan_y": 80,
+          "scope_path": [],
+          "view_id": "view_7185506706",
+          "zoom": 0.82
+        }
+      ],
+      "workspace_id": "ws-certification-review-map"
+    },
+    {
+      "active_view_id": "view_c40241c9aa",
+      "dirty": true,
+      "edges": [],
+      "name": "Evidence Binder",
+      "nodes": [
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220,
+          "custom_width": 360,
+          "exposed_ports": {
+            "source": false
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_204447210f",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "crop_h": 1,
+            "crop_w": 1,
+            "crop_x": 0,
+            "crop_y": 0,
+            "fit_mode": "contain",
+            "mirror_horizontal": false,
+            "mirror_vertical": false,
+            "rotation_degrees": 0,
+            "show_frame": true,
+            "show_title": true,
+            "source": "saved://unsupported_evidence_register_csv"
+          },
+          "title": "Unsupported CSV Evidence Register",
+          "type_id": "media.panel",
+          "x": 190,
+          "y": 350
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 280,
+          "custom_width": 380,
+          "exposed_ports": {
+            "source": false
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_2e30548914",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "page_number": 3,
+            "show_frame": true,
+            "show_title": true,
+            "source": "saved://compliance_memo_pdf"
+          },
+          "title": "EASA CM-PIFS-007 PDF - page 3",
+          "type_id": "media.panel",
+          "x": -760,
+          "y": 350
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220,
+          "custom_width": 360,
+          "exposed_ports": {
+            "source": false
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_393a44fc55",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "crop_h": 1,
+            "crop_w": 1,
+            "crop_x": 0,
+            "crop_y": 0,
+            "fit_mode": "contain",
+            "mirror_horizontal": false,
+            "mirror_vertical": false,
+            "rotation_degrees": 0,
+            "show_frame": true,
+            "show_title": true,
+            "source": "saved://unsupported_review_notes_md"
+          },
+          "title": "Unsupported Markdown Review Notes",
+          "type_id": "media.panel",
+          "x": 620,
+          "y": 350
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 260,
+          "custom_width": 360,
+          "exposed_ports": {
+            "source": false
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_47146b37f5",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "crop_h": 1,
+            "crop_w": 1,
+            "crop_x": 0,
+            "crop_y": 0,
+            "fit_mode": "contain",
+            "mirror_horizontal": false,
+            "mirror_vertical": false,
+            "rotation_degrees": 0,
+            "show_frame": true,
+            "show_title": true,
+            "source": "saved://displacement_envelope_png"
+          },
+          "title": "PyAnsys Rotor 67 Total Deformation",
+          "type_id": "media.panel",
+          "x": -340,
+          "y": 20
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 260,
+          "custom_width": 360,
+          "exposed_ports": {
+            "source": false
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_48af63e487",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "crop_h": 1,
+            "crop_w": 1,
+            "crop_x": 0,
+            "crop_y": 0,
+            "fit_mode": "contain",
+            "mirror_horizontal": false,
+            "mirror_vertical": false,
+            "rotation_degrees": 0,
+            "show_frame": true,
+            "show_title": true,
+            "source": "saved://stress_hotspot_map_png"
+          },
+          "title": "PyAnsys Rotor 67 Thermal Strain",
+          "type_id": "media.panel",
+          "x": -760,
+          "y": 20
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220,
+          "custom_width": 330,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_4c920a487c",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "browser_state": {},
+            "display_mode": "fit_width",
+            "persist_browser_state": true,
+            "preview_ref": {
+              "artifact_ref": "saved://web_06_preview_png",
+              "captured_title": "FAA AC 33.70-4",
+              "captured_url": "https://www.faa.gov/regulations_policies/advisory_circulars/index.cfm/go/document.information/documentID/1042036"
+            },
+            "show_frame": true,
+            "show_title": true,
+            "start_location": "https://www.faa.gov/regulations_policies/advisory_circulars/index.cfm/go/document.information/documentID/1042036"
+          },
+          "title": "FAA AC 33.70-4",
+          "type_id": "web.page_viewer",
+          "visual_style": {},
+          "x": -370,
+          "y": -100
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 280,
+          "custom_width": 380,
+          "exposed_ports": {
+            "source": false
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_4d7fafda85",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "page_number": 2,
+            "show_frame": true,
+            "show_title": true,
+            "source": "saved://fea_appendix_pdf"
+          },
+          "title": "FAA AC 33.70-1 PDF - page 2",
+          "type_id": "media.panel",
+          "x": -300,
+          "y": 350
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 250,
+          "custom_width": 380,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_6a6ba25d7a",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "browser_state": {},
+            "display_mode": "fit_width",
+            "persist_browser_state": true,
+            "preview_ref": {
+              "artifact_ref": "saved://local_traceability_guide_preview_png",
+              "captured_title": "FEA evidence to CS-E traceability",
+              "captured_url": "saved://local_traceability_guide_html"
+            },
+            "show_frame": true,
+            "show_title": true,
+            "start_location": "saved://local_traceability_guide_html"
+          },
+          "title": "Local Guide: FEA Evidence to CS-E Traceability",
+          "type_id": "web.page_viewer",
+          "visual_style": {},
+          "x": 800,
+          "y": -360
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220,
+          "custom_width": 360,
+          "exposed_ports": {
+            "source": false
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_e3dd52cba4",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "crop_h": 1,
+            "crop_w": 1,
+            "crop_x": 0,
+            "crop_y": 0,
+            "fit_mode": "contain",
+            "mirror_horizontal": false,
+            "mirror_vertical": false,
+            "rotation_degrees": 0,
+            "show_frame": true,
+            "show_title": true,
+            "source": "C:/engineering/private/rotor_rig_strain.raw"
+          },
+          "title": "External Rig Evidence Placeholder",
+          "type_id": "media.panel",
+          "x": 1040,
+          "y": 350
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 260,
+          "custom_width": 360,
+          "exposed_ports": {
+            "source": false
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_e9df4daa24",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "crop_h": 1,
+            "crop_w": 1,
+            "crop_x": 0,
+            "crop_y": 0,
+            "fit_mode": "contain",
+            "mirror_horizontal": false,
+            "mirror_vertical": false,
+            "rotation_degrees": 0,
+            "show_frame": true,
+            "show_title": true,
+            "source": "saved://margin_summary_chart_png"
+          },
+          "title": "Margin Summary Chart",
+          "type_id": "media.panel",
+          "x": 80,
+          "y": 20
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220,
+          "custom_width": 330,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_fda219e2fc",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "browser_state": {},
+            "display_mode": "fit_width",
+            "persist_browser_state": true,
+            "preview_ref": {
+              "artifact_ref": "saved://web_05_preview_png",
+              "captured_title": "FAA AC 33.70-1",
+              "captured_url": "https://www.faa.gov/airports/resources/advisory_circulars/index.cfm/go/document.information/documentNumber/33.70-1"
+            },
+            "show_frame": true,
+            "show_title": true,
+            "start_location": "https://www.faa.gov/airports/resources/advisory_circulars/index.cfm/go/document.information/documentNumber/33.70-1"
+          },
+          "title": "FAA AC 33.70-1",
+          "type_id": "web.page_viewer",
+          "visual_style": {},
+          "x": -760,
+          "y": -360
+        }
+      ],
+      "views": [
+        {
+          "hide_optional_ports": false,
+          "name": "Evidence Binder",
+          "pan_x": 70,
+          "pan_y": 90,
+          "scope_path": [],
+          "view_id": "view_c40241c9aa",
+          "zoom": 0.74
+        }
+      ],
+      "workspace_id": "ws-evidence-binder"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+Tabler Icons source: https://github.com/tabler/tabler-icons
+
+Included files:
+- color_picker.svg: copied from icons/outline/color-picker.svg and renamed locally for the laser pointer notetaking mockup.
+
+License: MIT. See TABLER_LICENSE.txt in this directory.

@@ -1,0 +1,9 @@
+PyQt6>=6.5
+PyQt6-WebEngine>=6.10
+pandas>=2.3
+numpy>=2.0
+scipy>=1.11
+plotly>=6.0
+pyqtgraph>=0.13
+dash>=2.17
+plotly-resampler>=0.10

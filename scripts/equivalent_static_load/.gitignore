@@ -1,0 +1,4 @@
+# Run artifacts — the GUI/CLI write these on every check/suggest/derive/verify;
+# never source, never meant to be committed.
+esl_out/
+gui_config.json

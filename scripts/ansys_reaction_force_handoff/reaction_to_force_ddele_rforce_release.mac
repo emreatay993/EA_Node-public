@@ -1,0 +1,83 @@
+! ======================================================================
+! DDELE reaction-force release shortcut
+!
+! Usage:
+!   Place this command snippet in load step N+1, before that step solves.
+!   It releases selected displacement constraints and tells APDL to ramp
+!   from previous-step reaction forces by using DDELE,...,FORCE.
+!
+! Important:
+!   This is not a manual per-node force hold. With no current force defined,
+!   APDL ramps from the previous reaction force toward zero in the current
+!   load step. Use the extraction snippets if you want explicit F loads.
+! ======================================================================
+
+! ----------------------- USER SETTINGS -------------------------------
+RTF_NS_NAME='MY_NAMED_SELECTION'
+
+RTF_RELEASE_UX=1
+RTF_RELEASE_UY=1
+RTF_RELEASE_UZ=1
+! --------------------- END USER SETTINGS -----------------------------
+
+/COM,BEGIN reaction_to_force_ddele_rforce_release
+
+FINISH
+/PREP7
+ALLSEL,ALL
+
+! Resolve the Mechanical named selection to active nodes.
+! Node components are used directly. MESH200 element-face components are
+! reduced to their attached active nodes. Other component types are rejected.
+*GET,RTF_COMP_TYPE,COMP,RTF_NS_NAME,TYPE
+
+*IF,RTF_COMP_TYPE,EQ,1,THEN
+  CMSEL,S,RTF_NS_NAME
+*ELSEIF,RTF_COMP_TYPE,EQ,2,THEN
+  ESEL,NONE
+  CMSEL,S,RTF_NS_NAME
+  *GET,RTF_ELEM_COUNT,ELEM,0,COUNT
+  *IF,RTF_ELEM_COUNT,LE,0,THEN
+    *MSG,ERROR,RTF_ELEM_COUNT
+Named selection selected %G elements; expected at least one.
+  *ENDIF
+  *GET,RTF_FIRST_ELEM,ELEM,0,NUM,MIN
+  *GET,RTF_ELEM_TYPE,ELEM,RTF_FIRST_ELEM,ATTR,TYPE
+  *GET,RTF_ELEM_NAME,ETYP,RTF_ELEM_TYPE,ATTR,ENAM
+  *IF,RTF_ELEM_NAME,NE,200,THEN
+    *MSG,ERROR,RTF_ELEM_NAME
+Named selection type is incorrect (%G): use face, edge, element face, or nodal.
+  *ENDIF
+  NSLE,S,ACTIVE
+*ELSE
+  *MSG,ERROR,RTF_COMP_TYPE
+Named selection type is incorrect (%G): use face, edge, element face, or nodal.
+*ENDIF
+
+! Save the handoff node selection before returning to solution.
+*GET,RTF_NODE_COUNT,NODE,0,COUNT
+*IF,RTF_NODE_COUNT,LE,0,THEN
+  *MSG,ERROR,RTF_NODE_COUNT
+Named selection selected %G nodes; expected at least one.
+*ENDIF
+CM,RTF_SOURCE_NODES,NODE
+
+FINISH
+/SOLU
+CMSEL,S,RTF_SOURCE_NODES
+OUTRES,RSOL,ALL
+
+! Release requested displacement constraints and let APDL use the previous
+! reaction force release behavior for those DOFs.
+*IF,RTF_RELEASE_UX,NE,0,THEN
+  DDELE,ALL,UX,,,FORCE
+*ENDIF
+*IF,RTF_RELEASE_UY,NE,0,THEN
+  DDELE,ALL,UY,,,FORCE
+*ENDIF
+*IF,RTF_RELEASE_UZ,NE,0,THEN
+  DDELE,ALL,UZ,,,FORCE
+*ENDIF
+
+ALLSEL,ALL
+/COM,END reaction_to_force_ddele_rforce_release

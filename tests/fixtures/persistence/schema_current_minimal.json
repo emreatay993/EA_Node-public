@@ -1,0 +1,45 @@
+{
+  "schema_version": 5,
+  "project_id": "proj_current_minimal",
+  "name": "Current Minimal",
+  "active_workspace_id": "ws_missing",
+  "workspaces": [
+    {
+      "workspace_id": "ws_a",
+      "name": "Workspace A",
+      "active_view_id": "view_missing",
+      "views": [
+        {
+          "view_id": "view_a1",
+          "name": "V1",
+          "zoom": 1.0,
+          "pan_x": 0.0,
+          "pan_y": 0.0,
+          "scope_path": [
+            null,
+            "",
+            "   "
+          ]
+        }
+      ],
+      "nodes": [],
+      "edges": []
+    },
+    {
+      "workspace_id": "ws_b",
+      "name": "Workspace B",
+      "active_view_id": "view_missing",
+      "views": [
+        {
+          "view_id": "view_b1",
+          "name": "V1",
+          "zoom": 1.0,
+          "pan_x": 0.0,
+          "pan_y": 0.0
+        }
+      ],
+      "nodes": [],
+      "edges": []
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "corex-node-editor"
+version = "0.1.0"
+description = "A visual node editor for engineering dataflow pipelines, remote SSH/SFTP control, and calculation workflows."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+dependencies = [
+    "imageio-ffmpeg>=0.6",
+    "paramiko>=4,<5",
+    "PyQt6>=6.5",
+    "PyQt6-WebEngine>=6.10",
+    "psutil>=5.9",
+    "scipy>=1.11",
+    "xy==0.0.6",
+]
+
+[project.optional-dependencies]
+ansys = [
+    "ansys-dpf-core>=0.16,<0.17",
+    "ansys-mechanical-core>=0.12.6",
+    "ansys-workbench-core>=0.14.0",
+    "h5py>=3.16",
+    "numpy>=2.0",
+    "pandas>=2.3",
+]
+excel = ["openpyxl>=3.1"]
+acceleration = ["numba>=0.65.1"]
+mail = [
+    "pywin32>=306; platform_system == 'Windows'",
+]
+tabular = [
+    "duckdb>=1.5",
+    "h5py>=3.16",
+    "numpy>=2.0",
+    "openpyxl>=3.1",
+    "pandas>=2.3",
+    "polars>=1.40",
+    "pyarrow>=24.0",
+    "tables>=3.11",
+]
+tabular-bench = [
+    "duckdb>=1.5",
+    "fastexcel>=0.20",
+    "h5py>=3.16",
+    "numpy>=2.0",
+    "openpyxl>=3.1",
+    "pandas>=2.3",
+    "polars>=1.40",
+    "pyarrow>=24.0",
+    "tables>=3.11",
+    "xlsxwriter>=3.2",
+]
+viewer = [
+    "cadquery-ocp-novtk==7.9.3.1.1",
+    "matplotlib>=3.8",
+    "mplcursors>=0.7.1",
+    "pyqtgraph>=0.13",
+    "pyvista>=0.47",
+    "pyvistaqt>=0.11",
+    "vtk>=9.6",
+]
+presentation = [
+    "python-pptx>=1.0",
+]
+jupyter = [
+    "jupyter_server>=2.14",
+    "notebook>=7.2",
+    "ipykernel>=6.29",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
+]
+all = [
+    "ansys-dpf-core>=0.16,<0.17",
+    "ansys-mechanical-core>=0.12.6",
+    "ansys-workbench-core>=0.14.0",
+    "cadquery-ocp-novtk==7.9.3.1.1",
+    "duckdb>=1.5",
+    "h5py>=3.16",
+    "ipykernel>=6.29",
+    "jupyter_server>=2.14",
+    "matplotlib>=3.8",
+    "mplcursors>=0.7.1",
+    "nbclient>=0.10",
+    "nbformat>=5.10",
+    "notebook>=7.2",
+    "numba>=0.65.1",
+    "numpy>=2.0",
+    "openpyxl>=3.1",
+    "pandas>=2.3",
+    "polars>=1.40",
+    "pyarrow>=24.0",
+    "pywin32>=306; platform_system == 'Windows'",
+    "pyqtgraph>=0.13",
+    "python-pptx>=1.0",
+    "pyvista>=0.47",
+    "pyvistaqt>=0.11",
+    "tables>=3.11",
+    "vtk>=9.6",
+]
+dev = [
+    "dash>=3.0",
+    "pytest>=7.4",
+    "pytest-xdist>=3.5",
+    "ruff>=0.8",
+    "scikit-learn>=1.5",
+    "tabulate>=0.9",
+    "build>=1.2",
+    "pyinstaller>=6.0",
+    "ansys-dpf-core>=0.16,<0.17",
+    "ansys-mechanical-core>=0.12.6",
+    "ansys-workbench-core>=0.14.0",
+    "cadquery-ocp-novtk==7.9.3.1.1",
+    "duckdb>=1.5",
+    "h5py>=3.16",
+    "ipykernel>=6.29",
+    "jupyter_server>=2.14",
+    "matplotlib>=3.8",
+    "mplcursors>=0.7.1",
+    "nbclient>=0.10",
+    "nbformat>=5.10",
+    "notebook>=7.2",
+    "numba>=0.65.1",
+    "numpy>=2.0",
+    "openpyxl>=3.1",
+    "pandas>=2.3",
+    "polars>=1.40",
+    "plotly>=6.0,<7",
+    "plotly-resampler>=0.11",
+    "pytz>=2024.1",
+    "pyarrow>=24.0",
+    "pywin32>=306; platform_system == 'Windows'",
+    "pyqtgraph>=0.13",
+    "python-pptx>=1.0",
+    "pyvista>=0.47",
+    "pyvistaqt>=0.11",
+    "tables>=3.11",
+    "vtk>=9.6",
+]
+
+[project.scripts]
+corex-node-editor = "ea_node_editor.bootstrap:main"
+corex-runtime = "ea_node_editor.bootstrap:headless_main"
+
+[tool.setuptools.packages.find]
+include = ["ea_node_editor*", "corex*"]
+
+[tool.setuptools.package-data]
+ea_node_editor = [
+    "addons/mars/icons/mars_icon_64.png",
+    "assets/app_icon/*.svg",
+    "assets/app_icon/*.png",
+    "assets/app_icon/*.ico",
+    "assets/fonts/*.ttf",
+    "assets/fonts/*.txt",
+    "assets/node_title_icons/**/*.svg",
+    "assets/node_title_icons/**/*.png",
+    "assets/node_title_icons/**/*.jpg",
+    "assets/node_title_icons/**/*.jpeg",
+    "web_assets/**/*.html",
+    "web_assets/**/*.css",
+    "web_assets/**/*.js",
+    "web_assets/**/*.mjs",
+    "web_assets/**/*.cjs",
+    "web_assets/**/*.chunk.js",
+    "web_assets/**/*.chunk.css",
+    "web_assets/**/*.json",
+    "web_assets/**/*.webmanifest",
+    "web_assets/**/asset-manifest.*",
+    "web_assets/**/*.wasm",
+    "web_assets/**/*.svg",
+    "web_assets/**/*.png",
+    "web_assets/**/*.jpg",
+    "web_assets/**/*.jpeg",
+    "web_assets/**/*.gif",
+    "web_assets/**/*.webp",
+    "web_assets/**/*.ico",
+    "web_assets/**/*.woff",
+    "web_assets/**/*.woff2",
+    "web_assets/**/*.ttf",
+    "web_assets/**/*.otf",
+    "web_assets/**/*.eot",
+    "web_assets/excalidraw_host/*",
+    "web_assets/excalidraw_host/**/*",
+    "ui_qml/*.qml",
+    "ui_qml/**/*.qml",
+    "ui_qml/**/*.js",
+    "ui_qml/**/*.svg",
+    "ui_qml/**/*.json",
+    "ui_qml/**/*.txt",
+    "ui_qml/**/*.qsb",
+    "ui_qml/**/*.frag",
+    "mockups/**/*.qml",
+    "mockups/**/*.js",
+    "ui/theme/icons/*.svg",
+    "ui/tooltips/*.json",
+]
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E9", "F63", "F7", "F82"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "gui: marks tests requiring Qt GUI",
+]
+addopts = "--strict-markers -p ea_node_editor.pytest_defaults"

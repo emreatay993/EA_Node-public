@@ -1,0 +1,7 @@
+XY 0.0.6
+Copyright XY contributors.
+
+Licensed under the Apache License, Version 2.0. The complete Apache License
+2.0 text is distributed in this package as OCP-APACHE-2.0.txt.
+
+Source: https://github.com/reflex-dev/xy

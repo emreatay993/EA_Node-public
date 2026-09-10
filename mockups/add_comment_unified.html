@@ -1,0 +1,2106 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<title>COREX Node Editor — Add Comment (Unified Variants)</title>
+<style>
+/* ============================================================
+   Token system — mirrors ea_node_editor/ui/theme/tokens.py and
+   ea_node_editor/ui/graph_theme/tokens.py (STITCH_DARK_V1 /
+   STITCH_LIGHT_V1 + GRAPH_STITCH_* node & port kinds).
+   ============================================================ */
+:root, [data-theme="dark"] {
+  --app-bg:#1f1f1f;
+  --app-fg:#e8e8e8;
+  --panel-bg:#1b1d22;
+  --panel-alt-bg:#24262c;
+  --toolbar-bg:#2a2b30;
+  --border:#3a3d45;
+  --hover:#33373f;
+  --pressed:#2d3139;
+  --input-bg:#22242a;
+  --input-border:#4a4f5a;
+  --input-fg:#f0f2f5;
+  --inspector-card-bg:#20242b;
+  --inspector-section-header-bg:#32363f;
+  --inspector-selected-bg:#2f4a66;
+  --inspector-selected-border:#60CDFF;
+  --accent:#60CDFF;
+  --accent-strong:#1D8CE0;
+  --status-bg:#24a2dc;
+  --status-border:#1b7daf;
+  --status-fg:#ffffff;
+  --canvas-bg:#1d1f24;
+  --canvas-minor-grid:#2b2f38;
+  --canvas-major-grid:#323746;
+  --muted-fg:#d0d5de;
+  --group-title-fg:#bdc5d3;
+  --panel-title-fg:#f0f4fb;
+  --tab-bg:#2a2d34;
+  --tab-fg:#d8deea;
+  --tab-selected-bg:#2f343e;
+  --tab-selected-fg:#f2f4f8;
+  --console-bg:#15181d;
+
+  /* Graph node (graph_stitch dark) */
+  --node-card-bg:#1b1d22;
+  --node-card-border:#3a3d45;
+  --node-card-selected-border:#60CDFF;
+  --node-header-bg:#2a2b30;
+  --node-header-fg:#f0f4fb;
+  --node-scope-badge-bg:#1D8CE0;
+  --node-inline-row-bg:#24262c;
+  --node-inline-row-border:#4a4f5a;
+  --node-inline-label-fg:#d0d5de;
+  --node-inline-input-fg:#f0f2f5;
+  --node-inline-input-bg:#22242a;
+  --node-inline-input-border:#4a4f5a;
+  --node-port-label-fg:#d0d5de;
+
+  /* Port kinds (GRAPH_PORT_KIND_TOKENS_V1) */
+  --port-data:#7AA8FF;
+  --port-exec:#67D487;
+  --port-completed:#E4CE7D;
+  --port-failed:#D94F4F;
+
+  /* Category accent stripes (GRAPH_CATEGORY_ACCENT_TOKENS_V1) */
+  --accent-default:#4AA9D6;
+  --accent-core:#2F89FF;
+  --accent-io:#22B455;
+  --accent-physics:#D88C32;   /* Engineering ≈ physics */
+  --accent-logic:#B35BD1;
+  --accent-hpc:#C75050;
+
+  /* Comment (new, stays inside the palette family) */
+  --comment-yellow:#F5C451;
+  --comment-strong:#E2A828;
+  --comment-bg:rgba(245,196,81,.10);
+  --comment-bg-strong:rgba(245,196,81,.18);
+  --comment-border:rgba(245,196,81,.55);
+  --comment-ink:#F5E3B0;
+}
+[data-theme="light"] {
+  --app-bg:#eef2f6;
+  --app-fg:#17212b;
+  --panel-bg:#f5f7fa;
+  --panel-alt-bg:#ffffff;
+  --toolbar-bg:#e5ebf2;
+  --border:#b7c2ce;
+  --hover:#dbe4ee;
+  --pressed:#cfd9e6;
+  --input-bg:#ffffff;
+  --input-border:#96a6ba;
+  --input-fg:#17212b;
+  --inspector-card-bg:#ffffff;
+  --inspector-section-header-bg:#e3eaf1;
+  --inspector-selected-bg:#d8ebf9;
+  --inspector-selected-border:#1D8CE0;
+  --accent:#1D8CE0;
+  --accent-strong:#b9dcf7;
+  --status-bg:#dceefb;
+  --status-border:#9ec8e5;
+  --status-fg:#173449;
+  --canvas-bg:#f3f5f8;
+  --canvas-minor-grid:#d9dfe8;
+  --canvas-major-grid:#c0c9d6;
+  --muted-fg:#5f6b7a;
+  --group-title-fg:#4f5e70;
+  --panel-title-fg:#1b2733;
+  --tab-bg:#dce4ec;
+  --tab-fg:#314154;
+  --tab-selected-bg:#edf3f8;
+  --tab-selected-fg:#162231;
+  --console-bg:#ffffff;
+
+  --node-card-bg:#f5f7fa;
+  --node-card-border:#b7c2ce;
+  --node-card-selected-border:#1D8CE0;
+  --node-header-bg:#e5ebf2;
+  --node-header-fg:#1b2733;
+  --node-scope-badge-bg:#1D8CE0;
+  --node-inline-row-bg:#ffffff;
+  --node-inline-row-border:#96a6ba;
+  --node-inline-label-fg:#5f6b7a;
+  --node-inline-input-fg:#17212b;
+  --node-inline-input-bg:#ffffff;
+  --node-inline-input-border:#96a6ba;
+  --node-port-label-fg:#5f6b7a;
+
+  --comment-yellow:#F5C451;
+  --comment-strong:#C8871F;
+  --comment-bg:rgba(245,196,81,.22);
+  --comment-bg-strong:rgba(245,196,81,.36);
+  --comment-border:rgba(200,135,31,.65);
+  --comment-ink:#6A4A0E;
+}
+
+* { box-sizing:border-box; }
+html,body {
+  margin:0;padding:0;
+  font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+  color:var(--app-fg);
+  background:var(--app-bg);
+  font-size:13px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- Page chrome (the page that hosts the variants) -------- */
+.page-header {
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; gap:12px;
+  padding:10px 16px;
+  background:var(--toolbar-bg);
+  border-bottom:1px solid var(--border);
+}
+.page-header h1 {
+  margin:0; font-size:14px; font-weight:700;
+  color:var(--panel-title-fg);
+  letter-spacing:.3px;
+}
+.page-header .sub { color:var(--muted-fg); font-size:12px; }
+.page-header .spacer { flex:1; }
+.theme-toggle {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 10px; border-radius:4px; cursor:pointer;
+  background:var(--input-bg);
+  border:1px solid var(--input-border);
+  color:var(--app-fg);
+  font-size:12px;
+}
+.theme-toggle:hover { background:var(--hover); }
+.variant-nav {
+  display:flex; gap:6px;
+  padding:8px 16px;
+  background:var(--panel-bg);
+  border-bottom:1px solid var(--border);
+  position:sticky; top:42px; z-index:19;
+  flex-wrap:wrap;
+}
+.variant-nav a {
+  padding:5px 10px; border-radius:4px;
+  font-size:11px; text-decoration:none;
+  color:var(--muted-fg);
+  border:1px solid transparent;
+}
+.variant-nav a:hover { background:var(--hover); color:var(--app-fg); }
+.variant-nav a.active {
+  color:var(--accent);
+  border-color:var(--accent);
+  background:color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.variant-section { padding:18px 16px 40px; }
+.variant-heading {
+  margin:6px 4px 10px;
+  display:flex; align-items:baseline; gap:12px;
+  flex-wrap:wrap;
+}
+.variant-heading h2 {
+  margin:0; font-size:15px; font-weight:700; color:var(--panel-title-fg);
+  letter-spacing:.2px;
+}
+.variant-heading .tag {
+  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+  color:var(--comment-strong);
+  padding:2px 7px; border-radius:8px;
+  background:var(--comment-bg);
+  border:1px solid var(--comment-border);
+}
+.variant-heading p {
+  margin:0; color:var(--muted-fg); font-size:12px; flex:1 1 100%;
+  max-width:960px;
+}
+
+/* ============================================================
+   SHELL — faithful COREX Node Editor chrome
+   Rows: title(32) + toolbar(38) + [scope(34) + canvas + workspaces(36) + console(170)] + status(24)
+   Cols: library(260) + center + inspector(300)
+   ============================================================ */
+.shell {
+  position:relative;
+  width:100%;
+  height:820px;
+  max-width:1440px;
+  margin:0 auto;
+  background:var(--app-bg);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:32px 38px 1fr 24px;
+  color:var(--app-fg);
+  font-size:12px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+
+/* Title bar (ShellTitleBar.qml — 32px, toolbar_bg) */
+.shell .titlebar {
+  display:flex; align-items:center;
+  padding:0 10px;
+  background:var(--toolbar-bg);
+  border-bottom:1px solid var(--border);
+  gap:8px;
+}
+.shell .titlebar .app-name {
+  font-size:13px; font-weight:700; color:var(--panel-title-fg);
+}
+.shell .titlebar .spacer { flex:1; }
+.shell .titlebar .project { color:var(--muted-fg); font-size:11px; }
+.shell .titlebar .win-ctrls { display:flex; gap:2px; margin-left:10px; }
+.shell .titlebar .win-ctrls span {
+  width:22px; height:18px; display:inline-flex; align-items:center; justify-content:center;
+  color:var(--muted-fg); font-size:11px; border-radius:3px;
+}
+.shell .titlebar .win-ctrls span:hover { background:var(--hover); }
+
+/* Run toolbar (ShellRunToolbar.qml — 38px, toolbar_bg) */
+.shell .runbar {
+  display:flex; align-items:center;
+  padding:0 8px;
+  background:var(--toolbar-bg);
+  border-bottom:1px solid var(--border);
+  gap:6px;
+}
+.shell .runbar .btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 8px; height:24px;
+  font-size:11px; border-radius:3px;
+  color:var(--app-fg);
+  background:transparent;
+  border:1px solid transparent;
+  cursor:pointer;
+}
+.shell .runbar .btn:hover { background:var(--hover); }
+.shell .runbar .btn.sel { background:var(--accent-strong); border-color:var(--accent); color:#fff; }
+.shell .runbar .icon-btn {
+  width:26px; height:24px; display:inline-flex; align-items:center; justify-content:center;
+  border-radius:3px; color:var(--app-fg); cursor:pointer;
+  border:1px solid transparent;
+}
+.shell .runbar .icon-btn:hover { background:var(--hover); }
+.shell .runbar .spacer { flex:1; }
+.shell .runbar .zoom { color:var(--muted-fg); font-size:11px; }
+.shell .runbar .divider { width:1px; align-self:stretch; background:var(--border); margin:2px 4px; }
+
+/* Workspace row */
+.shell .workspace {
+  display:grid;
+  grid-template-columns:260px 1fr 300px;
+  overflow:hidden;
+}
+
+/* NODE LIBRARY pane (ShellCollapsibleSidePane + NodeLibraryPane.qml) */
+.shell .library {
+  background:var(--panel-bg);
+  border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+.shell .pane-title-row {
+  display:flex; align-items:center; padding:0 10px;
+  height:28px;
+  color:var(--panel-title-fg);
+  border-bottom:1px solid var(--border);
+  background:var(--toolbar-bg);
+}
+.shell .pane-title-row .pane-title {
+  font-size:11px; font-weight:700; letter-spacing:1.2px;
+}
+.shell .pane-title-row .spacer { flex:1; }
+.shell .pane-title-row .collapse-btn {
+  color:var(--muted-fg); padding:0 6px; cursor:pointer; border-radius:2px;
+  line-height:1;
+  font-size:14px;
+}
+.shell .pane-title-row .collapse-btn:hover { background:var(--hover); color:var(--app-fg); }
+.shell .library .search {
+  padding:8px 10px;
+}
+.shell .library .search input {
+  width:100%; padding:5px 8px; border-radius:3px;
+  background:var(--input-bg);
+  border:1px solid var(--input-border);
+  color:var(--input-fg);
+  font-size:11px;
+  outline:none;
+}
+.shell .library-tree { flex:1; overflow:auto; padding:2px 0 8px; }
+.shell .lib-cat {
+  display:flex; align-items:center; gap:4px;
+  height:28px; padding-left:8px;
+  font-size:12px; font-weight:700; color:var(--group-title-fg);
+  cursor:pointer; user-select:none;
+}
+.shell .lib-cat .chev { width:10px; color:var(--muted-fg); font-size:10px; }
+.shell .lib-cat:hover { background:var(--hover); }
+.shell .lib-sub {
+  display:flex; align-items:center; gap:6px;
+  height:26px; padding-left:22px;
+  font-size:11px; font-weight:700; color:var(--group-title-fg);
+  cursor:pointer; user-select:none;
+}
+.shell .lib-sub .chev { width:10px; color:var(--muted-fg); font-size:10px; }
+.shell .lib-sub:hover { background:var(--hover); }
+.shell .lib-node {
+  display:flex; align-items:center; gap:6px;
+  height:26px; padding-left:32px;
+  font-size:11px; color:var(--app-fg);
+  cursor:grab;
+}
+.shell .lib-node.deep { padding-left:44px; }
+.shell .lib-node:hover { background:var(--hover); }
+.shell .lib-node .dot {
+  width:8px; height:8px; border-radius:4px;
+  background:var(--accent);
+}
+.shell .lib-node.ring .dot { background:transparent; border:1.5px solid var(--accent); }
+
+/* Center pane */
+.shell .center {
+  display:grid;
+  grid-template-rows:34px 1fr 36px 170px;
+  background:var(--panel-bg);
+  overflow:hidden;
+}
+
+/* Scope + VIEWS strip */
+.shell .scopebar {
+  display:flex; align-items:center; padding:0 8px; gap:10px;
+  background:var(--toolbar-bg);
+  border-bottom:1px solid var(--border);
+}
+.shell .scope-label { color:var(--muted-fg); font-size:11px; }
+.shell .scope-crumbs { display:flex; align-items:center; gap:4px; }
+.shell .scope-crumb {
+  padding:3px 8px; height:22px; border-radius:3px;
+  color:var(--app-fg); border:1px solid transparent;
+  display:inline-flex; align-items:center; font-size:11px;
+  cursor:pointer;
+}
+.shell .scope-crumb:hover { background:var(--hover); }
+.shell .scope-crumb.active {
+  background:var(--accent-strong); color:#fff; border-color:var(--accent);
+}
+[data-theme="light"] .shell .scope-crumb.active { color:#0b2030; }
+.shell .scopebar .spacer { flex:1; }
+.shell .views-label { color:var(--muted-fg); font-size:10px; font-weight:700; letter-spacing:1.1px; }
+.shell .view-tab {
+  height:22px; padding:0 12px; border-radius:3px;
+  background:var(--tab-selected-bg); color:var(--tab-selected-fg);
+  border:1px solid var(--border);
+  display:inline-flex; align-items:center;
+  font-size:11px; font-weight:600;
+}
+.shell .new-view {
+  height:22px; padding:0 10px; border-radius:3px;
+  background:transparent; color:var(--accent);
+  border:1px solid var(--accent);
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:11px;
+  cursor:pointer;
+}
+.shell .new-view:hover { background:color-mix(in srgb, var(--accent) 15%, transparent); }
+
+/* Canvas */
+.shell .canvas {
+  position:relative;
+  background:
+    linear-gradient(to right, var(--canvas-minor-grid) 1px, transparent 1px) 0 0/32px 32px,
+    linear-gradient(to bottom, var(--canvas-minor-grid) 1px, transparent 1px) 0 0/32px 32px,
+    linear-gradient(to right, var(--canvas-major-grid) 1px, transparent 1px) 0 0/128px 128px,
+    linear-gradient(to bottom, var(--canvas-major-grid) 1px, transparent 1px) 0 0/128px 128px,
+    var(--canvas-bg);
+  overflow:hidden;
+  border-bottom:1px solid var(--border);
+}
+
+/* Graph node card — 4px accent stripe, header bar, inline rows, ports */
+.node {
+  position:absolute;
+  min-width:180px;
+  background:var(--node-card-bg);
+  border:1px solid var(--node-card-border);
+  border-radius:6px;
+  font-size:10.5px;
+  color:var(--app-fg);
+  user-select:none;
+}
+.node.selected {
+  border-color:var(--node-card-selected-border);
+  box-shadow:0 0 0 2px color-mix(in srgb, var(--node-card-selected-border) 28%, transparent);
+}
+.node .accent-bar {
+  height:4px; border-radius:6px 6px 0 0;
+  background:var(--accent-default);
+}
+.node.cat-physics .accent-bar { background:var(--accent-physics); }
+.node.cat-core    .accent-bar { background:var(--accent-core); }
+.node.cat-io      .accent-bar { background:var(--accent-io); }
+.node.cat-logic   .accent-bar { background:var(--accent-logic); }
+.node.cat-hpc     .accent-bar { background:var(--accent-hpc); }
+.node .header {
+  height:22px; padding:0 8px;
+  display:flex; align-items:center; gap:6px;
+  background:var(--node-header-bg);
+  color:var(--node-header-fg);
+  border-bottom:1px solid var(--node-card-border);
+  font-size:10.5px; font-weight:700;
+}
+.node .header .title { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.node .header .open-badge {
+  padding:1px 7px; border-radius:8px;
+  background:var(--node-scope-badge-bg);
+  color:#fff; font-size:8.5px; font-weight:700;
+  letter-spacing:.8px;
+}
+.node .inline {
+  display:flex; align-items:center; gap:6px;
+  margin:4px 6px; padding:3px 6px;
+  background:var(--node-inline-row-bg);
+  border:1px solid var(--node-inline-row-border);
+  border-radius:4px;
+  height:22px; font-size:10px;
+}
+.node .inline .label {
+  width:66px; color:var(--node-inline-label-fg);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-size:9.5px;
+}
+.node .inline .val {
+  flex:1; color:var(--node-inline-input-fg);
+  background:var(--node-inline-input-bg);
+  border:1px solid var(--node-inline-input-border);
+  border-radius:3px;
+  padding:1px 5px; height:18px;
+  display:flex; align-items:center;
+  font-size:10px;
+}
+.node .inline .chk {
+  width:14px; height:14px; border-radius:2px;
+  background:var(--node-inline-input-bg);
+  border:1px solid var(--node-inline-input-border);
+  display:inline-flex; align-items:center; justify-content:center;
+  color:var(--accent);
+  font-size:10px;
+}
+.node .ports {
+  display:flex; justify-content:space-between;
+  padding:4px 0 6px;
+  border-top:1px solid var(--node-card-border);
+  margin-top:4px;
+}
+.node .ports .col {
+  flex:1; display:flex; flex-direction:column; gap:4px;
+}
+.node .ports .col.right { text-align:right; }
+.node .port {
+  display:flex; align-items:center; gap:5px;
+  padding:0 6px; height:14px;
+  font-size:9.5px; color:var(--node-port-label-fg);
+}
+.node .port.right { justify-content:flex-end; }
+.node .port .dot {
+  width:8px; height:8px; border-radius:4px;
+  background:var(--port-data);
+  border:1px solid rgba(0,0,0,.25);
+  flex:none;
+}
+.node .port.exec .dot { background:var(--port-exec); border-radius:2px; transform:rotate(45deg); width:7px; height:7px; }
+
+/* Edges */
+.edges { position:absolute; inset:0; pointer-events:none; }
+.edges path { fill:none; stroke-width:1.6; }
+
+/* Group backdrop — pre-existing annotation node on the canvas */
+.group-backdrop {
+  position:absolute;
+  background:var(--comment-bg-strong);
+  border:1.5px dashed var(--comment-border);
+  border-radius:6px;
+  color:var(--comment-ink);
+  padding:8px 12px;
+  font-size:12px; font-weight:700;
+  letter-spacing:.1px;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--comment-yellow) 10%, transparent);
+}
+.group-backdrop .hint {
+  font-size:9.5px; font-weight:600; letter-spacing:1px; text-transform:uppercase;
+  opacity:.75;
+  margin-bottom:4px;
+}
+
+/* Workspaces tab strip */
+.shell .workspaces {
+  display:flex; align-items:center;
+  background:var(--toolbar-bg);
+  border-bottom:1px solid var(--border);
+  padding:0 8px;
+  gap:10px;
+}
+.shell .ws-label { color:var(--muted-fg); font-size:10px; font-weight:700; letter-spacing:1.1px; }
+.shell .ws-tabs { display:flex; gap:2px; flex:1; overflow:hidden; }
+.shell .ws-tab {
+  height:24px; padding:0 14px;
+  border-radius:3px;
+  background:var(--tab-selected-bg);
+  color:var(--tab-selected-fg);
+  border:1px solid var(--border);
+  display:inline-flex; align-items:center;
+  font-size:11px; font-weight:600;
+  max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.shell .new-ws {
+  height:24px; padding:0 12px; border-radius:3px;
+  background:transparent; color:var(--accent);
+  border:1px solid var(--accent);
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:11px; cursor:pointer;
+}
+.shell .new-ws:hover { background:color-mix(in srgb, var(--accent) 15%, transparent); }
+
+/* Console (Output / Errors / Warnings / Clear) */
+.shell .console {
+  display:grid; grid-template-rows:30px 1fr;
+  background:var(--panel-bg);
+  overflow:hidden;
+}
+.shell .console .tabs {
+  display:flex; align-items:center; gap:6px;
+  background:var(--toolbar-bg);
+  padding:0 6px;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.shell .console .tab {
+  height:22px; padding:0 10px; border-radius:3px;
+  background:transparent; color:var(--app-fg);
+  border:1px solid transparent;
+  display:inline-flex; align-items:center;
+  font-size:11px; cursor:pointer;
+}
+.shell .console .tab:hover { background:var(--hover); }
+.shell .console .tab.active {
+  background:var(--accent-strong); color:#fff; border-color:var(--accent);
+}
+[data-theme="light"] .shell .console .tab.active { color:#0b2030; }
+.shell .console .tabs .spacer { flex:1; }
+.shell .console .body {
+  background:var(--console-bg);
+  color:var(--app-fg);
+  font-family:Consolas,monospace;
+  font-size:11px;
+  padding:8px 12px;
+  overflow:auto;
+  white-space:pre-wrap;
+}
+
+/* PROPERTIES pane — right side */
+.shell .inspector {
+  background:var(--panel-bg);
+  border-left:1px solid var(--border);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+.shell .insp-tabs { display:flex; }
+.shell .insp-tabs .tab {
+  flex:1; height:26px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--tab-bg); color:var(--tab-fg);
+  border:1px solid var(--border);
+  font-size:11px; cursor:pointer;
+}
+.shell .insp-tabs .tab.active {
+  background:var(--tab-selected-bg); color:var(--tab-selected-fg);
+  font-weight:700;
+}
+.shell .insp-scroll {
+  flex:1; overflow-y:auto; padding:10px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.insp-card {
+  background:var(--inspector-card-bg);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 10px 12px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.insp-card .card-title {
+  font-size:10px; font-weight:700; letter-spacing:1.2px;
+  color:var(--group-title-fg);
+  text-transform:uppercase;
+}
+.insp-card .node-title {
+  font-size:16px; font-weight:700; color:var(--panel-title-fg);
+  line-height:1.2;
+}
+.insp-card .node-sub { color:var(--muted-fg); font-size:11px; }
+.insp-head-row { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.insp-btn {
+  height:22px; padding:0 10px; border-radius:3px;
+  background:transparent; color:var(--app-fg);
+  border:1px solid var(--border);
+  font-size:10px; font-weight:700; letter-spacing:.5px;
+  cursor:pointer;
+}
+.insp-btn:hover { background:var(--hover); }
+.insp-btn.sel { background:var(--accent-strong); color:#fff; border-color:var(--accent); }
+[data-theme="light"] .insp-btn.sel { color:#0b2030; }
+.meta-chips { display:flex; gap:6px; flex-wrap:wrap; }
+.meta-chip {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:2px 8px; border-radius:10px;
+  background:var(--inspector-section-header-bg);
+  border:1px solid var(--border);
+  color:var(--muted-fg);
+  font-size:10px;
+}
+.meta-chip b { color:var(--app-fg); font-size:10px; }
+.insp-filter { display:flex; gap:6px; align-items:center; }
+.insp-filter input {
+  flex:1; height:24px; padding:0 8px; border-radius:3px;
+  background:var(--input-bg); border:1px solid var(--input-border); color:var(--input-fg);
+  font-size:11px; outline:none;
+}
+.insp-segment {
+  display:inline-flex; border:1px solid var(--input-border); border-radius:11px;
+  background:var(--input-bg);
+  height:22px; overflow:hidden;
+}
+.insp-segment .seg {
+  padding:0 10px; display:inline-flex; align-items:center; font-size:10px; font-weight:700;
+  color:var(--muted-fg); cursor:pointer;
+}
+.insp-segment .seg.sel { background:var(--accent-strong); color:#fff; }
+[data-theme="light"] .insp-segment .seg.sel { color:#0b2030; }
+.smart-group {
+  background:var(--inspector-section-header-bg);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:6px 10px;
+  display:flex; align-items:center; gap:6px;
+  font-size:11px; color:var(--app-fg); font-weight:700;
+}
+.smart-group .count {
+  margin-left:auto;
+  font-size:10px;
+  padding:1px 6px; border-radius:8px;
+  background:var(--panel-bg);
+  border:1px solid var(--border);
+  color:var(--muted-fg); font-weight:700;
+}
+.insp-row {
+  display:flex; align-items:center; gap:8px;
+  padding:2px 2px;
+}
+.insp-row .lbl {
+  width:84px; color:var(--muted-fg); font-size:11px;
+}
+.insp-row .val {
+  flex:1; height:22px; padding:0 6px; border-radius:3px;
+  background:var(--input-bg); border:1px solid var(--input-border); color:var(--input-fg);
+  font-size:11px;
+  display:flex; align-items:center;
+}
+.port-tabs {
+  display:flex; gap:4px; padding:3px;
+  background:var(--input-bg); border:1px solid var(--input-border);
+  border-radius:11px; height:40px;
+}
+.port-tabs .seg {
+  flex:1; display:inline-flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:var(--app-fg);
+  border-radius:8px; cursor:pointer;
+}
+.port-tabs .seg.sel { background:var(--accent-strong); color:#fff; }
+[data-theme="light"] .port-tabs .seg.sel { color:#0b2030; }
+.port-row {
+  display:flex; align-items:center; gap:8px;
+  padding:5px 8px; border-radius:4px;
+  background:var(--input-bg); border:1px solid var(--input-border);
+  font-size:11px;
+}
+.port-row.sel {
+  background:var(--inspector-selected-bg);
+  border-color:var(--inspector-selected-border);
+}
+.port-row .chk {
+  width:14px; height:14px; border-radius:2px;
+  background:var(--panel-bg); border:1px solid var(--input-border);
+  color:var(--accent);
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:10px;
+}
+.port-row .chk.on { background:var(--accent-strong); border-color:var(--accent); color:#fff; }
+[data-theme="light"] .port-row .chk.on { color:#0b2030; }
+.port-row .kind-dot {
+  width:9px; height:9px; border-radius:5px;
+  background:var(--port-data); border:1px solid rgba(0,0,0,.25);
+}
+.port-row.exec .kind-dot {
+  background:var(--port-exec); border-radius:2px; transform:rotate(45deg); width:8px; height:8px;
+}
+.port-row .key { font-weight:700; }
+.port-row .kind-chip {
+  margin-left:auto;
+  padding:1px 6px; border-radius:8px;
+  background:var(--panel-bg); border:1px solid var(--border);
+  color:var(--muted-fg); font-size:9.5px; font-weight:700; letter-spacing:.4px;
+}
+
+/* Status strip (ShellStatusStrip.qml — 24px, accent blue) */
+.shell .status {
+  display:flex; align-items:center; gap:10px;
+  padding:0 8px;
+  background:var(--status-bg);
+  color:var(--status-fg);
+  border-top:1px solid var(--status-border);
+  font-size:11px;
+}
+.shell .status b { font-weight:700; }
+.shell .status .status-btn {
+  height:20px; padding:0 8px; border-radius:3px;
+  background:transparent; color:var(--status-fg);
+  border:1px solid transparent;
+  display:inline-flex; align-items:center;
+  font-size:10.5px; cursor:pointer;
+}
+.shell .status .status-btn:hover { background:rgba(255,255,255,.15); }
+.shell .status .status-btn.sel {
+  background:rgba(255,255,255,.25);
+  border-color:rgba(255,255,255,.4);
+}
+.shell .status .spacer { flex:1; }
+[data-theme="light"] .shell .status .status-btn.sel {
+  background:rgba(0,0,0,.10);
+  border-color:rgba(0,0,0,.18);
+}
+
+/* ============================================================
+   COMMENT SURFACES — five variants layered on the same shell
+   ============================================================ */
+
+/* Shared: corner badge + subtle yellow outline on node bearing a comment */
+.node.has-comment { outline:1.5px solid var(--comment-border); }
+.corner-badge {
+  position:absolute; top:-8px; right:-8px;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--comment-yellow);
+  color:#3a2500; font-weight:800; font-size:10px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.35);
+  border:1.5px solid #c4941b;
+  cursor:pointer;
+}
+
+/* --- V1 Inspector Hub: "Comments" inspector section card ------ */
+.comments-card { position:relative; }
+.comments-card .card-title .pill-tag {
+  display:inline-block; margin-left:8px;
+  padding:1px 7px; border-radius:8px;
+  font-size:9px; letter-spacing:.8px;
+  color:var(--comment-ink);
+  background:var(--comment-bg);
+  border:1px solid var(--comment-border);
+}
+.comment-thread { display:flex; flex-direction:column; gap:8px; }
+.comment-item {
+  display:flex; gap:8px;
+  padding:8px; border-radius:6px;
+  background:var(--comment-bg);
+  border:1px solid var(--comment-border);
+}
+.comment-item .avatar {
+  width:24px; height:24px; border-radius:50%;
+  background:var(--accent-strong); color:#fff;
+  font-size:10px; font-weight:700;
+  display:inline-flex; align-items:center; justify-content:center;
+  flex:none;
+}
+.comment-item .body { flex:1; }
+.comment-item .body .meta { display:flex; gap:6px; font-size:10px; color:var(--muted-fg); }
+.comment-item .body .meta b { color:var(--app-fg); }
+.comment-item .body .txt { color:var(--app-fg); font-size:11px; line-height:1.35; margin-top:3px; }
+.comment-compose {
+  display:flex; gap:8px; align-items:flex-start;
+  padding:8px; border-radius:6px;
+  background:var(--input-bg); border:1px dashed var(--input-border);
+}
+.comment-compose textarea {
+  flex:1; min-height:54px; resize:vertical;
+  background:transparent; border:none;
+  color:var(--input-fg); font-size:11px; outline:none;
+  font-family:inherit;
+}
+.comment-compose .send {
+  padding:4px 10px; height:24px;
+  border-radius:3px; font-size:11px; font-weight:700;
+  background:var(--accent-strong); color:#fff; border:1px solid var(--accent);
+  cursor:pointer;
+}
+[data-theme="light"] .comment-compose .send { color:#0b2030; }
+
+/* --- V2 Dual Pane: inspector split top(props) / bottom(comments) ---- */
+.dual-inspector { display:grid; grid-template-rows:1fr 260px; overflow:hidden; flex:1; }
+.dual-inspector .top { overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px; }
+.dual-inspector .bottom {
+  border-top:1px solid var(--border);
+  display:flex; flex-direction:column;
+  background:var(--panel-bg);
+}
+.dual-inspector .bottom .drawer-head {
+  height:28px; display:flex; align-items:center; padding:0 10px;
+  background:var(--comment-bg); border-bottom:1px solid var(--comment-border);
+  color:var(--comment-ink); font-size:11px; font-weight:700;
+  letter-spacing:.4px;
+  gap:8px;
+}
+.dual-inspector .bottom .drawer-head .spacer { flex:1; }
+.dual-inspector .bottom .drawer-head .mini {
+  padding:1px 6px; border-radius:8px;
+  background:rgba(0,0,0,.12); font-size:10px; font-weight:700;
+}
+.dual-inspector .bottom .drawer-body {
+  flex:1; overflow-y:auto; padding:8px 10px; display:flex; flex-direction:column; gap:8px;
+}
+
+/* --- V3 Drawer-Native: Comments as a 4th console tab + pinned markers ----- */
+.comments-console-body {
+  padding:10px 12px; display:flex; flex-direction:column; gap:8px;
+  background:var(--console-bg); overflow-y:auto; font-size:11px; font-family:inherit; white-space:normal;
+}
+.console-comment-row {
+  display:grid; grid-template-columns:22px 1fr auto; gap:8px;
+  padding:7px 8px;
+  background:var(--comment-bg);
+  border:1px solid var(--comment-border);
+  border-radius:6px;
+  align-items:start;
+}
+.console-comment-row .av {
+  width:22px; height:22px; border-radius:50%;
+  background:var(--accent-strong); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:700;
+}
+.console-comment-row .loc {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:9.5px; font-weight:700; letter-spacing:.4px;
+  color:var(--comment-ink); padding:1px 6px;
+  border:1px solid var(--comment-border); border-radius:8px;
+  background:color-mix(in srgb, var(--comment-yellow) 14%, transparent);
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+/* Pinned marker pushed above a node */
+.pin-marker {
+  position:absolute;
+  width:22px; height:26px;
+  background:var(--comment-yellow);
+  color:#3a2500; font-size:11px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+  clip-path:polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+  box-shadow:0 4px 8px rgba(0,0,0,.25);
+  cursor:pointer;
+}
+
+/* --- V4 Floating Thread: popover anchored to node ---- */
+.float-thread {
+  position:absolute;
+  width:252px;
+  background:var(--panel-bg);
+  border:1px solid var(--comment-border);
+  border-radius:8px;
+  box-shadow:0 12px 28px rgba(0,0,0,.45);
+  z-index:5;
+  overflow:hidden;
+}
+[data-theme="light"] .float-thread { box-shadow:0 12px 28px rgba(27,39,51,.18); }
+.float-thread::before {
+  content:""; position:absolute;
+  width:10px; height:10px;
+  background:var(--panel-bg);
+  border-left:1px solid var(--comment-border);
+  border-top:1px solid var(--comment-border);
+  transform:rotate(45deg);
+  left:-6px; top:36px;
+}
+.float-thread .head {
+  background:var(--comment-bg);
+  border-bottom:1px solid var(--comment-border);
+  padding:6px 10px; display:flex; align-items:center; gap:6px;
+  color:var(--comment-ink); font-size:11px; font-weight:700;
+}
+.float-thread .head .spacer { flex:1; }
+.float-thread .head .x {
+  cursor:pointer; color:var(--comment-ink); font-size:13px; line-height:1;
+}
+.float-thread .body { padding:8px; display:flex; flex-direction:column; gap:8px; }
+.float-thread .compose {
+  display:flex; gap:6px; padding:6px 8px; border-top:1px solid var(--border);
+  background:var(--input-bg);
+}
+.float-thread .compose input {
+  flex:1; height:24px; padding:0 6px; border-radius:3px;
+  background:transparent; border:1px solid var(--input-border); color:var(--input-fg);
+  font-size:11px; outline:none;
+}
+.float-thread .compose button {
+  padding:0 10px; height:24px;
+  background:var(--accent-strong); color:#fff; border:1px solid var(--accent);
+  border-radius:3px; font-size:11px; font-weight:700; cursor:pointer;
+}
+[data-theme="light"] .float-thread .compose button { color:#0b2030; }
+
+/* --- V5 Keyboard-First: command bar + inline docked card ----- */
+.cmdbar {
+  position:absolute; left:50%; transform:translateX(-50%);
+  top:16px;
+  width:min(640px, 78%);
+  background:var(--panel-bg);
+  border:1px solid var(--border);
+  border-radius:8px;
+  box-shadow:0 14px 30px rgba(0,0,0,.4);
+  z-index:6;
+  overflow:hidden;
+}
+[data-theme="light"] .cmdbar { box-shadow:0 14px 30px rgba(27,39,51,.18); }
+.cmdbar .row1 {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px; background:var(--input-bg); border-bottom:1px solid var(--border);
+}
+.cmdbar .row1 .slash {
+  font-family:Consolas,monospace; font-weight:700;
+  color:var(--comment-strong); font-size:13px;
+}
+.cmdbar .row1 input {
+  flex:1; border:none; outline:none;
+  background:transparent; color:var(--input-fg);
+  font-size:13px;
+}
+.cmdbar .row1 .kbd {
+  border:1px solid var(--input-border); border-radius:3px;
+  padding:1px 6px; font-size:10px; font-family:Consolas,monospace;
+  color:var(--muted-fg); background:var(--panel-bg);
+}
+.cmdbar .row2 {
+  padding:8px 12px; display:flex; flex-direction:column; gap:3px;
+  font-size:11px; color:var(--muted-fg);
+  max-height:180px; overflow-y:auto;
+}
+.cmdbar .row2 .hit {
+  padding:6px 8px; border-radius:4px;
+  display:flex; align-items:center; gap:8px;
+  cursor:pointer;
+}
+.cmdbar .row2 .hit.active {
+  background:var(--inspector-selected-bg); color:var(--app-fg);
+  border:1px solid var(--inspector-selected-border);
+}
+.cmdbar .row2 .hit .tag {
+  padding:1px 6px; border-radius:8px;
+  background:var(--comment-bg); border:1px solid var(--comment-border);
+  color:var(--comment-ink); font-size:9.5px; font-weight:700; letter-spacing:.5px;
+}
+
+/* Anchored docked comment card for v5 */
+.docked-note {
+  position:absolute;
+  background:var(--comment-bg-strong);
+  border:1px solid var(--comment-border);
+  border-radius:6px;
+  padding:6px 8px;
+  font-size:11px;
+  color:var(--comment-ink);
+  max-width:220px;
+  z-index:4;
+}
+.docked-note .meta {
+  font-size:9.5px; text-transform:uppercase; letter-spacing:.8px;
+  font-weight:700; opacity:.8;
+}
+.docked-note::after {
+  content:""; position:absolute;
+  width:10px; height:10px;
+  background:var(--comment-bg-strong);
+  border-right:1px solid var(--comment-border);
+  border-bottom:1px solid var(--comment-border);
+  transform:rotate(45deg);
+  bottom:-6px; left:22px;
+}
+
+/* Context menu (QML-style) */
+.ctx-menu {
+  position:absolute;
+  min-width:232px;
+  background:var(--panel-bg);
+  border:1px solid var(--border);
+  border-radius:6px;
+  box-shadow:0 10px 22px rgba(0,0,0,.5);
+  padding:4px;
+  z-index:8;
+  font-size:11px;
+}
+[data-theme="light"] .ctx-menu { box-shadow:0 10px 22px rgba(27,39,51,.22); }
+.ctx-menu .item {
+  display:flex; align-items:center; gap:8px;
+  padding:5px 10px; border-radius:3px;
+  color:var(--app-fg); cursor:pointer;
+}
+.ctx-menu .item:hover { background:var(--hover); }
+.ctx-menu .item.highlight {
+  background:color-mix(in srgb, var(--comment-yellow) 14%, transparent);
+  color:var(--comment-ink);
+  border:1px solid var(--comment-border);
+}
+.ctx-menu .item .kbd {
+  margin-left:auto;
+  font-size:10px; color:var(--muted-fg);
+  font-family:Consolas,monospace;
+}
+.ctx-menu .sep { height:1px; background:var(--border); margin:3px 2px; }
+
+/* Callout (variant notes under each shell) */
+.callout {
+  max-width:1440px; margin:10px auto 0;
+  padding:10px 14px; border-left:3px solid var(--comment-yellow);
+  background:var(--comment-bg);
+  color:var(--app-fg);
+  border-radius:4px;
+  font-size:12px; line-height:1.5;
+}
+.callout b { color:var(--comment-ink); }
+.kbdlist { display:inline-flex; gap:4px; margin-left:4px; }
+.kbdlist span {
+  font-family:Consolas,monospace; font-size:10px;
+  padding:1px 6px; border-radius:3px;
+  background:var(--panel-bg); border:1px solid var(--border); color:var(--muted-fg);
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>COREX Node Editor — Add Comment (Unified Variants)</h1>
+  <span class="sub">Five polished takes that combine Corner-badge + Inspector-section + Pinned-markers-&amp;-drawer</span>
+  <span class="spacer"></span>
+  <button class="theme-toggle" id="themeToggle">
+    <span id="themeLabel">🌙 Dark</span>
+  </button>
+</div>
+
+<nav class="variant-nav">
+  <a href="#v1" class="active">V1 — Inspector Hub</a>
+  <a href="#v2">V2 — Dual Pane</a>
+  <a href="#v3">V3 — Drawer-Native</a>
+  <a href="#v4">V4 — Floating Thread</a>
+  <a href="#v5">V5 — Keyboard-First</a>
+</nav>
+
+<!-- ==================================================
+     V1 — INSPECTOR HUB
+     ================================================== -->
+<section class="variant-section" id="v1">
+  <div class="variant-heading">
+    <h2>Variant 1 — Inspector Hub</h2>
+    <span class="tag">Comments ⇢ Properties pane</span>
+    <p>Primary surface lives in the <b>PROPERTIES</b> pane as a dedicated <b>Comments</b> section card, matching the visual language of <b>Node Definition</b> and <b>Port Management</b>. Nodes that own comments show a yellow corner badge on the graph (keeps the canvas lightweight).</p>
+  </div>
+  <div class="shell" id="shell1">
+    <!-- Title bar -->
+    <div class="titlebar">
+      <span class="app-name">COREX Node Editor</span>
+      <span style="color:var(--muted-fg);font-size:11px;margin-left:6px;">— Engineering</span>
+      <span class="spacer"></span>
+      <span class="project">engineering_viewer_capabilities.cxproj</span>
+      <span class="win-ctrls"><span>—</span><span>▢</span><span>✕</span></span>
+    </div>
+
+    <!-- Run toolbar -->
+    <div class="runbar">
+      <span class="icon-btn" title="Run">▶</span>
+      <span class="icon-btn" title="Pause / Resume">❙❙</span>
+      <span class="icon-btn" title="Stop">■</span>
+      <span class="spacer"></span>
+      <span class="zoom">Zoom: 42%</span>
+      <span class="divider"></span>
+      <span class="btn">⚙ Settings</span>
+      <span class="btn">{ } Script</span>
+    </div>
+
+    <!-- Workspace -->
+    <div class="workspace">
+      <!-- Library -->
+      <aside class="library">
+        <div class="pane-title-row">
+          <span class="pane-title">NODE LIBRARY</span>
+          <span class="spacer"></span>
+          <span class="collapse-btn" title="Collapse node library">«</span>
+        </div>
+        <div class="search"><input placeholder="Search nodes..." /></div>
+        <div class="library-tree">
+          <div class="lib-cat"><span class="chev">▸</span> Annotation</div>
+          <div class="lib-cat"><span class="chev">▾</span> Engineering</div>
+            <div class="lib-sub"><span class="chev">▾</span> Import</div>
+              <div class="lib-node deep"><span class="dot"></span>FE Import</div>
+            <div class="lib-sub"><span class="chev">▾</span> Viewer</div>
+              <div class="lib-node deep"><span class="dot"></span>Model Viewer</div>
+          <div class="lib-cat"><span class="chev">▾</span> Core</div>
+            <div class="lib-node"><span class="dot"></span>Constant</div>
+            <div class="lib-node"><span class="dot"></span>Logger</div>
+            <div class="lib-node"><span class="dot"></span>Python Script</div>
+          <div class="lib-cat"><span class="chev">▸</span> Flowchart</div>
+          <div class="lib-cat"><span class="chev">▸</span> HPC</div>
+          <div class="lib-cat"><span class="chev">▸</span> Input/Output</div>
+          <div class="lib-cat"><span class="chev">▸</span> Planning</div>
+          <div class="lib-cat"><span class="chev">▸</span> Subnode</div>
+        </div>
+      </aside>
+
+      <!-- Center -->
+      <main class="center">
+        <div class="scopebar">
+          <span class="scope-label">Scope:</span>
+          <div class="scope-crumbs">
+            <span class="scope-crumb active">Model Viewer Capabilities</span>
+          </div>
+          <span class="spacer"></span>
+          <span class="views-label">VIEWS</span>
+          <span class="view-tab">V1</span>
+          <span class="new-view">+ New View</span>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas">
+          <div class="group-backdrop" style="left:24px;top:18px;width:540px;">
+            <div class="hint">★ Group</div>
+            Engineering Viewer Workflow Example: CAD and FE Overlay
+          </div>
+
+          <svg class="edges" viewBox="0 0 1440 600" preserveAspectRatio="none">
+            <path d="M 228 212 C 285 212, 295 220, 355 220" stroke="#67D487"/>
+            <path d="M 228 242 C 288 242, 292 266, 355 266" stroke="#7AA8FF"/>
+            <path d="M 550 232 C 620 232, 628 320, 704 320" stroke="#7AA8FF"/>
+            <path d="M 550 288 C 620 288, 628 356, 704 356" stroke="#7AA8FF"/>
+          </svg>
+
+          <div class="node cat-physics has-comment" style="left:360px;top:190px;width:190px;">
+            <div class="accent-bar"></div>
+            <div class="header"><span class="title">FE Import</span></div>
+            <div class="inline"><span class="label">FE File</span><span class="val">mesh.vtu</span></div>
+            <div class="ports">
+              <div class="col"><div class="port"><span class="dot"></span>path</div></div>
+              <div class="col right"><div class="port right"><span>scene</span><span class="dot"></span></div></div>
+            </div>
+            <div class="corner-badge" title="Comments (3)">3</div>
+          </div>
+
+          <div class="node cat-physics selected" style="left:700px;top:280px;width:210px;">
+            <div class="accent-bar"></div>
+            <div class="header"><span class="title">Model Viewer</span><span class="open-badge">OPEN</span></div>
+            <div class="inline"><span class="label">Representation</span><span class="val">surface_with_edges</span></div>
+            <div class="inline"><span class="label">Show Mesh Edges</span><span class="chk">☐</span></div>
+            <div class="ports">
+              <div class="col"><div class="port"><span class="dot"></span>scene_1</div></div>
+              <div class="col right">
+                <div class="port right"><span>session</span><span class="dot"></span></div>
+                <div class="port right"><span>selections</span><span class="dot"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="workspaces">
+          <span class="ws-label">WORKSPACES</span>
+          <div class="ws-tabs"><span class="ws-tab">Model Viewer Capabilities</span></div>
+          <span class="new-ws">+ New Workspace</span>
+        </div>
+
+        <div class="console">
+          <div class="tabs">
+            <span class="tab active">Output</span>
+            <span class="tab">Errors (0)</span>
+            <span class="tab">Warnings (0)</span>
+            <span class="spacer"></span>
+            <span class="tab">Clear</span>
+          </div>
+          <div class="body">[12:41:02] Workspace "Model Viewer Capabilities" activated.
+[12:41:05] Model Viewer :: scene ready.
+[12:41:06] Ready.</div>
+        </div>
+      </main>
+
+      <!-- Inspector -->
+      <aside class="inspector">
+        <div class="insp-tabs">
+          <div class="tab active">Properties</div>
+          <div class="tab">Help</div>
+        </div>
+        <div class="insp-scroll">
+          <div class="insp-card">
+            <div class="insp-head-row">
+              <div>
+                <div class="node-title">Model Viewer</div>
+                <div class="node-sub">Engineering scene viewer</div>
+              </div>
+              <button class="insp-btn sel">COLLAPSE</button>
+            </div>
+            <div class="meta-chips">
+              <span class="meta-chip">CATEGORY <b>Engineering › Viewer</b></span>
+              <span class="meta-chip">ID <b>2</b></span>
+            </div>
+          </div>
+
+          <div class="insp-filter">
+            <input placeholder="Filter by name…">
+            <div class="insp-segment"><span class="seg sel">NAME</span><span class="seg">VALUE</span></div>
+          </div>
+
+          <div class="smart-group">View <span class="count">3</span></div>
+          <div class="insp-row"><span class="lbl">Representation</span><span class="val">surface_with_edges ▾</span></div>
+          <div class="insp-row"><span class="lbl">Show Mesh Edges</span><span class="val">false</span></div>
+          <div class="insp-row"><span class="lbl">Parallel Projection</span><span class="val">false</span></div>
+
+          <div class="insp-card">
+            <div class="card-title">PORT MANAGEMENT</div>
+            <div class="port-tabs">
+              <span class="seg sel">INPUTS (1)</span>
+              <span class="seg">OUTPUTS (2)</span>
+            </div>
+            <div class="port-row sel">
+              <span class="chk on">✓</span><span class="kind-dot"></span>
+              <span class="key">scene_1</span><span class="kind-chip">ENGINEERING_SCENE</span>
+            </div>
+          </div>
+
+          <!-- NEW: Comments section card (Variant 1's key UI) -->
+          <div class="insp-card comments-card">
+            <div class="card-title">COMMENTS <span class="pill-tag">3 · ON THIS NODE</span></div>
+            <div class="comment-thread">
+              <div class="comment-item">
+                <div class="avatar">EA</div>
+                <div class="body">
+                  <div class="meta"><b>Emre</b><span>• 2h ago</span><span>• resolved ✓</span></div>
+                  <div class="txt">Confirmed the imported FE scene uses the intended units before viewing.</div>
+                </div>
+              </div>
+              <div class="comment-item">
+                <div class="avatar">MK</div>
+                <div class="body">
+                  <div class="meta"><b>Melis</b><span>• 38m ago</span></div>
+                  <div class="txt">Should we expose Show Mesh Edges in the compact viewer controls?</div>
+                </div>
+              </div>
+              <div class="comment-compose">
+                <textarea placeholder="Reply to thread…  (⌘/Ctrl+Enter to send)"></textarea>
+                <button class="send">Post</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Status strip -->
+    <div class="status">
+      <b>● Ready (Idle)</b>
+      <span>◈ R:0  Q:0  D:0  F:0</span>
+      <span>▮ FPS:0  CPU:29%  RAM:16.4/31.8 GB</span>
+      <span class="spacer"></span>
+      <span>⓵ W:0  E:0</span>
+    </div>
+  </div>
+  <div class="callout">
+    <b>Interaction:</b> right-click a node → <b>Add Comment</b> (<span class="kbdlist"><span>C</span></span>) opens the composer inside the Comments card; thread lives alongside other inspector sections and follows selection. Corner badge count is the only canvas-side affordance, preserving a tidy graph.
+  </div>
+</section>
+
+<!-- ==================================================
+     V2 — DUAL PANE
+     ================================================== -->
+<section class="variant-section" id="v2">
+  <div class="variant-heading">
+    <h2>Variant 2 — Dual Pane Inspector</h2>
+    <span class="tag">Split: Properties ▲ / Comments ▼</span>
+    <p>The PROPERTIES pane keeps all properties where you expect them, but docks a resizable <b>Comments</b> tray at the bottom of the same column. Great for focused review sessions — you can read props and thread at the same time without leaving the inspector.</p>
+  </div>
+  <div class="shell" id="shell2">
+    <div class="titlebar">
+      <span class="app-name">COREX Node Editor</span>
+      <span style="color:var(--muted-fg);font-size:11px;margin-left:6px;">— Engineering</span>
+      <span class="spacer"></span>
+      <span class="project">engineering_viewer_capabilities.cxproj</span>
+      <span class="win-ctrls"><span>—</span><span>▢</span><span>✕</span></span>
+    </div>
+    <div class="runbar">
+      <span class="icon-btn">▶</span><span class="icon-btn">❙❙</span><span class="icon-btn">■</span>
+      <span class="spacer"></span>
+      <span class="zoom">Zoom: 42%</span>
+      <span class="divider"></span>
+      <span class="btn">⚙ Settings</span>
+      <span class="btn">{ } Script</span>
+    </div>
+    <div class="workspace">
+      <aside class="library">
+        <div class="pane-title-row">
+          <span class="pane-title">NODE LIBRARY</span><span class="spacer"></span>
+          <span class="collapse-btn">«</span>
+        </div>
+        <div class="search"><input placeholder="Search nodes..." /></div>
+        <div class="library-tree">
+          <div class="lib-cat"><span class="chev">▸</span> Annotation</div>
+          <div class="lib-cat"><span class="chev">▾</span> Engineering</div>
+            <div class="lib-sub"><span class="chev">▾</span> Import</div>
+              <div class="lib-node deep"><span class="dot"></span>FE Import</div>
+            <div class="lib-sub"><span class="chev">▾</span> Viewer</div>
+              <div class="lib-node deep"><span class="dot"></span>Model Viewer</div>
+          <div class="lib-cat"><span class="chev">▸</span> Core</div>
+          <div class="lib-cat"><span class="chev">▸</span> Flowchart</div>
+          <div class="lib-cat"><span class="chev">▸</span> HPC</div>
+        </div>
+      </aside>
+
+      <main class="center">
+        <div class="scopebar">
+          <span class="scope-label">Scope:</span>
+          <div class="scope-crumbs"><span class="scope-crumb active">Model Viewer Capabilities</span></div>
+          <span class="spacer"></span>
+          <span class="views-label">VIEWS</span>
+          <span class="view-tab">V1</span>
+          <span class="new-view">+ New View</span>
+        </div>
+        <div class="canvas">
+          <div class="group-backdrop" style="left:24px;top:18px;width:540px;">
+            <div class="hint">★ Group</div>
+            Engineering Viewer Workflow Example: CAD and FE Overlay
+          </div>
+          <svg class="edges" viewBox="0 0 1440 600" preserveAspectRatio="none">
+            <path d="M 240 260 C 300 260, 308 260, 360 260" stroke="#67D487"/>
+            <path d="M 540 260 C 600 260, 620 320, 680 320" stroke="#7AA8FF"/>
+            <path d="M 540 300 C 600 300, 620 360, 680 360" stroke="#7AA8FF"/>
+          </svg>
+
+          <div class="node cat-physics" style="left:60px;top:230px;width:180px;">
+            <div class="accent-bar"></div>
+            <div class="header"><span class="title">FE Import</span></div>
+            <div class="inline"><span class="label">FE File</span><span class="val">mesh.vtu</span></div>
+            <div class="ports">
+              <div class="col"><div class="port"><span class="dot"></span>path</div></div>
+              <div class="col right"><div class="port right"><span>scene</span><span class="dot"></span></div></div>
+            </div>
+          </div>
+
+          <div class="node cat-physics selected has-comment" style="left:360px;top:210px;width:180px;">
+            <div class="accent-bar"></div>
+            <div class="header"><span class="title">Model Viewer</span><span class="open-badge">OPEN</span></div>
+            <div class="inline"><span class="label">Representation</span><span class="val">surface_with_edges</span></div>
+            <div class="inline"><span class="label">Show Mesh Edges</span><span class="chk">☐</span></div>
+            <div class="ports">
+              <div class="col"><div class="port"><span class="dot"></span>scene_1</div></div>
+              <div class="col right">
+                <div class="port right"><span>session</span><span class="dot"></span></div>
+                <div class="port right"><span>selections</span><span class="dot"></span></div>
+              </div>
+            </div>
+            <div class="corner-badge">2</div>
+          </div>
+
+        </div>
+
+        <div class="workspaces">
+          <span class="ws-label">WORKSPACES</span>
+          <div class="ws-tabs"><span class="ws-tab">CAD and FE Overlay</span></div>
+          <span class="new-ws">+ New Workspace</span>
+        </div>
+        <div class="console">
+          <div class="tabs">
+            <span class="tab active">Output</span><span class="tab">Errors (0)</span><span class="tab">Warnings (0)</span>
+            <span class="spacer"></span><span class="tab">Clear</span>
+          </div>
+          <div class="body">[12:44:01] Model Viewer :: scene ready.
+[12:44:03] 2 comments synced to "Model Viewer".</div>
+        </div>
+      </main>
+
+      <aside class="inspector">
+        <div class="insp-tabs">
+          <div class="tab active">Properties</div>
+          <div class="tab">Help</div>
+        </div>
+        <div class="dual-inspector">
+          <div class="top">
+            <div class="insp-card">
+              <div class="insp-head-row">
+                <div>
+                  <div class="node-title">Model Viewer</div>
+                  <div class="node-sub">CAD and FE scene viewer</div>
+                </div>
+                <button class="insp-btn sel">COLLAPSE</button>
+              </div>
+              <div class="meta-chips">
+                <span class="meta-chip">CATEGORY <b>Engineering › Viewer</b></span>
+                <span class="meta-chip">ID <b>4</b></span>
+              </div>
+            </div>
+            <div class="insp-filter">
+              <input placeholder="Filter by name…">
+              <div class="insp-segment"><span class="seg sel">NAME</span><span class="seg">VALUE</span></div>
+            </div>
+            <div class="smart-group">View <span class="count">3</span></div>
+            <div class="insp-row"><span class="lbl">Representation</span><span class="val">surface_with_edges ▾</span></div>
+            <div class="insp-row"><span class="lbl">Show Mesh Edges</span><span class="val">false</span></div>
+            <div class="insp-row"><span class="lbl">Parallel Projection</span><span class="val">false</span></div>
+            <div class="insp-card">
+              <div class="card-title">PORT MANAGEMENT</div>
+              <div class="port-tabs">
+                <span class="seg sel">INPUTS (1)</span>
+                <span class="seg">OUTPUTS (2)</span>
+              </div>
+              <div class="port-row sel">
+                <span class="chk on">✓</span><span class="kind-dot"></span>
+                <span class="key">scene_1</span><span class="kind-chip">ENGINEERING_SCENE</span>
+              </div>
+            </div>
+          </div>
+          <div class="bottom">
+            <div class="drawer-head">
+              <span>★ COMMENTS</span>
+              <span class="mini">2 open · 1 resolved</span>
+              <span class="spacer"></span>
+              <span style="font-size:11px;cursor:pointer;opacity:.8;" title="Collapse comments drawer">⌄</span>
+            </div>
+            <div class="drawer-body">
+              <div class="comment-item">
+                <div class="avatar">EA</div>
+                <div class="body">
+                  <div class="meta"><b>Emre</b><span>• 2h ago</span></div>
+                  <div class="txt">Use <code>scene_1</code> here — the viewer expects a prepared Engineering Scene.</div>
+                </div>
+              </div>
+              <div class="comment-item">
+                <div class="avatar">MK</div>
+                <div class="body">
+                  <div class="meta"><b>Melis</b><span>• 38m ago</span></div>
+                  <div class="txt">@Emre — let's document the scene input requirement in Help too.</div>
+                </div>
+              </div>
+              <div class="comment-compose">
+                <textarea placeholder="Comment on Model Viewer…"></textarea>
+                <button class="send">Post</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="status">
+      <b>● Ready (Idle)</b>
+      <span>◈ R:0  Q:0  D:0  F:0</span>
+      <span>▮ FPS:0  CPU:29%  RAM:16.4/31.8 GB</span>
+      <span class="spacer"></span>
+      <span>⓵ W:0  E:0</span>
+    </div>
+  </div>
+  <div class="callout">
+    <b>Interaction:</b> <b>Add Comment</b> pops focus to the bottom-drawer composer; the drawer is resizable (drag the header divider) and collapses to a 28 px rail with a count pill. Corner badge on the node is still the peek affordance on the canvas.
+  </div>
+</section>
+
+<!-- ==================================================
+     V3 — DRAWER-NATIVE
+     ================================================== -->
+<section class="variant-section" id="v3">
+  <div class="variant-heading">
+    <h2>Variant 3 — Drawer-Native (Console-style)</h2>
+    <span class="tag">4th tab · Comments · pinned markers</span>
+    <p>Comments get a first-class tab in the bottom console next to <b>Output / Errors / Warnings</b>, showing every comment in the workspace. Nodes with a pinned marker flag jump the reader to the thread.</p>
+  </div>
+  <div class="shell" id="shell3">
+    <div class="titlebar">
+      <span class="app-name">COREX Node Editor</span>
+      <span style="color:var(--muted-fg);font-size:11px;margin-left:6px;">— Engineering</span>
+      <span class="spacer"></span>
+      <span class="project">engineering_viewer_capabilities.cxproj</span>
+      <span class="win-ctrls"><span>—</span><span>▢</span><span>✕</span></span>
+    </div>
+    <div class="runbar">
+      <span class="icon-btn">▶</span><span class="icon-btn">❙❙</span><span class="icon-btn">■</span>
+      <span class="spacer"></span>
+      <span class="zoom">Zoom: 42%</span>
+      <span class="divider"></span>
+      <span class="btn">⚙ Settings</span>
+      <span class="btn">{ } Script</span>
+    </div>
+    <div class="workspace">
+      <aside class="library">
+        <div class="pane-title-row">
+          <span class="pane-title">NODE LIBRARY</span><span class="spacer"></span>
+          <span class="collapse-btn">«</span>
+        </div>
+        <div class="search"><input placeholder="Search nodes..." /></div>
+        <div class="library-tree">
+          <div class="lib-cat"><span class="chev">▾</span> Engineering</div>
+            <div class="lib-sub"><span class="chev">▾</span> Import</div>
+              <div class="lib-node deep"><span class="dot"></span>FE Import</div>
+            <div class="lib-sub"><span class="chev">▾</span> Viewer</div>
+              <div class="lib-node deep"><span class="dot"></span>Model Viewer</div>
+          <div class="lib-cat"><span class="chev">▸</span> Core</div>
+          <div class="lib-cat"><span class="chev">▸</span> Planning</div>
+        </div>
+      </aside>
+
+      <main class="center">
+        <div class="scopebar">
+          <span class="scope-label">Scope:</span>
+          <div class="scope-crumbs"><span class="scope-crumb active">Model Viewer Capabilities</span></div>
+          <span class="spacer"></span>
+          <span class="views-label">VIEWS</span>
+          <span class="view-tab">V1</span>
+          <span class="new-view">+ New View</span>
+        </div>
+        <div class="canvas">
+          <div class="group-backdrop" style="left:24px;top:16px;width:560px;">
+            <div class="hint">★ Group</div>
+            Engineering Viewer Workflow Example: CAD and FE Overlay
+          </div>
+
+          <svg class="edges" viewBox="0 0 1440 600" preserveAspectRatio="none">
+            <path d="M 220 250 C 280 250, 300 230, 360 230" stroke="#67D487"/>
+            <path d="M 540 260 C 600 260, 620 320, 680 320" stroke="#7AA8FF"/>
+          </svg>
+
+          <div class="pin-marker" style="left:393px;top:182px;" title="Thread on FE Import">12</div>
+
+          <div class="node cat-physics selected has-comment" style="left:360px;top:210px;width:180px;">
+            <div class="accent-bar"></div>
+            <div class="header"><span class="title">FE Import</span><span class="open-badge">OPEN</span></div>
+            <div class="inline"><span class="label">FE File</span><span class="val">mesh.vtu</span></div>
+            <div class="inline"><span class="label">Length Unit</span><span class="val">mm</span></div>
+            <div class="ports">
+              <div class="col"><div class="port"><span class="dot"></span>path</div></div>
+              <div class="col right"><div class="port right"><span>scene</span><span class="dot"></span></div></div>
+            </div>
+          </div>
+
+          <div class="node cat-physics has-comment" style="left:680px;top:280px;width:200px;">
+            <div class="accent-bar"></div>
+            <div class="header"><span class="title">Model Viewer</span></div>
+            <div class="inline"><span class="label">Representation</span><span class="val">surface_with_edges</span></div>
+            <div class="ports">
+              <div class="col"><div class="port"><span class="dot"></span>scene_1</div></div>
+              <div class="col right">
+                <div class="port right"><span>session</span><span class="dot"></span></div>
+                <div class="port right"><span>selections</span><span class="dot"></span></div>
+              </div>
+            </div>
+            <div class="pin-marker" style="left:170px;top:-20px;">4</div>
+          </div>
+        </div>
+
+        <div class="workspaces">
+          <span class="ws-label">WORKSPACES</span>
+          <div class="ws-tabs"><span class="ws-tab">Model Viewer Capabilities</span></div>
+          <span class="new-ws">+ New Workspace</span>
+        </div>
+
+        <div class="console">
+          <div class="tabs">
+            <span class="tab">Output</span>
+            <span class="tab">Errors (0)</span>
+            <span class="tab">Warnings (0)</span>
+            <span class="tab active" style="background:var(--comment-bg);border-color:var(--comment-border);color:var(--comment-ink);">★ Comments (16)</span>
+            <span class="spacer"></span>
+            <span class="tab">Filter: All ▾</span>
+            <span class="tab">Clear</span>
+          </div>
+          <div class="comments-console-body">
+            <div class="console-comment-row">
+              <span class="av">EA</span>
+              <div>
+                <div style="font-size:11px;color:var(--muted-fg);"><b style="color:var(--app-fg);">Emre</b> · 2h ago</div>
+                <div style="margin-top:3px;">Confirmed the imported scene uses the intended units before viewing.</div>
+              </div>
+              <span class="loc">→ FE Import #12</span>
+            </div>
+            <div class="console-comment-row">
+              <span class="av">MK</span>
+              <div>
+                <div style="font-size:11px;color:var(--muted-fg);"><b style="color:var(--app-fg);">Melis</b> · 38m ago</div>
+                <div style="margin-top:3px;">Let's verify the import units here.</div>
+              </div>
+              <span class="loc">→ FE Import #4</span>
+            </div>
+            <div class="console-comment-row">
+              <span class="av" style="background:var(--comment-strong);color:#fff;">TT</span>
+              <div>
+                <div style="font-size:11px;color:var(--muted-fg);"><b style="color:var(--app-fg);">Tuna</b> · yesterday · <i>resolved</i></div>
+                <div style="margin-top:3px;">Documenting the <code>scene</code> output for downstream viewing.</div>
+              </div>
+              <span class="loc">→ FE Import</span>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <aside class="inspector">
+        <div class="insp-tabs">
+          <div class="tab active">Properties</div>
+          <div class="tab">Help</div>
+        </div>
+        <div class="insp-scroll">
+          <div class="insp-card">
+            <div class="insp-head-row">
+              <div>
+                <div class="node-title">FE Import</div>
+                <div class="node-sub">Neutral FE scene importer</div>
+              </div>
+              <button class="insp-btn sel">COLLAPSE</button>
+            </div>
+            <div class="meta-chips">
+              <span class="meta-chip">CATEGORY <b>Engineering › Import</b></span>
+              <span class="meta-chip">ID <b>3</b></span>
+              <span class="meta-chip" style="background:var(--comment-bg);border-color:var(--comment-border);color:var(--comment-ink);">★ 12 comments</span>
+            </div>
+          </div>
+          <div class="insp-filter">
+            <input placeholder="Filter by name…">
+            <div class="insp-segment"><span class="seg sel">NAME</span><span class="seg">VALUE</span></div>
+          </div>
+          <div class="smart-group">Import <span class="count">2</span></div>
+          <div class="insp-row"><span class="lbl">Path</span><span class="val">mesh.vtu</span></div>
+          <div class="insp-row"><span class="lbl">Length Unit</span><span class="val">mm</span></div>
+          <div class="insp-card">
+            <div class="card-title">PORT MANAGEMENT</div>
+            <div class="port-tabs">
+              <span class="seg sel">INPUTS (1)</span>
+              <span class="seg">OUTPUTS (1)</span>
+            </div>
+            <div class="port-row sel">
+              <span class="chk on">✓</span><span class="kind-dot"></span>
+              <span class="key">path</span><span class="kind-chip">PATH</span>
+            </div>
+            <div class="port-row"><span class="chk on">✓</span><span class="kind-dot"></span><span class="key">scene</span><span class="kind-chip">ENGINEERING_SCENE</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="status">
+      <b>● Ready (Idle)</b>
+      <span>◈ R:0  Q:0  D:0  F:0</span>
+      <span>▮ FPS:0  CPU:29%  RAM:16.4/31.8 GB</span>
+      <span class="spacer"></span>
+      <span>⓵ W:0  E:0</span>
+    </div>
+  </div>
+  <div class="callout">
+    <b>Interaction:</b> pinned markers are reassuring at a distance (you can count un-addressed threads at a glance). Clicking a <code>→ FE Import #12</code> link in the Comments tab pans the canvas to that node and opens the thread in the inspector. Great fit for teams that live in the bottom console.
+  </div>
+</section>
+
+<!-- ==================================================
+     V4 — FLOATING THREAD
+     ================================================== -->
+<section class="variant-section" id="v4">
+  <div class="variant-heading">
+    <h2>Variant 4 — Floating Thread (in-situ)</h2>
+    <span class="tag">Popover anchored to node</span>
+    <p>Comments surface as a small pop-over attached to the selected node. The conversation stays visually tethered to what it's about and doesn't fight the inspector — perfect for quick review loops where you don't want to split your attention.</p>
+  </div>
+  <div class="shell" id="shell4">
+    <div class="titlebar">
+      <span class="app-name">COREX Node Editor</span>
+      <span style="color:var(--muted-fg);font-size:11px;margin-left:6px;">— Engineering</span>
+      <span class="spacer"></span>
+      <span class="project">engineering_viewer_capabilities.cxproj</span>
+      <span class="win-ctrls"><span>—</span><span>▢</span><span>✕</span></span>
+    </div>
+    <div class="runbar">
+      <span class="icon-btn">▶</span><span class="icon-btn">❙❙</span><span class="icon-btn">■</span>
+      <span class="spacer"></span>
+      <span class="zoom">Zoom: 42%</span>
+      <span class="divider"></span>
+      <span class="btn">⚙ Settings</span>
+      <span class="btn">{ } Script</span>
+    </div>
+    <div class="workspace">
+      <aside class="library">
+        <div class="pane-title-row">
+          <span class="pane-title">NODE LIBRARY</span><span class="spacer"></span>
+          <span class="collapse-btn">«</span>
+        </div>
+        <div class="search"><input placeholder="Search nodes..." /></div>
+        <div class="library-tree">
+          <div class="lib-cat"><span class="chev">▾</span> Engineering</div>
+            <div class="lib-sub"><span class="chev">▾</span> Import</div>
+              <div class="lib-node deep"><span class="dot"></span>FE Import</div>
+            <div class="lib-sub"><span class="chev">▾</span> Viewer</div>
+              <div class="lib-node deep"><span class="dot"></span>Model Viewer</div>
+        </div>
+      </aside>
+
+      <main class="center">
+        <div class="scopebar">
+          <span class="scope-label">Scope:</span>
+          <div class="scope-crumbs"><span class="scope-crumb active">Model Viewer Capabilities</span></div>
+          <span class="spacer"></span>
+          <span class="views-label">VIEWS</span>
+          <span class="view-tab">V1</span>
+          <span class="new-view">+ New View</span>
+        </div>
+
+        <div class="canvas">
+          <div class="group-backdrop" style="left:24px;top:18px;width:540px;">
+            <div class="hint">★ Group</div>
+            Engineering Viewer Workflow Example: CAD and FE Overlay
+          </div>
+
+          <svg class="edges" viewBox="0 0 1440 600" preserveAspectRatio="none">
+            <path d="M 260 250 C 320 250, 328 250, 400 250" stroke="#67D487"/>
+          </svg>
+
+          <div class="node cat-physics" style="left:72px;top:230px;width:180px;">
+            <div class="accent-bar"></div>
+            <div class="header"><span class="title">FE Import</span></div>
+            <div class="inline"><span class="label">FE File</span><span class="val">mesh.vtu</span></div>
+            <div class="ports">
+              <div class="col"><div class="port"><span class="dot"></span>path</div></div>
+              <div class="col right"><div class="port right"><span>scene</span><span class="dot"></span></div></div>
+            </div>
+          </div>
+
+          <div class="node cat-physics selected has-comment" style="left:400px;top:200px;width:200px;">
+            <div class="accent-bar"></div>
+            <div class="header"><span class="title">Model Viewer</span><span class="open-badge">OPEN</span></div>
+            <div class="inline"><span class="label">Representation</span><span class="val">surface_with_edges</span></div>
+            <div class="ports">
+              <div class="col"><div class="port"><span class="dot"></span>scene_1</div></div>
+              <div class="col right"><div class="port right"><span>session</span><span class="dot"></span></div><div class="port right"><span>selections</span><span class="dot"></span></div></div>
+            </div>
+            <div class="corner-badge">5</div>
+          </div>
+
+          <div class="float-thread" style="left:620px;top:192px;">
+            <div class="head">
+              <span>★ Model Viewer</span>
+              <span class="spacer"></span>
+              <span style="padding:1px 6px;border-radius:8px;background:rgba(0,0,0,.12);font-size:10px;">5</span>
+              <span class="x" title="Close">✕</span>
+            </div>
+            <div class="body">
+              <div class="comment-item">
+                <div class="avatar">EA</div>
+                <div class="body">
+                  <div class="meta"><b>Emre</b><span>• 10m ago</span></div>
+                  <div class="txt">Keep the representation consistent when comparing scene layers.</div>
+                </div>
+              </div>
+              <div class="comment-item">
+                <div class="avatar">MK</div>
+                <div class="body">
+                  <div class="meta"><b>Melis</b><span>• 8m ago</span></div>
+                  <div class="txt">Ack. I'll document the required Engineering Scene input.</div>
+                </div>
+              </div>
+            </div>
+            <div class="compose">
+              <input placeholder="Reply to thread…" />
+              <button>Post</button>
+            </div>
+          </div>
+
+          <div class="ctx-menu" style="left:480px;top:420px;">
+            <div class="item">Run from here <span class="kbd">F5</span></div>
+            <div class="item">Pause execution</div>
+            <div class="sep"></div>
+            <div class="item">Rename <span class="kbd">F2</span></div>
+            <div class="item">Duplicate <span class="kbd">Ctrl+D</span></div>
+            <div class="item">Copy <span class="kbd">Ctrl+C</span></div>
+            <div class="sep"></div>
+            <div class="item highlight">★ Add Comment <span class="kbd">C</span></div>
+            <div class="item">Toggle Breakpoint</div>
+            <div class="sep"></div>
+            <div class="item" style="color:var(--port-failed);">Delete Node <span class="kbd">Del</span></div>
+          </div>
+        </div>
+
+        <div class="workspaces">
+          <span class="ws-label">WORKSPACES</span>
+          <div class="ws-tabs"><span class="ws-tab">Model Viewer Capabilities</span></div>
+          <span class="new-ws">+ New Workspace</span>
+        </div>
+        <div class="console">
+          <div class="tabs">
+            <span class="tab active">Output</span><span class="tab">Errors (0)</span><span class="tab">Warnings (0)</span>
+            <span class="spacer"></span><span class="tab">Clear</span>
+          </div>
+          <div class="body">[12:49:44] Model Viewer :: scene ready.</div>
+        </div>
+      </main>
+
+      <aside class="inspector">
+        <div class="insp-tabs">
+          <div class="tab active">Properties</div>
+          <div class="tab">Help</div>
+        </div>
+        <div class="insp-scroll">
+          <div class="insp-card">
+            <div class="insp-head-row">
+              <div>
+                <div class="node-title">Model Viewer</div>
+                <div class="node-sub">CAD and FE scene viewer</div>
+              </div>
+              <button class="insp-btn sel">COLLAPSE</button>
+            </div>
+            <div class="meta-chips">
+              <span class="meta-chip">CATEGORY <b>Engineering › Viewer</b></span>
+              <span class="meta-chip">ID <b>7</b></span>
+              <span class="meta-chip" style="background:var(--comment-bg);border-color:var(--comment-border);color:var(--comment-ink);">★ 5 comments</span>
+            </div>
+          </div>
+          <div class="insp-filter">
+            <input placeholder="Filter by name…">
+            <div class="insp-segment"><span class="seg sel">NAME</span><span class="seg">VALUE</span></div>
+          </div>
+          <div class="smart-group">View <span class="count">3</span></div>
+          <div class="insp-row"><span class="lbl">Representation</span><span class="val">surface_with_edges ▾</span></div>
+          <div class="insp-row"><span class="lbl">Show Mesh Edges</span><span class="val">false</span></div>
+          <div class="insp-row"><span class="lbl">Parallel Projection</span><span class="val">false</span></div>
+          <div class="insp-card">
+            <div class="card-title">PORT MANAGEMENT</div>
+            <div class="port-tabs">
+              <span class="seg sel">INPUTS (1)</span>
+              <span class="seg">OUTPUTS (2)</span>
+            </div>
+            <div class="port-row sel"><span class="chk on">✓</span><span class="kind-dot"></span><span class="key">scene_1</span><span class="kind-chip">ENGINEERING_SCENE</span></div>
+            <div class="port-row"><span class="chk on">✓</span><span class="kind-dot"></span><span class="key">session</span><span class="kind-chip">VIEWER_SESSION</span></div>
+            <div class="port-row"><span class="chk on">✓</span><span class="kind-dot"></span><span class="key">selections</span><span class="kind-chip">SELECTION_SET</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="status">
+      <b>● Ready (Idle)</b>
+      <span>◈ R:0  Q:0  D:0  F:0</span>
+      <span>▮ FPS:0  CPU:29%  RAM:16.4/31.8 GB</span>
+      <span class="spacer"></span>
+      <span>⓵ W:0  E:0</span>
+    </div>
+  </div>
+  <div class="callout">
+    <b>Interaction:</b> the pop-over follows the node through pan/zoom and hides the inspector's Comments section for that node (no duplication). Great when doing quick walkthroughs with a teammate over a zoomed-in canvas.
+  </div>
+</section>
+
+<!-- ==================================================
+     V5 — KEYBOARD-FIRST
+     ================================================== -->
+<section class="variant-section" id="v5">
+  <div class="variant-heading">
+    <h2>Variant 5 — Keyboard-First</h2>
+    <span class="tag">“/” command · docked notes</span>
+    <p>For power users: press <span class="kbdlist"><span>/</span></span> to summon a command palette, type <code>/comment &lt;text&gt;</code>, and drop a sticky docked note under the selected node. Threads still live in the Inspector's Comments section — this is the fast lane for adding them.</p>
+  </div>
+  <div class="shell" id="shell5">
+    <div class="titlebar">
+      <span class="app-name">COREX Node Editor</span>
+      <span style="color:var(--muted-fg);font-size:11px;margin-left:6px;">— Engineering</span>
+      <span class="spacer"></span>
+      <span class="project">engineering_viewer_capabilities.cxproj</span>
+      <span class="win-ctrls"><span>—</span><span>▢</span><span>✕</span></span>
+    </div>
+    <div class="runbar">
+      <span class="icon-btn">▶</span><span class="icon-btn">❙❙</span><span class="icon-btn">■</span>
+      <span class="spacer"></span>
+      <span class="zoom">Zoom: 42%</span>
+      <span class="divider"></span>
+      <span class="btn">⚙ Settings</span>
+      <span class="btn">{ } Script</span>
+    </div>
+    <div class="workspace">
+      <aside class="library">
+        <div class="pane-title-row">
+          <span class="pane-title">NODE LIBRARY</span><span class="spacer"></span>
+          <span class="collapse-btn">«</span>
+        </div>
+        <div class="search"><input placeholder="Search nodes..." /></div>
+        <div class="library-tree">
+          <div class="lib-cat"><span class="chev">▾</span> Engineering</div>
+            <div class="lib-sub"><span class="chev">▾</span> Import</div>
+              <div class="lib-node deep"><span class="dot"></span>FE Import</div>
+            <div class="lib-sub"><span class="chev">▾</span> Viewer</div>
+              <div class="lib-node deep"><span class="dot"></span>Model Viewer</div>
+          <div class="lib-cat"><span class="chev">▸</span> Core</div>
+        </div>
+      </aside>
+
+      <main class="center">
+        <div class="scopebar">
+          <span class="scope-label">Scope:</span>
+          <div class="scope-crumbs"><span class="scope-crumb active">Model Viewer Capabilities</span></div>
+          <span class="spacer"></span>
+          <span class="views-label">VIEWS</span>
+          <span class="view-tab">V1</span>
+          <span class="new-view">+ New View</span>
+        </div>
+
+        <div class="canvas">
+          <div class="group-backdrop" style="left:24px;top:18px;width:540px;">
+            <div class="hint">★ Group</div>
+            Engineering Viewer Workflow Example: CAD and FE Overlay
+          </div>
+
+          <svg class="edges" viewBox="0 0 1440 600" preserveAspectRatio="none">
+            <path d="M 260 250 C 320 250, 328 250, 400 250" stroke="#67D487"/>
+          </svg>
+
+          <div class="node cat-physics" style="left:72px;top:230px;width:180px;">
+            <div class="accent-bar"></div>
+            <div class="header"><span class="title">FE Import</span></div>
+            <div class="inline"><span class="label">FE File</span><span class="val">mesh.vtu</span></div>
+            <div class="ports">
+              <div class="col"><div class="port"><span class="dot"></span>path</div></div>
+              <div class="col right"><div class="port right"><span>scene</span><span class="dot"></span></div></div>
+            </div>
+          </div>
+
+          <div class="node cat-physics selected has-comment" style="left:400px;top:200px;width:190px;">
+            <div class="accent-bar"></div>
+            <div class="header"><span class="title">Model Viewer</span><span class="open-badge">OPEN</span></div>
+            <div class="inline"><span class="label">Representation</span><span class="val">surface_with_edges</span></div>
+            <div class="ports">
+              <div class="col"><div class="port"><span class="dot"></span>scene_1</div></div>
+              <div class="col right"><div class="port right"><span>session</span><span class="dot"></span></div><div class="port right"><span>selections</span><span class="dot"></span></div></div>
+            </div>
+            <div class="corner-badge">2</div>
+          </div>
+
+          <div class="docked-note" style="left:402px;top:392px;">
+            <div class="meta">★ E. Atay · just now</div>
+            Check viewer input ordering after changing scene order — guidance is available in the Inspector / Help tab.
+          </div>
+
+          <div class="cmdbar">
+            <div class="row1">
+              <span class="slash">/</span>
+              <input id="cmdbarInput" value="comment Check viewer input ordering after changing scene order" />
+              <span class="kbd">Ctrl+/</span>
+            </div>
+            <div class="row2">
+              <div class="hit active"><span class="tag">COMMENT</span>/comment &lt;text&gt; — dock a note under the selected node</div>
+              <div class="hit"><span class="tag" style="background:color-mix(in srgb, var(--port-data) 20%, transparent);border-color:var(--port-data);color:var(--port-data);">NAV</span>/go FE Import</div>
+              <div class="hit"><span class="tag" style="background:color-mix(in srgb, var(--port-exec) 20%, transparent);border-color:var(--port-exec);color:var(--port-exec);">RUN</span>/run from selected</div>
+              <div class="hit"><span class="tag" style="background:color-mix(in srgb, var(--port-failed) 20%, transparent);border-color:var(--port-failed);color:var(--port-failed);">DEL</span>/delete selected</div>
+              <div class="hit"><span class="tag" style="background:var(--inspector-section-header-bg);border-color:var(--border);color:var(--muted-fg);">SET</span>/set port scene_1 = scene</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="workspaces">
+          <span class="ws-label">WORKSPACES</span>
+          <div class="ws-tabs"><span class="ws-tab">Model Viewer Capabilities</span></div>
+          <span class="new-ws">+ New Workspace</span>
+        </div>
+        <div class="console">
+          <div class="tabs">
+            <span class="tab active">Output</span><span class="tab">Errors (0)</span><span class="tab">Warnings (0)</span>
+            <span class="spacer"></span><span class="tab">Clear</span>
+          </div>
+          <div class="body">[12:54:10] / comment attached to Model Viewer (#9).</div>
+        </div>
+      </main>
+
+      <aside class="inspector">
+        <div class="insp-tabs">
+          <div class="tab active">Properties</div>
+          <div class="tab">Help</div>
+        </div>
+        <div class="insp-scroll">
+          <div class="insp-card">
+            <div class="insp-head-row">
+              <div>
+                <div class="node-title">Model Viewer</div>
+                <div class="node-sub">Display CAD and FE scenes in an embedded viewer</div>
+              </div>
+              <button class="insp-btn sel">COLLAPSE</button>
+            </div>
+            <div class="meta-chips">
+              <span class="meta-chip">CATEGORY <b>Engineering › Viewer</b></span>
+              <span class="meta-chip">ID <b>1</b></span>
+              <span class="meta-chip" style="background:var(--comment-bg);border-color:var(--comment-border);color:var(--comment-ink);">★ 2 comments</span>
+            </div>
+          </div>
+          <div class="insp-filter">
+            <input placeholder="Filter by name…">
+            <div class="insp-segment"><span class="seg sel">NAME</span><span class="seg">VALUE</span></div>
+          </div>
+          <div class="smart-group">View <span class="count">3</span></div>
+          <div class="insp-row"><span class="lbl">Representation</span><span class="val">surface_with_edges ▾</span></div>
+          <div class="insp-row"><span class="lbl">Show Mesh Edges</span><span class="val">false</span></div>
+          <div class="insp-row"><span class="lbl">Parallel Projection</span><span class="val">false</span></div>
+          <div class="insp-card">
+            <div class="card-title">PORT MANAGEMENT</div>
+            <div class="port-tabs">
+              <span class="seg sel">INPUTS (1)</span>
+              <span class="seg">OUTPUTS (2)</span>
+            </div>
+            <div class="port-row sel"><span class="chk on">✓</span><span class="kind-dot"></span><span class="key">scene_1</span><span class="kind-chip">ENGINEERING_SCENE</span></div>
+            <div class="port-row"><span class="chk on">✓</span><span class="kind-dot"></span><span class="key">session</span><span class="kind-chip">VIEWER_SESSION</span></div>
+            <div class="port-row"><span class="chk on">✓</span><span class="kind-dot"></span><span class="key">selections</span><span class="kind-chip">SELECTION_SET</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="status">
+      <b>● Ready (Idle)</b>
+      <span>◈ R:0  Q:0  D:0  F:0</span>
+      <span>▮ FPS:0  CPU:29%  RAM:16.4/31.8 GB</span>
+      <span class="spacer"></span>
+      <span>⓵ W:0  E:0</span>
+    </div>
+  </div>
+  <div class="callout">
+    <b>Interaction:</b> <span class="kbdlist"><span>/</span></span> opens the palette, <span class="kbdlist"><span>C</span></span> is still the node-local shortcut for <i>Add Comment</i>. The docked note shows your latest text as a lightweight anchor; full thread is available in the Inspector's Comments card — keeping one source of truth.
+  </div>
+</section>
+
+<script>
+  // Theme toggle
+  (function () {
+    const root = document.documentElement;
+    const btn = document.getElementById('themeToggle');
+    const label = document.getElementById('themeLabel');
+    const saved = localStorage.getItem('corex-mockup-theme');
+    if (saved === 'light' || saved === 'dark') root.setAttribute('data-theme', saved);
+    function sync() {
+      const t = root.getAttribute('data-theme');
+      label.textContent = t === 'light' ? '☀ Light' : '🌙 Dark';
+    }
+    sync();
+    btn.addEventListener('click', () => {
+      const t = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      root.setAttribute('data-theme', t);
+      localStorage.setItem('corex-mockup-theme', t);
+      sync();
+    });
+  })();
+
+  // Nav-link scrollspy
+  (function () {
+    const links = document.querySelectorAll('.variant-nav a');
+    const sections = Array.from(document.querySelectorAll('section.variant-section'));
+    const byHash = new Map(Array.from(links).map(l => [l.getAttribute('href'), l]));
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        links.forEach(l => l.classList.remove('active'));
+        const link = byHash.get('#' + e.target.id);
+        if (link) link.classList.add('active');
+      });
+    }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+    sections.forEach(s => obs.observe(s));
+  })();
+</script>
+</body>
+</html>

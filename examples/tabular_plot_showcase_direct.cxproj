@@ -1,0 +1,1216 @@
+{
+  "active_workspace_id": "ws_tabular_plot_showcase_direct",
+  "metadata": {
+    "artifact_store": {
+      "artifacts": {
+        "tabular_source.bar_xlsx": {
+          "artifact_kind": "tabular_source",
+          "relative_path": "nodes/tabular.input - bar channels.xlsx [a0310aa6]/in/tabular/source/bar_channels.xlsx"
+        },
+        "tabular_source.contour_npz": {
+          "artifact_kind": "tabular_source",
+          "relative_path": "nodes/tabular.input - contour field.npz [484afbe7]/in/tabular/source/contour_field.npz"
+        },
+        "tabular_source.heatmap_npy": {
+          "artifact_kind": "tabular_source",
+          "relative_path": "nodes/tabular.input - heatmap grid.npy [f3a68152]/in/tabular/source/heatmap_grid.npy"
+        },
+        "tabular_source.histogram_txt": {
+          "artifact_kind": "tabular_source",
+          "relative_path": "nodes/tabular.input - histogram latency.txt [e74c8962]/in/tabular/source/histogram_latency.txt"
+        },
+        "tabular_source.line_csv": {
+          "artifact_kind": "tabular_source",
+          "relative_path": "nodes/tabular.input - line series.csv [710192bc]/in/tabular/source/line_series.csv"
+        },
+        "tabular_source.point_cloud_csv": {
+          "artifact_kind": "tabular_source",
+          "relative_path": "nodes/tabular.input - point cloud.csv [e58923f8]/in/tabular/source/point_cloud.csv"
+        },
+        "tabular_source.scatter_tsv": {
+          "artifact_kind": "tabular_source",
+          "relative_path": "nodes/tabular.input - scatter points.tsv [c9a1d9b8]/in/tabular/source/scatter_points.tsv"
+        },
+        "tabular_source.streamlines_hdf5": {
+          "artifact_kind": "tabular_source",
+          "relative_path": "nodes/tabular.input - streamline path.h5 [a695cc3b]/in/tabular/source/streamline_path.h5"
+        },
+        "tabular_source.surface_parquet": {
+          "artifact_kind": "tabular_source",
+          "relative_path": "nodes/tabular.input - surface elevation.parquet [9b186d97]/in/tabular/source/surface_elevation.parquet"
+        }
+      },
+      "staged": {}
+    },
+    "custom_workflows": [],
+    "ui": {
+      "passive_style_presets": {
+        "edge_presets": [],
+        "node_presets": []
+      },
+      "script_editor": {
+        "floating": false,
+        "visible": false,
+        "width": 0.0
+      }
+    },
+    "workflow_settings": {
+      "environment": {
+        "python_path": "",
+        "working_directory": ""
+      },
+      "general": {
+        "author": "",
+        "description": "Loads CSV, TSV, XLSX, TXT, NPY, NPZ, Parquet, CSV point cloud, and HDF5 streamline sources directly into the generic plot node family without adapter nodes.",
+        "project_name": "Tabular Plot Showcase Direct"
+      },
+      "logging": {
+        "capture_console": true,
+        "level": "info"
+      },
+      "plugins": {
+        "enabled": []
+      },
+      "solver_config": {
+        "enable_parallel": true,
+        "memory_limit_gb": 12,
+        "thread_count": 8
+      }
+    },
+    "workspace_order": [
+      "ws_tabular_plot_showcase_direct"
+    ]
+  },
+  "name": "Tabular Plot Showcase Direct",
+  "project_id": "proj_tabular_plot_showcase_direct",
+  "schema_version": 5,
+  "workspace_order": [
+    "ws_tabular_plot_showcase_direct"
+  ],
+  "workspaces": [
+    {
+      "active_view_id": "view_tabular_plot_showcase_direct",
+      "dirty": true,
+      "edges": [
+        {
+          "edge_id": "edge_data_bar_ref",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_bar_input",
+          "source_port_key": "table_data",
+          "target_node_id": "node_bar_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_data_contour_ref",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_contour_input",
+          "source_port_key": "array_data",
+          "target_node_id": "node_contour_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_data_heatmap_ref",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_heatmap_input",
+          "source_port_key": "array_data",
+          "target_node_id": "node_heatmap_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_data_histogram_ref",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_histogram_input",
+          "source_port_key": "table_data",
+          "target_node_id": "node_histogram_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_data_line_ref",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_line_input",
+          "source_port_key": "table_data",
+          "target_node_id": "node_line_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_data_point_cloud_ref",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_point_cloud_input",
+          "source_port_key": "table_data",
+          "target_node_id": "node_point_cloud_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_data_scatter_ref",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_scatter_input",
+          "source_port_key": "table_data",
+          "target_node_id": "node_scatter_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_data_streamlines_ref",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_streamlines_input",
+          "source_port_key": "array_data",
+          "target_node_id": "node_streamlines_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_data_surface_ref",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_surface_input",
+          "source_port_key": "table_data",
+          "target_node_id": "node_surface_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        }
+      ],
+      "name": "Tabular Plot Showcase Direct",
+      "nodes": [
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220.0,
+          "custom_width": 360.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "array_data": true,
+            "path": true,
+            "table_data": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_bar_input",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "allow_npz_archive_preview": true,
+            "array_slice_2d": {
+              "column_limit": 50,
+              "column_offset": 0,
+              "row_limit": 50,
+              "row_offset": 0
+            },
+            "cache_policy": "source_direct",
+            "delimiter": "",
+            "encoding": "utf-8",
+            "header_row": 0,
+            "path": "saved://tabular_source.bar_xlsx",
+            "project_managed_cache": false,
+            "project_managed_source": true,
+            "schema_hints": {},
+            "selected_object": "Quarterly Channels",
+            "skip_rows": 0,
+            "tabular_selected_columns": [
+              "channel",
+              "units"
+            ],
+            "tabular_table_view_state": {}
+          },
+          "title": "bar_channels.xlsx",
+          "type_id": "tabular.input",
+          "x": -820.0,
+          "y": 440.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 210.0,
+          "custom_width": 380.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_bar_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": false,
+            "axis_limits": {
+              "x": [
+                null,
+                null
+              ],
+              "y": [
+                null,
+                null
+              ],
+              "z": [
+                null,
+                null
+              ]
+            },
+            "backend": "auto",
+            "data_export_format": "csv",
+            "grid": true,
+            "legend": true,
+            "log_scales": {
+              "x": false,
+              "y": false,
+              "z": false
+            },
+            "plot_options": {},
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "tabular_mapping": {
+              "category": "channel",
+              "y": "units"
+            },
+            "title": "Bar Plot",
+            "x_label": "Channel",
+            "y_label": "Units",
+            "z_label": ""
+          },
+          "title": "Bar Plot",
+          "type_id": "plot.bar",
+          "x": -300.0,
+          "y": 440.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220.0,
+          "custom_width": 360.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "array_data": true,
+            "path": true,
+            "table_data": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_contour_input",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "allow_npz_archive_preview": true,
+            "array_slice_2d": {
+              "column_limit": 50,
+              "column_offset": 0,
+              "row_limit": 50,
+              "row_offset": 0
+            },
+            "cache_policy": "source_direct",
+            "delimiter": "",
+            "encoding": "utf-8",
+            "header_row": 0,
+            "path": "saved://tabular_source.contour_npz",
+            "project_managed_cache": false,
+            "project_managed_source": true,
+            "schema_hints": {},
+            "selected_object": "contour",
+            "skip_rows": 0,
+            "tabular_selected_columns": [],
+            "tabular_table_view_state": {}
+          },
+          "title": "contour_field.npz",
+          "type_id": "tabular.input",
+          "x": -820.0,
+          "y": 1100.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 210.0,
+          "custom_width": 380.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_contour_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": false,
+            "axis_limits": {
+              "x": [
+                null,
+                null
+              ],
+              "y": [
+                null,
+                null
+              ],
+              "z": [
+                null,
+                null
+              ]
+            },
+            "backend": "auto",
+            "colormap": "viridis",
+            "data_export_format": "csv",
+            "grid": true,
+            "legend": true,
+            "log_scales": {
+              "x": false,
+              "y": false,
+              "z": false
+            },
+            "plot_options": {},
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "title": "Contour Plot",
+            "x_label": "X",
+            "y_label": "Y",
+            "z_label": ""
+          },
+          "title": "Contour Plot",
+          "type_id": "plot.contour",
+          "x": -300.0,
+          "y": 1100.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220.0,
+          "custom_width": 360.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "array_data": true,
+            "path": true,
+            "table_data": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_heatmap_input",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "allow_npz_archive_preview": true,
+            "array_slice_2d": {
+              "column_limit": 50,
+              "column_offset": 0,
+              "row_limit": 50,
+              "row_offset": 0
+            },
+            "cache_policy": "source_direct",
+            "delimiter": "",
+            "encoding": "utf-8",
+            "header_row": 0,
+            "path": "saved://tabular_source.heatmap_npy",
+            "project_managed_cache": false,
+            "project_managed_source": true,
+            "schema_hints": {},
+            "selected_object": "",
+            "skip_rows": 0,
+            "tabular_selected_columns": [],
+            "tabular_table_view_state": {}
+          },
+          "title": "heatmap_grid.npy",
+          "type_id": "tabular.input",
+          "x": -820.0,
+          "y": 880.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 210.0,
+          "custom_width": 380.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_heatmap_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": false,
+            "axis_limits": {
+              "x": [
+                null,
+                null
+              ],
+              "y": [
+                null,
+                null
+              ],
+              "z": [
+                null,
+                null
+              ]
+            },
+            "backend": "auto",
+            "colormap": "magma",
+            "data_export_format": "csv",
+            "grid": true,
+            "legend": true,
+            "log_scales": {
+              "x": false,
+              "y": false,
+              "z": false
+            },
+            "plot_options": {},
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "title": "Heatmap Plot",
+            "x_label": "Column",
+            "y_label": "Row",
+            "z_label": ""
+          },
+          "title": "Heatmap Plot",
+          "type_id": "plot.heatmap",
+          "x": -300.0,
+          "y": 880.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220.0,
+          "custom_width": 360.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "array_data": true,
+            "path": true,
+            "table_data": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_histogram_input",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "allow_npz_archive_preview": true,
+            "array_slice_2d": {
+              "column_limit": 50,
+              "column_offset": 0,
+              "row_limit": 50,
+              "row_offset": 0
+            },
+            "cache_policy": "source_direct",
+            "delimiter": "",
+            "encoding": "utf-8",
+            "header_row": 0,
+            "path": "saved://tabular_source.histogram_txt",
+            "project_managed_cache": false,
+            "project_managed_source": true,
+            "schema_hints": {},
+            "selected_object": "",
+            "skip_rows": 0,
+            "tabular_selected_columns": [
+              "latency_ms"
+            ],
+            "tabular_table_view_state": {}
+          },
+          "title": "histogram_latency.txt",
+          "type_id": "tabular.input",
+          "x": -820.0,
+          "y": 660.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 210.0,
+          "custom_width": 380.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_histogram_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": false,
+            "axis_limits": {
+              "x": [
+                null,
+                null
+              ],
+              "y": [
+                null,
+                null
+              ],
+              "z": [
+                null,
+                null
+              ]
+            },
+            "backend": "auto",
+            "data_export_format": "csv",
+            "grid": true,
+            "legend": true,
+            "log_scales": {
+              "x": false,
+              "y": false,
+              "z": false
+            },
+            "plot_options": {
+              "bins": 12
+            },
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "tabular_mapping": {
+              "values": [
+                "latency_ms"
+              ]
+            },
+            "title": "Histogram Plot",
+            "x_label": "Latency ms",
+            "y_label": "Count",
+            "z_label": ""
+          },
+          "title": "Histogram Plot",
+          "type_id": "plot.histogram",
+          "x": -300.0,
+          "y": 660.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220.0,
+          "custom_width": 360.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "array_data": true,
+            "path": true,
+            "table_data": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_line_input",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "allow_npz_archive_preview": true,
+            "array_slice_2d": {
+              "column_limit": 50,
+              "column_offset": 0,
+              "row_limit": 50,
+              "row_offset": 0
+            },
+            "cache_policy": "source_direct",
+            "delimiter": "",
+            "encoding": "utf-8",
+            "header_row": 0,
+            "path": "saved://tabular_source.line_csv",
+            "project_managed_cache": false,
+            "project_managed_source": true,
+            "schema_hints": {},
+            "selected_object": "",
+            "skip_rows": 0,
+            "tabular_selected_columns": [
+              "month",
+              "north",
+              "south"
+            ],
+            "tabular_table_view_state": {}
+          },
+          "title": "line_series.csv",
+          "type_id": "tabular.input",
+          "x": -820.0,
+          "y": 0.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 210.0,
+          "custom_width": 380.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_line_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": false,
+            "axis_limits": {
+              "x": [
+                null,
+                null
+              ],
+              "y": [
+                null,
+                null
+              ],
+              "z": [
+                null,
+                null
+              ]
+            },
+            "backend": "auto",
+            "data_export_format": "csv",
+            "grid": true,
+            "legend": true,
+            "log_scales": {
+              "x": false,
+              "y": false,
+              "z": false
+            },
+            "plot_options": {},
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "tabular_mapping": {
+              "x": "month",
+              "y": [
+                "north",
+                "south"
+              ]
+            },
+            "title": "Line Plot",
+            "x_label": "Month",
+            "y_label": "Revenue",
+            "z_label": ""
+          },
+          "title": "Line Plot",
+          "type_id": "plot.scatter",
+          "x": -300.0,
+          "y": 0.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220.0,
+          "custom_width": 360.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "array_data": true,
+            "path": true,
+            "table_data": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_point_cloud_input",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "allow_npz_archive_preview": true,
+            "array_slice_2d": {
+              "column_limit": 50,
+              "column_offset": 0,
+              "row_limit": 50,
+              "row_offset": 0
+            },
+            "cache_policy": "source_direct",
+            "delimiter": "",
+            "encoding": "utf-8",
+            "header_row": 0,
+            "path": "saved://tabular_source.point_cloud_csv",
+            "project_managed_cache": false,
+            "project_managed_source": true,
+            "schema_hints": {},
+            "selected_object": "",
+            "skip_rows": 0,
+            "tabular_selected_columns": [
+              "x",
+              "y",
+              "z",
+              "intensity"
+            ],
+            "tabular_table_view_state": {}
+          },
+          "title": "point_cloud.csv",
+          "type_id": "tabular.input",
+          "x": -820.0,
+          "y": 1540.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 210.0,
+          "custom_width": 380.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_point_cloud_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": false,
+            "axis_limits": {
+              "x": [
+                null,
+                null
+              ],
+              "y": [
+                null,
+                null
+              ],
+              "z": [
+                null,
+                null
+              ]
+            },
+            "backend": "auto",
+            "colormap": "turbo",
+            "data_export_format": "csv",
+            "grid": true,
+            "legend": true,
+            "log_scales": {
+              "x": false,
+              "y": false,
+              "z": false
+            },
+            "plot_options": {
+              "point_size": 7
+            },
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "tabular_mapping": {
+              "x": "x",
+              "y": "y",
+              "z": "z"
+            },
+            "title": "Point Cloud Plot",
+            "x_label": "X",
+            "y_label": "Y",
+            "z_label": "Z"
+          },
+          "title": "Point Cloud Plot",
+          "type_id": "plot.point_cloud",
+          "x": -300.0,
+          "y": 1540.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220.0,
+          "custom_width": 360.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "array_data": true,
+            "path": true,
+            "table_data": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_scatter_input",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "allow_npz_archive_preview": true,
+            "array_slice_2d": {
+              "column_limit": 50,
+              "column_offset": 0,
+              "row_limit": 50,
+              "row_offset": 0
+            },
+            "cache_policy": "source_direct",
+            "delimiter": "",
+            "encoding": "utf-8",
+            "header_row": 0,
+            "path": "saved://tabular_source.scatter_tsv",
+            "project_managed_cache": false,
+            "project_managed_source": true,
+            "schema_hints": {},
+            "selected_object": "",
+            "skip_rows": 0,
+            "tabular_selected_columns": [
+              "load",
+              "efficiency"
+            ],
+            "tabular_table_view_state": {}
+          },
+          "title": "scatter_points.tsv",
+          "type_id": "tabular.input",
+          "x": -820.0,
+          "y": 220.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 210.0,
+          "custom_width": 380.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_scatter_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": false,
+            "axis_limits": {
+              "x": [
+                null,
+                null
+              ],
+              "y": [
+                null,
+                null
+              ],
+              "z": [
+                null,
+                null
+              ]
+            },
+            "backend": "auto",
+            "data_export_format": "csv",
+            "grid": true,
+            "legend": true,
+            "log_scales": {
+              "x": false,
+              "y": false,
+              "z": false
+            },
+            "plot_options": {},
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "tabular_mapping": {
+              "x": "load",
+              "y": "efficiency"
+            },
+            "title": "Scatter Plot",
+            "x_label": "Load",
+            "y_label": "Efficiency",
+            "z_label": ""
+          },
+          "title": "Scatter Plot",
+          "type_id": "plot.scatter",
+          "x": -300.0,
+          "y": 220.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 2180.0,
+          "custom_width": 1480.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_showcase_note",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "title": "Tabular Plot Showcase Direct"
+          },
+          "title": "Tabular Plot Showcase Direct",
+          "type_id": "passive.annotation.group_backdrop",
+          "visual_style": {},
+          "x": -940.0,
+          "y": -190.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220.0,
+          "custom_width": 360.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "array_data": true,
+            "path": true,
+            "table_data": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_streamlines_input",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "allow_npz_archive_preview": true,
+            "array_slice_2d": {
+              "column_limit": 3,
+              "column_offset": 0,
+              "row_limit": 80,
+              "row_offset": 0
+            },
+            "cache_policy": "source_direct",
+            "delimiter": "",
+            "encoding": "utf-8",
+            "header_row": 0,
+            "path": "saved://tabular_source.streamlines_hdf5",
+            "project_managed_cache": false,
+            "project_managed_source": true,
+            "schema_hints": {},
+            "selected_object": "streamline_path",
+            "skip_rows": 0,
+            "tabular_selected_columns": [],
+            "tabular_table_view_state": {}
+          },
+          "title": "streamline_path.h5",
+          "type_id": "tabular.input",
+          "x": -820.0,
+          "y": 1760.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 210.0,
+          "custom_width": 380.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_streamlines_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": false,
+            "axis_limits": {
+              "x": [
+                null,
+                null
+              ],
+              "y": [
+                null,
+                null
+              ],
+              "z": [
+                null,
+                null
+              ]
+            },
+            "backend": "auto",
+            "colormap": "cividis",
+            "data_export_format": "csv",
+            "grid": true,
+            "legend": true,
+            "log_scales": {
+              "x": false,
+              "y": false,
+              "z": false
+            },
+            "plot_options": {
+              "line_width": 4,
+              "render_lines_as_tubes": true
+            },
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "title": "Streamlines Plot",
+            "x_label": "X",
+            "y_label": "Y",
+            "z_label": "Z"
+          },
+          "title": "Streamlines Plot",
+          "type_id": "plot.streamlines",
+          "x": -300.0,
+          "y": 1760.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 220.0,
+          "custom_width": 360.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "array_data": true,
+            "path": true,
+            "table_data": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_surface_input",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "allow_npz_archive_preview": true,
+            "array_slice_2d": {
+              "column_limit": 50,
+              "column_offset": 0,
+              "row_limit": 50,
+              "row_offset": 0
+            },
+            "cache_policy": "source_direct",
+            "delimiter": "",
+            "encoding": "utf-8",
+            "header_row": 0,
+            "path": "saved://tabular_source.surface_parquet",
+            "project_managed_cache": false,
+            "project_managed_source": true,
+            "schema_hints": {},
+            "selected_object": "",
+            "skip_rows": 0,
+            "tabular_selected_columns": [
+              "x",
+              "y",
+              "z"
+            ],
+            "tabular_table_view_state": {}
+          },
+          "title": "surface_elevation.parquet",
+          "type_id": "tabular.input",
+          "x": -820.0,
+          "y": 1320.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 210.0,
+          "custom_width": 380.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_surface_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": false,
+            "axis_limits": {
+              "x": [
+                null,
+                null
+              ],
+              "y": [
+                null,
+                null
+              ],
+              "z": [
+                null,
+                null
+              ]
+            },
+            "backend": "auto",
+            "colormap": "viridis",
+            "data_export_format": "csv",
+            "grid": true,
+            "legend": true,
+            "log_scales": {
+              "x": false,
+              "y": false,
+              "z": false
+            },
+            "plot_options": {
+              "show_edges": true
+            },
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "tabular_mapping": {
+              "values": [
+                "x",
+                "y",
+                "z"
+              ]
+            },
+            "title": "Surface Plot",
+            "x_label": "X",
+            "y_label": "Y",
+            "z_label": "Elevation"
+          },
+          "title": "Surface Plot",
+          "type_id": "plot.surface",
+          "x": -300.0,
+          "y": 1320.0
+        }
+      ],
+      "views": [
+        {
+          "hide_optional_ports": true,
+          "name": "Showcase",
+          "pan_x": 1020.0,
+          "pan_y": 220.0,
+          "scope_path": [],
+          "view_id": "view_tabular_plot_showcase_direct",
+          "zoom": 0.72
+        }
+      ],
+      "workspace_id": "ws_tabular_plot_showcase_direct"
+    }
+  ]
+}

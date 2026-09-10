@@ -1,0 +1,538 @@
+{
+  "active_workspace_id": "ws_7a49f1d01a",
+  "metadata": {
+    "custom_workflows": [],
+    "ui": {
+      "passive_style_presets": {
+        "edge_presets": [
+          {
+            "name": "Review Loop",
+            "preset_id": "edge_preset_0f1e2d3c",
+            "style": {
+              "arrow_head": "open",
+              "label_background_color": "#FFF1DE",
+              "label_text_color": "#51310E",
+              "stroke_color": "#A6722C",
+              "stroke_pattern": "dashed",
+              "stroke_width": 2
+            }
+          }
+        ],
+        "node_presets": [
+          {
+            "name": "Review Accent",
+            "preset_id": "node_preset_a1b2c3d4",
+            "style": {
+              "accent_color": "#E2A35D",
+              "border_color": "#C97A2B",
+              "border_width": 2,
+              "corner_radius": 18,
+              "fill_color": "#FFF4E7",
+              "header_color": "#FFE8CF",
+              "text_color": "#4D2D12"
+            }
+          }
+        ]
+      },
+      "script_editor": {
+        "floating": false,
+        "visible": false
+      }
+    },
+    "workflow_settings": {
+      "environment": {
+        "python_path": "",
+        "working_directory": ""
+      },
+      "general": {
+        "author": "",
+        "description": "",
+        "project_name": ""
+      },
+      "logging": {
+        "capture_console": true,
+        "level": "info"
+      },
+      "plugins": {
+        "enabled": []
+      },
+      "solver_config": {
+        "enable_parallel": true,
+        "memory_limit_gb": 12,
+        "thread_count": 8
+      }
+    },
+    "workspace_order": [
+      "ws_7a49f1d01a"
+    ]
+  },
+  "name": "Passive QA Reference",
+  "project_id": "proj_22f4e04a48",
+  "schema_version": 5,
+  "workspace_order": [
+    "ws_7a49f1d01a"
+  ],
+  "workspaces": [
+    {
+      "active_view_id": "view_e947f1b659",
+      "dirty": false,
+      "edges": [
+        {
+          "edge_id": "edge_0400226921",
+          "enabled": true,
+          "input_order": 0,
+          "label": "Draft ready",
+          "source_node_id": "node_955b5e35ae",
+          "source_port_key": "right",
+          "target_node_id": "node_d84aca3401",
+          "target_port_key": "left",
+          "visual_style": {
+            "arrow_head": "filled",
+            "label_background_color": "#EAF4FB",
+            "label_text_color": "#173247",
+            "stroke_color": "#2D6C96",
+            "stroke_pattern": "solid",
+            "stroke_width": 2.5
+          }
+        },
+        {
+          "edge_id": "edge_2f67493fb9",
+          "enabled": true,
+          "input_order": 0,
+          "label": "Comments logged",
+          "source_node_id": "node_690da0b3b4",
+          "source_port_key": "right",
+          "target_node_id": "node_985e85ba23",
+          "target_port_key": "left",
+          "visual_style": {
+            "arrow_head": "filled",
+            "label_background_color": "#EAF4FB",
+            "label_text_color": "#173247",
+            "stroke_color": "#2D6C96",
+            "stroke_pattern": "solid",
+            "stroke_width": 2.5
+          }
+        },
+        {
+          "edge_id": "edge_3a85562886",
+          "enabled": true,
+          "input_order": 0,
+          "label": "Needs input",
+          "source_node_id": "node_d84aca3401",
+          "source_port_key": "bottom",
+          "target_node_id": "node_c4c06ba676",
+          "target_port_key": "top",
+          "visual_style": {
+            "arrow_head": "open",
+            "label_background_color": "#FFF1DE",
+            "label_text_color": "#51310E",
+            "stroke_color": "#A6722C",
+            "stroke_pattern": "dashed",
+            "stroke_width": 2
+          }
+        },
+        {
+          "edge_id": "edge_3d279ffbc0",
+          "enabled": true,
+          "input_order": 0,
+          "label": "Review",
+          "source_node_id": "node_d84aca3401",
+          "source_port_key": "right",
+          "target_node_id": "node_690da0b3b4",
+          "target_port_key": "left",
+          "visual_style": {
+            "arrow_head": "filled",
+            "label_background_color": "#EAF4FB",
+            "label_text_color": "#173247",
+            "stroke_color": "#2D6C96",
+            "stroke_pattern": "solid",
+            "stroke_width": 2.5
+          }
+        },
+        {
+          "edge_id": "edge_d7ce44bda2",
+          "enabled": true,
+          "input_order": 0,
+          "label": "Close",
+          "source_node_id": "node_56d3ad48a0",
+          "source_port_key": "right",
+          "target_node_id": "node_459cab9b77",
+          "target_port_key": "left",
+          "visual_style": {
+            "arrow_head": "filled",
+            "label_background_color": "#EAF4FB",
+            "label_text_color": "#173247",
+            "stroke_color": "#2D6C96",
+            "stroke_pattern": "solid",
+            "stroke_width": 2.5
+          }
+        },
+        {
+          "edge_id": "edge_e22f258404",
+          "enabled": true,
+          "input_order": 0,
+          "label": "Resubmit",
+          "source_node_id": "node_985e85ba23",
+          "source_port_key": "right",
+          "target_node_id": "node_9351213121",
+          "target_port_key": "left",
+          "visual_style": {
+            "arrow_head": "open",
+            "label_background_color": "#FFF1DE",
+            "label_text_color": "#51310E",
+            "stroke_color": "#A6722C",
+            "stroke_pattern": "dashed",
+            "stroke_width": 2
+          }
+        },
+        {
+          "edge_id": "edge_fa1de614bb",
+          "enabled": true,
+          "input_order": 0,
+          "label": "Begin",
+          "source_node_id": "node_7b28c3db08",
+          "source_port_key": "right",
+          "target_node_id": "node_955b5e35ae",
+          "target_port_key": "left",
+          "visual_style": {
+            "arrow_head": "filled",
+            "label_background_color": "#EAF4FB",
+            "label_text_color": "#173247",
+            "stroke_color": "#2D6C96",
+            "stroke_pattern": "solid",
+            "stroke_width": 2.5
+          }
+        },
+        {
+          "edge_id": "edge_ff7c1b1642",
+          "enabled": true,
+          "input_order": 0,
+          "label": "Approved",
+          "source_node_id": "node_9351213121",
+          "source_port_key": "right",
+          "target_node_id": "node_56d3ad48a0",
+          "target_port_key": "left",
+          "visual_style": {
+            "arrow_head": "filled",
+            "label_background_color": "#EAF4FB",
+            "label_text_color": "#173247",
+            "stroke_color": "#2D6C96",
+            "stroke_pattern": "solid",
+            "stroke_width": 2.5
+          }
+        }
+      ],
+      "name": "Passive QA Reference",
+      "nodes": [
+        {
+          "collapsed": false,
+          "custom_height": 208,
+          "custom_width": 320,
+          "exposed_ports": {},
+          "node_id": "node_37e3aaef46",
+          "parent_node_id": null,
+          "properties": {
+            "body": "Confirm branch labels, preview panels, and preset round-trip.",
+            "due_date": "2026-03-18",
+            "owner": "QA",
+            "status": "in_progress",
+            "title": "QA Task"
+          },
+          "title": "QA task",
+          "type_id": "passive.planning.task_card",
+          "visual_style": {
+            "accent_color": "#E2A35D",
+            "border_color": "#C97A2B",
+            "border_width": 2,
+            "corner_radius": 18,
+            "fill_color": "#FFF4E7",
+            "header_color": "#FFE8CF",
+            "text_color": "#4D2D12"
+          },
+          "x": 520,
+          "y": 420
+        },
+        {
+          "collapsed": false,
+          "custom_height": null,
+          "custom_width": null,
+          "exposed_ports": {
+            "top": true,
+            "right": true,
+            "bottom": true,
+            "left": true
+          },
+          "node_id": "node_459cab9b77",
+          "parent_node_id": null,
+          "properties": {},
+          "title": "Complete",
+          "type_id": "passive.flowchart.end",
+          "visual_style": {},
+          "x": 1780,
+          "y": 150
+        },
+        {
+          "collapsed": false,
+          "custom_height": 122,
+          "custom_width": 222,
+          "exposed_ports": {
+            "top": true,
+            "right": true,
+            "bottom": true,
+            "left": true
+          },
+          "node_id": "node_56d3ad48a0",
+          "parent_node_id": null,
+          "properties": {},
+          "title": "Archive",
+          "type_id": "passive.flowchart.database",
+          "visual_style": {
+            "border_color": "#4F6478",
+            "border_width": 2,
+            "fill_color": "#EEF2F7",
+            "text_color": "#1E2A35"
+          },
+          "x": 1540,
+          "y": 132
+        },
+        {
+          "collapsed": false,
+          "custom_height": 250,
+          "custom_width": 340,
+          "exposed_ports": {
+            "source": false
+          },
+          "node_id": "node_58d1d2cdb4",
+          "parent_node_id": null,
+          "properties": {
+            "caption": "Reference image preview asset",
+            "fit_mode": "contain",
+            "source": "C:\\Users\\user\\Documents\\COREX\\tests\\fixtures\\passive_nodes\\reference_preview.png"
+          },
+          "title": "Image Panel",
+          "type_id": "media.panel",
+          "x": 1380,
+          "y": 390
+        },
+        {
+          "collapsed": false,
+          "custom_height": 190,
+          "custom_width": 280,
+          "exposed_ports": {},
+          "node_id": "node_6283662ece",
+          "parent_node_id": null,
+          "properties": {
+            "body": "Compare node colors and edge labels to the checklist after reopen.",
+            "title": "Visual Sign-off"
+          },
+          "title": "Visual note",
+          "type_id": "passive.annotation.sticky_note",
+          "visual_style": {
+            "border_color": "#8C7A00",
+            "border_width": 2,
+            "corner_radius": 18,
+            "fill_color": "#FFF7A8",
+            "text_color": "#4B4300"
+          },
+          "x": 960,
+          "y": 420
+        },
+        {
+          "collapsed": false,
+          "custom_height": 116,
+          "custom_width": 238,
+          "exposed_ports": {
+            "top": true,
+            "right": true,
+            "bottom": true,
+            "left": true
+          },
+          "node_id": "node_690da0b3b4",
+          "parent_node_id": null,
+          "properties": {},
+          "title": "Review Packet",
+          "type_id": "passive.flowchart.document",
+          "visual_style": {
+            "border_color": "#4A7BA7",
+            "border_width": 2,
+            "fill_color": "#EEF6FF",
+            "text_color": "#153149"
+          },
+          "x": 810,
+          "y": 24
+        },
+        {
+          "collapsed": false,
+          "custom_height": null,
+          "custom_width": null,
+          "exposed_ports": {
+            "top": true,
+            "right": true,
+            "bottom": true,
+            "left": true
+          },
+          "node_id": "node_7b28c3db08",
+          "parent_node_id": null,
+          "properties": {},
+          "title": "Start",
+          "type_id": "passive.flowchart.start",
+          "visual_style": {},
+          "x": 80,
+          "y": 150
+        },
+        {
+          "collapsed": false,
+          "custom_height": 110,
+          "custom_width": 258,
+          "exposed_ports": {
+            "top": true,
+            "right": true,
+            "bottom": true,
+            "left": true
+          },
+          "node_id": "node_9351213121",
+          "parent_node_id": null,
+          "properties": {},
+          "title": "Approval Board",
+          "type_id": "passive.flowchart.predefined_process",
+          "visual_style": {
+            "border_color": "#2D6C96",
+            "border_width": 2,
+            "fill_color": "#EAF4FB",
+            "text_color": "#173247"
+          },
+          "x": 1300,
+          "y": 132
+        },
+        {
+          "collapsed": false,
+          "custom_height": 96,
+          "custom_width": 220,
+          "exposed_ports": {
+            "top": true,
+            "right": true,
+            "bottom": true,
+            "left": true
+          },
+          "node_id": "node_955b5e35ae",
+          "parent_node_id": null,
+          "properties": {},
+          "title": "Capture Request",
+          "type_id": "passive.flowchart.process",
+          "visual_style": {
+            "border_color": "#61798B",
+            "border_width": 2,
+            "fill_color": "#F5FAFD",
+            "font_weight": "bold",
+            "text_color": "#173247"
+          },
+          "x": 280,
+          "y": 132
+        },
+        {
+          "collapsed": false,
+          "custom_height": 132,
+          "custom_width": 132,
+          "exposed_ports": {
+            "top": true,
+            "right": true,
+            "bottom": true,
+            "left": true
+          },
+          "node_id": "node_985e85ba23",
+          "parent_node_id": null,
+          "properties": {},
+          "title": "Revise",
+          "type_id": "passive.flowchart.connector",
+          "visual_style": {
+            "border_color": "#968200",
+            "border_width": 2,
+            "fill_color": "#FFF9CC",
+            "text_color": "#5D5100"
+          },
+          "x": 1100,
+          "y": 150
+        },
+        {
+          "collapsed": false,
+          "custom_height": 430,
+          "custom_width": 330,
+          "exposed_ports": {
+            "source": false
+          },
+          "node_id": "node_a47d0511e4",
+          "parent_node_id": null,
+          "properties": {
+            "caption": "Reference review packet",
+            "page_number": 1,
+            "source": "C:\\Users\\user\\Documents\\COREX\\tests\\fixtures\\passive_nodes\\reference_preview.pdf"
+          },
+          "title": "PDF Panel",
+          "type_id": "media.panel",
+          "x": 1750,
+          "y": 360
+        },
+        {
+          "collapsed": false,
+          "custom_height": 104,
+          "custom_width": 238,
+          "exposed_ports": {
+            "top": true,
+            "right": true,
+            "bottom": true,
+            "left": true
+          },
+          "node_id": "node_c4c06ba676",
+          "parent_node_id": null,
+          "properties": {},
+          "title": "Stakeholder Input",
+          "type_id": "passive.flowchart.input_output",
+          "visual_style": {
+            "border_color": "#A6722C",
+            "border_width": 2,
+            "fill_color": "#FDF3E8",
+            "text_color": "#51310E"
+          },
+          "x": 810,
+          "y": 254
+        },
+        {
+          "collapsed": false,
+          "custom_height": 136,
+          "custom_width": 232,
+          "exposed_ports": {
+            "top": true,
+            "right": true,
+            "bottom": true,
+            "left": true
+          },
+          "node_id": "node_d84aca3401",
+          "parent_node_id": null,
+          "properties": {},
+          "title": "Ready for Review?",
+          "type_id": "passive.flowchart.decision",
+          "visual_style": {
+            "border_color": "#C97A2B",
+            "border_width": 2,
+            "fill_color": "#FFF4E7",
+            "font_weight": "bold",
+            "text_color": "#4D2D12"
+          },
+          "x": 530,
+          "y": 118
+        }
+      ],
+      "views": [
+        {
+          "name": "V1",
+          "pan_x": 0,
+          "pan_y": 0,
+          "scope_path": [],
+          "view_id": "view_e947f1b659",
+          "zoom": 1
+        }
+      ],
+      "workspace_id": "ws_7a49f1d01a"
+    }
+  ]
+}

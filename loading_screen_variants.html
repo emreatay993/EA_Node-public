@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>CoreX — Loading Screen Variants</title>
+<style>
+  :root{
+    --bg:#0B0F1A;
+    --bg-2:#0F1422;
+    --panel:#121827;
+    --line:#1E2636;
+    --ink:#E6ECF5;
+    --ink-dim:#8A97AE;
+    --ink-mute:#57627A;
+    --blue-1:#2F6BFF;
+    --blue-2:#00D1FF;
+    --blue-soft:#6FA8FF;
+    --ok:#3DE1AD;
+    --warn:#F6C667;
+    --err:#FF6B6B;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.45 "Inter","Segoe UI",system-ui,-apple-system,sans-serif;}
+  h1{font-weight:600;letter-spacing:.2px;margin:0 0 6px}
+  h2{font-size:13px;font-weight:600;color:var(--ink);margin:0}
+  .page{max-width:1400px;margin:0 auto;padding:32px 28px 72px}
+  .hdr{display:flex;align-items:baseline;justify-content:space-between;gap:24px;margin-bottom:24px}
+  .hdr p{margin:0;color:var(--ink-dim);max-width:720px}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+  @media (max-width:960px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 20px 40px -20px rgba(0,0,0,.6);}
+  .card .meta{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 14px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#141b2c,#0F1422)}
+  .tag{font:600 10px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--blue-soft);padding:5px 8px;border:1px solid #1c2a49;background:#0e1730;border-radius:999px}
+  .desc{font-size:12px;color:var(--ink-dim);padding:10px 14px 0}
+  .stage{position:relative;aspect-ratio:16/9;background:radial-gradient(1200px 600px at 50% 40%,#101a33 0%,#0B0F1A 55%, #06080F 100%);
+    overflow:hidden}
+  .brand{font:600 22px/1 "Inter",sans-serif;letter-spacing:.18em;color:var(--ink)}
+  .brand .dim{color:var(--ink-mute);font-weight:500}
+  .sub{font:500 11px/1 "JetBrains Mono",monospace;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-mute)}
+  .track{height:2px;background:#18203a;border-radius:2px;overflow:hidden;position:relative}
+  .track::after{content:"";position:absolute;inset:0;width:40%;background:linear-gradient(90deg,transparent,var(--blue-2),var(--blue-1),transparent);
+    animation:slide 1.6s ease-in-out infinite}
+  @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+  .legend{display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px 14px}
+  .chip{font:500 11px/1 "Inter",sans-serif;color:var(--ink-dim);padding:6px 9px;border:1px solid var(--line);border-radius:999px;background:#0f1627}
+
+  /* ============ V1: Assembling Graph ============ */
+  .v1 svg{position:absolute;inset:0;width:100%;height:100%}
+  .v1 .edge{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 2.2s ease forwards}
+  .v1 .edge.d1{animation-delay:.1s}.v1 .edge.d2{animation-delay:.35s}.v1 .edge.d3{animation-delay:.6s}
+  .v1 .edge.d4{animation-delay:.85s}.v1 .edge.d5{animation-delay:1.1s}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .v1 .node{opacity:0;transform-origin:center;animation:pop .5s cubic-bezier(.2,.9,.3,1.4) forwards}
+  .v1 .n1{animation-delay:.2s}.v1 .n2{animation-delay:.45s}.v1 .n3{animation-delay:.7s}
+  .v1 .n4{animation-delay:.95s}.v1 .n5{animation-delay:1.2s}.v1 .core{animation-delay:1.5s}
+  @keyframes pop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:scale(1)}}
+  .v1 .overlay{position:absolute;left:0;right:0;bottom:0;padding:18px 22px;
+    background:linear-gradient(180deg,transparent, rgba(6,8,15,.75) 70%)}
+  .v1 .overlay .row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .v1 .status{font:500 11px/1 "JetBrains Mono",monospace;color:var(--blue-soft);letter-spacing:.18em}
+
+  /* ============ V2: Breathing Core ============ */
+  .v2{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:22px}
+  .orb{position:relative;width:180px;height:180px;display:grid;place-items:center}
+  .orb .ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(111,168,255,.25);
+    animation:pulse 3.2s ease-in-out infinite}
+  .orb .ring.r2{inset:-22px;animation-delay:.4s;border-color:rgba(111,168,255,.15)}
+  .orb .ring.r3{inset:-44px;animation-delay:.8s;border-color:rgba(111,168,255,.08)}
+  .orb .core{width:92px;height:92px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,#7dddff, var(--blue-1) 55%, #10255d 100%);
+    box-shadow:0 0 40px rgba(0,209,255,.45), 0 0 120px rgba(47,107,255,.35);
+    animation:breathe 2.6s ease-in-out infinite}
+  .orb .sheen{position:absolute;width:160%;height:160%;border-radius:50%;
+    background:conic-gradient(from 90deg, transparent 0, rgba(0,209,255,.18) 20%, transparent 40%, transparent 100%);
+    animation:spin 5.5s linear infinite;mix-blend-mode:screen}
+  @keyframes pulse{0%{transform:scale(.92);opacity:.9}50%{transform:scale(1.06);opacity:.4}100%{transform:scale(.92);opacity:.9}}
+  @keyframes breathe{0%,100%{transform:scale(.96)}50%{transform:scale(1.04)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .v2 .meta-row{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:280px}
+  .v2 .track{width:260px}
+  .v2 .tick{font:500 11px/1 "JetBrains Mono",monospace;color:var(--ink-mute);letter-spacing:.3em}
+
+  /* ============ V3: Dataflow Stream ============ */
+  .v3 svg{position:absolute;inset:0;width:100%;height:100%}
+  .v3 .wire{fill:none;stroke:#1d2a49;stroke-width:2}
+  .v3 .wire-glow{fill:none;stroke:url(#flowGrad);stroke-width:2.2;
+    stroke-dasharray:6 10;animation:dash 1.8s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-64}}
+  .v3 .nd{fill:#0f1730;stroke:var(--blue-1);stroke-width:2.2}
+  .v3 .nd.active{fill:url(#ndGrad)}
+  .v3 .packet{fill:var(--blue-2);filter:drop-shadow(0 0 6px #00d1ff)}
+  .v3 .overlay{position:absolute;left:22px;bottom:22px;right:22px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+  .v3 .col-l{display:flex;flex-direction:column;gap:8px}
+
+  /* ============ V4: Terminal Boot ============ */
+  .v4{background:#05070C;position:relative}
+  .v4::before{content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(255,255,255,.02) 2px 3px);
+    pointer-events:none}
+  .v4 .term{position:absolute;inset:22px 24px 22px 24px;display:flex;flex-direction:column;gap:2px;
+    font:12.5px/1.55 "JetBrains Mono",ui-monospace,monospace;color:#9bb3d8}
+  .v4 .term .l{opacity:0;animation:typein .3s ease forwards}
+  .v4 .l1{animation-delay:.0s}.v4 .l2{animation-delay:.25s}.v4 .l3{animation-delay:.5s}
+  .v4 .l4{animation-delay:.75s}.v4 .l5{animation-delay:1.0s}.v4 .l6{animation-delay:1.25s}
+  .v4 .l7{animation-delay:1.5s}.v4 .l8{animation-delay:1.75s}.v4 .l9{animation-delay:2.0s}
+  @keyframes typein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .v4 .ok{color:var(--ok)}.v4 .warn{color:var(--warn)}.v4 .b{color:var(--blue-2)}.v4 .m{color:var(--ink-mute)}
+  .v4 .prompt::after{content:"▊";color:var(--blue-2);animation:caret 1s steps(2) infinite;margin-left:3px}
+  @keyframes caret{50%{opacity:0}}
+  .v4 .footer{position:absolute;right:24px;bottom:22px;display:flex;align-items:center;gap:10px}
+  .v4 .ver{font:500 10px/1 "JetBrains Mono",monospace;color:var(--ink-mute);letter-spacing:.2em}
+
+  /* ============ V5: Blueprint ============ */
+  .v5{background:
+      linear-gradient(180deg,#071028 0%,#050A18 100%);
+    position:relative}
+  .v5::before{content:"";position:absolute;inset:0;
+    background:
+      linear-gradient(transparent 0 39px,rgba(111,168,255,.06) 39px 40px),
+      linear-gradient(90deg,transparent 0 39px,rgba(111,168,255,.06) 39px 40px);
+    background-size:40px 40px;
+    mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%)}
+  .v5 svg{position:absolute;inset:0;width:100%;height:100%}
+  .v5 .bp-line{stroke:#6FA8FF;stroke-opacity:.6;stroke-width:1.2;fill:none;
+    stroke-dasharray:1;stroke-dashoffset:1;animation:draw 2.2s ease forwards}
+  .v5 .bp-node{fill:#071028;stroke:#6FA8FF;stroke-width:1.4;opacity:0;animation:pop .5s ease forwards}
+  .v5 .bp-label{font:500 9.5px "JetBrains Mono",monospace;fill:#6FA8FF;opacity:.8}
+  .v5 .bp-axis{stroke:#223560;stroke-width:1}
+  .v5 .bp-dim{stroke:#3a5692;stroke-width:1;stroke-dasharray:3 4;fill:none}
+  .v5 .overlay{position:absolute;left:22px;top:20px;right:22px;display:flex;align-items:center;justify-content:space-between}
+  .v5 .stamp{padding:4px 8px;border:1px solid #2b3f74;color:#8bb0ff;border-radius:4px;
+    font:600 10px/1 "JetBrains Mono",monospace;letter-spacing:.18em}
+  .v5 .bottom{position:absolute;left:22px;bottom:20px;right:22px;display:flex;align-items:flex-end;justify-content:space-between}
+
+  /* ============ V6: Signal / Oscilloscope ============ */
+  .v6{background:radial-gradient(800px 400px at 50% 100%,#0d1a33 0%,#06080F 80%)}
+  .v6 svg{position:absolute;inset:0;width:100%;height:100%}
+  .v6 .wave{fill:none;stroke:url(#waveGrad);stroke-width:1.8;
+    stroke-dasharray:1200;stroke-dashoffset:1200;animation:wave-in 2.6s ease forwards}
+  .v6 .wave.w2{animation-delay:.3s;stroke-opacity:.6}
+  .v6 .wave.w3{animation-delay:.6s;stroke-opacity:.35}
+  @keyframes wave-in{to{stroke-dashoffset:0}}
+  .v6 .tick{stroke:#1b2540;stroke-width:1}
+  .v6 .gridlbl{font:500 9px "JetBrains Mono",monospace;fill:#415680;letter-spacing:.1em}
+  .v6 .overlay{position:absolute;inset:auto 24px 22px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .v6 .metric{display:flex;flex-direction:column;gap:4px}
+  .v6 .metric b{font:600 16px "JetBrains Mono",monospace;color:var(--blue-2);letter-spacing:.04em}
+  .v6 .metric span{font:500 9px "JetBrains Mono",monospace;color:var(--ink-mute);letter-spacing:.25em;text-transform:uppercase}
+
+  .footer-note{margin-top:28px;color:var(--ink-mute);font-size:12px}
+  .footer-note code{color:var(--blue-soft);background:#0f1627;padding:1px 6px;border:1px solid var(--line);border-radius:4px}
+
+  /* centered hero text shared */
+  .hero{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <div>
+      <h1>CoreX Node Editor — Loading / Splash Screen Mockups</h1>
+      <p>Six directions, live-animated in the browser. All use the existing brand palette
+        (<code style="color:#6FA8FF">#0B0F1A</code> → <code style="color:#00D1FF">#00D1FF</code> / <code style="color:#2F6BFF">#2F6BFF</code>).
+        Pick one (or mix), and I can implement it as a QtQuick/QML splash or Qt Widgets <code style="color:#6FA8FF">QSplashScreen</code>.</p>
+    </div>
+    <div class="sub">v0.1 · mockups</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- =================== V1 =================== -->
+    <section class="card">
+      <div class="meta"><h2>V1 · Assembling Graph</h2><span class="tag">on-brand</span></div>
+      <div class="desc">Nodes drop in, edges draw themselves, the CoreX core ignites last. Loading feels like the editor “constructing itself.”</div>
+      <div class="stage v1">
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="eg" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stop-color="#2F6BFF"/>
+              <stop offset="1" stop-color="#00D1FF"/>
+            </linearGradient>
+            <radialGradient id="coreGrad"><stop offset="0" stop-color="#7dddff"/><stop offset="1" stop-color="#2F6BFF"/></radialGradient>
+          </defs>
+          <!-- edges -->
+          <path class="edge d1" d="M300,260 C480,260 560,450 800,450" stroke="url(#eg)" stroke-width="2.4" fill="none" pathLength="1"/>
+          <path class="edge d2" d="M300,620 C480,620 560,470 800,470" stroke="url(#eg)" stroke-width="2.4" fill="none" pathLength="1"/>
+          <path class="edge d3" d="M1300,260 C1120,260 1040,450 800,450" stroke="url(#eg)" stroke-width="2.4" fill="none" pathLength="1"/>
+          <path class="edge d4" d="M1300,620 C1120,620 1040,470 800,470" stroke="url(#eg)" stroke-width="2.4" fill="none" pathLength="1"/>
+          <path class="edge d5" d="M800,180 C800,300 800,360 800,430" stroke="url(#eg)" stroke-width="2.4" fill="none" pathLength="1"/>
+          <!-- nodes -->
+          <g class="node n1"><rect x="220" y="225" width="170" height="70" rx="10" fill="#101a33" stroke="#2F6BFF" stroke-width="2"/>
+            <circle cx="240" cy="260" r="5" fill="#00D1FF"/><text x="260" y="254" fill="#cfe0ff" font-family="JetBrains Mono" font-size="13">Import</text>
+            <text x="260" y="278" fill="#6FA8FF" font-size="11" font-family="JetBrains Mono">csv · xlsx · sfe</text></g>
+          <g class="node n2"><rect x="220" y="585" width="170" height="70" rx="10" fill="#101a33" stroke="#2F6BFF" stroke-width="2"/>
+            <circle cx="240" cy="620" r="5" fill="#00D1FF"/><text x="260" y="614" fill="#cfe0ff" font-family="JetBrains Mono" font-size="13">Params</text>
+            <text x="260" y="638" fill="#6FA8FF" font-size="11" font-family="JetBrains Mono">user · env</text></g>
+          <g class="node n3"><rect x="1210" y="225" width="170" height="70" rx="10" fill="#101a33" stroke="#2F6BFF" stroke-width="2"/>
+            <text x="1230" y="254" fill="#cfe0ff" font-family="JetBrains Mono" font-size="13">Plot</text>
+            <text x="1230" y="278" fill="#6FA8FF" font-size="11" font-family="JetBrains Mono">matplotlib</text></g>
+          <g class="node n4"><rect x="1210" y="585" width="170" height="70" rx="10" fill="#101a33" stroke="#2F6BFF" stroke-width="2"/>
+            <text x="1230" y="614" fill="#cfe0ff" font-family="JetBrains Mono" font-size="13">Export</text>
+            <text x="1230" y="638" fill="#6FA8FF" font-size="11" font-family="JetBrains Mono">sfe · data</text></g>
+          <g class="node n5"><rect x="720" y="130" width="160" height="54" rx="10" fill="#101a33" stroke="#2F6BFF" stroke-width="2"/>
+            <text x="740" y="164" fill="#cfe0ff" font-family="JetBrains Mono" font-size="13">MARS Batch Solve</text></g>
+          <g class="node core">
+            <circle cx="800" cy="460" r="80" fill="url(#coreGrad)"/>
+            <circle cx="800" cy="460" r="106" fill="none" stroke="#6FA8FF" stroke-opacity=".35" stroke-width="2"/>
+          </g>
+        </svg>
+        <div class="hero" style="top:66%">
+          <div class="brand">CORE<span class="dim">X</span></div>
+          <div class="sub">assembling graph</div>
+        </div>
+        <div class="overlay">
+          <div class="row">
+            <span class="status">MOUNTING · 47/62 PLUGINS</span>
+            <span class="sub">v0.9.3</span>
+          </div>
+          <div class="track"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="chip">Feels like: construction</span>
+        <span class="chip">Tone: premium / technical</span>
+        <span class="chip">Good for: first launch</span>
+      </div>
+    </section>
+
+    <!-- =================== V2 =================== -->
+    <section class="card">
+      <div class="meta"><h2>V2 · Breathing Core</h2><span class="tag">minimal</span></div>
+      <div class="desc">A single pulsing core with orbiting rings. Minimal chrome, maximum focus. Recommended if launches should feel fast.</div>
+      <div class="stage v2">
+        <div class="orb">
+          <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+          <div class="sheen"></div>
+          <div class="core"></div>
+        </div>
+        <div class="meta-row">
+          <div class="brand">CORE<span class="dim">X</span></div>
+          <div class="sub">node editor</div>
+          <div class="track"></div>
+          <div class="tick">WARMING UP</div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="chip">Feels like: calm · confident</span>
+        <span class="chip">Tone: Apple-ish</span>
+        <span class="chip">Best for: warm starts</span>
+      </div>
+    </section>
+
+    <!-- =================== V3 =================== -->
+    <section class="card">
+      <div class="meta"><h2>V3 · Dataflow Stream</h2><span class="tag">playful</span></div>
+      <div class="desc">Animated packets travel along wires between glowing nodes. Makes the product identity (data flows through a graph) literal.</div>
+      <div class="stage v3">
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="flowGrad" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stop-color="#2F6BFF"/><stop offset="1" stop-color="#00D1FF"/>
+            </linearGradient>
+            <radialGradient id="ndGrad"><stop offset="0" stop-color="#00D1FF"/><stop offset="1" stop-color="#2F6BFF"/></radialGradient>
+          </defs>
+          <!-- static dim wires -->
+          <path class="wire" d="M160,450 C360,450 360,220 580,220 S800,450 1000,450 S1220,680 1440,680"/>
+          <path class="wire" d="M160,450 C360,450 360,680 580,680 S800,450 1000,450 S1220,220 1440,220"/>
+          <!-- glow wires on top -->
+          <path class="wire-glow" d="M160,450 C360,450 360,220 580,220 S800,450 1000,450 S1220,680 1440,680"/>
+          <path class="wire-glow" d="M160,450 C360,450 360,680 580,680 S800,450 1000,450 S1220,220 1440,220" style="animation-delay:-.7s"/>
+          <!-- nodes -->
+          <circle class="nd" cx="160" cy="450" r="18"/>
+          <circle class="nd active" cx="580" cy="220" r="22"/>
+          <circle class="nd active" cx="580" cy="680" r="22"/>
+          <circle class="nd" cx="1000" cy="450" r="22"/>
+          <circle class="nd active" cx="1440" cy="220" r="18"/>
+          <circle class="nd active" cx="1440" cy="680" r="18"/>
+          <!-- animated packets (via CSS offset-path would be cleaner; use SMIL for browser simplicity) -->
+          <circle class="packet" r="4">
+            <animateMotion dur="2.6s" repeatCount="indefinite"
+              path="M160,450 C360,450 360,220 580,220 S800,450 1000,450 S1220,680 1440,680"/>
+          </circle>
+          <circle class="packet" r="4">
+            <animateMotion dur="2.6s" begin="-1.3s" repeatCount="indefinite"
+              path="M160,450 C360,450 360,220 580,220 S800,450 1000,450 S1220,680 1440,680"/>
+          </circle>
+          <circle class="packet" r="4">
+            <animateMotion dur="3.0s" begin="-.8s" repeatCount="indefinite"
+              path="M160,450 C360,450 360,680 580,680 S800,450 1000,450 S1220,220 1440,220"/>
+          </circle>
+        </svg>
+        <div class="overlay">
+          <div class="col-l">
+            <div class="brand">CORE<span class="dim">X</span></div>
+            <div class="sub" style="color:var(--blue-soft)">loading graph runtime</div>
+            <div class="track" style="width:360px"></div>
+          </div>
+          <div class="sub">64 / 120 nodes · 38 / 88 wires</div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="chip">Feels like: alive · kinetic</span>
+        <span class="chip">Tone: product-y</span>
+        <span class="chip">Risk: can distract on slow loads</span>
+      </div>
+    </section>
+
+    <!-- =================== V4 =================== -->
+    <section class="card">
+      <div class="meta"><h2>V4 · Engineer's Boot Log</h2><span class="tag">pro / technical</span></div>
+      <div class="desc">Retro boot console for power users. Shows what's actually loading — great for debugging cold starts and catching plugin load failures.</div>
+      <div class="stage v4">
+        <div class="term">
+          <div class="l l1"><span class="m">[</span><span class="ok">  OK  </span><span class="m">]</span> Mounting <span class="b">ea_node_editor.core</span> … 0.12s</div>
+          <div class="l l2"><span class="m">[</span><span class="ok">  OK  </span><span class="m">]</span> Initialising graph runtime <span class="b">v0.9.3</span></div>
+          <div class="l l3"><span class="m">[</span><span class="ok">  OK  </span><span class="m">]</span> Loading theme <span class="b">corex-dark</span></div>
+          <div class="l l4"><span class="m">[</span><span class="ok">  OK  </span><span class="m">]</span> Resolving plugin registry … 47 discovered</div>
+          <div class="l l5"><span class="m">[</span><span class="ok">  OK  </span><span class="m">]</span> Loading plugin: <span class="b">mars</span> (12 operators)</div>
+          <div class="l l6"><span class="m">[</span><span class="ok">  OK  </span><span class="m">]</span> Loading plugin: <span class="b">matplotlib-viewport</span></div>
+          <div class="l l7"><span class="m">[</span><span class="warn"> WARN </span><span class="m">]</span> Plugin <span class="b">sfe-importer</span> skipped (missing license)</div>
+          <div class="l l8"><span class="m">[</span><span class="ok">  OK  </span><span class="m">]</span> Restoring last workspace <span class="m">(dene3.cxproj)</span></div>
+          <div class="l l9 prompt">corex&gt; <span class="m">ready in 1.84s</span></div>
+        </div>
+        <div class="footer">
+          <div class="track" style="width:180px"></div>
+          <span class="ver">CoreX · 0.9.3 · py3.12</span>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="chip">Feels like: terminal / tool</span>
+        <span class="chip">Tone: pro engineer</span>
+        <span class="chip">Bonus: diagnostic value</span>
+      </div>
+    </section>
+
+    <!-- =================== V5 =================== -->
+    <section class="card">
+      <div class="meta"><h2>V5 · Blueprint Grid</h2><span class="tag">industrial</span></div>
+      <div class="desc">Engineering-schematic feel: gridded "drafting table," dimension lines and component footprints materialising. Leans into the CAE/FEA audience.</div>
+      <div class="stage v5">
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+          <!-- crosshair -->
+          <line class="bp-axis" x1="0" y1="450" x2="1600" y2="450"/>
+          <line class="bp-axis" x1="800" y1="0" x2="800" y2="900"/>
+          <!-- dimension lines -->
+          <path class="bp-dim" d="M260,200 L1340,200"/>
+          <path class="bp-dim" d="M260,700 L1340,700"/>
+          <path class="bp-dim" d="M260,200 L260,700"/>
+          <path class="bp-dim" d="M1340,200 L1340,700"/>
+          <!-- drawn silhouette of a node graph -->
+          <path class="bp-line" d="M420,360 L620,360 L620,540 L420,540 Z" pathLength="1" style="animation-delay:.1s"/>
+          <path class="bp-line" d="M980,260 L1180,260 L1180,440 L980,440 Z" pathLength="1" style="animation-delay:.3s"/>
+          <path class="bp-line" d="M980,480 L1180,480 L1180,660 L980,660 Z" pathLength="1" style="animation-delay:.5s"/>
+          <path class="bp-line" d="M620,450 C760,450 840,340 980,340" pathLength="1" style="animation-delay:.8s"/>
+          <path class="bp-line" d="M620,450 C760,450 840,560 980,560" pathLength="1" style="animation-delay:1.0s"/>
+          <!-- dots on corners -->
+          <circle class="bp-node" cx="420" cy="360" r="3" style="animation-delay:.2s"/>
+          <circle class="bp-node" cx="620" cy="360" r="3" style="animation-delay:.25s"/>
+          <circle class="bp-node" cx="620" cy="540" r="3" style="animation-delay:.3s"/>
+          <circle class="bp-node" cx="420" cy="540" r="3" style="animation-delay:.35s"/>
+          <circle class="bp-node" cx="980" cy="340" r="3" style="animation-delay:.45s"/>
+          <circle class="bp-node" cx="980" cy="560" r="3" style="animation-delay:.55s"/>
+          <!-- labels -->
+          <text class="bp-label" x="430" y="350">IMPORT</text>
+          <text class="bp-label" x="990" y="250">SOLVE</text>
+          <text class="bp-label" x="990" y="470">PLOT</text>
+          <text class="bp-label" x="266" y="195">0,0</text>
+          <text class="bp-label" x="1300" y="195">1920,1080</text>
+        </svg>
+        <div class="overlay">
+          <div class="stamp">DRAFT · REV 0.9.3</div>
+          <div class="stamp">SHEET 1/1 · SCALE 1:1</div>
+        </div>
+        <div class="hero">
+          <div class="brand">CORE<span class="dim">X</span></div>
+          <div class="sub">node editor · drafting</div>
+        </div>
+        <div class="bottom">
+          <div class="sub" style="color:#6FA8FF">GENERATING SCHEMATIC …</div>
+          <div class="track" style="width:260px"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="chip">Feels like: CAD / drafting</span>
+        <span class="chip">Audience: CAE engineers</span>
+        <span class="chip">Color mood: cool / clinical</span>
+      </div>
+    </section>
+
+    <!-- =================== V6 =================== -->
+    <section class="card">
+      <div class="meta"><h2>V6 · Signal Waveform</h2><span class="tag">data / scientific</span></div>
+      <div class="desc">Oscilloscope-style waveforms writing in left-to-right; tiny metrics block at the bottom. Signals the product is about numerical signals.</div>
+      <div class="stage v6">
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="waveGrad" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stop-color="#2F6BFF"/><stop offset="1" stop-color="#00D1FF"/>
+            </linearGradient>
+          </defs>
+          <!-- faint grid -->
+          <g>
+            <line class="tick" x1="0" y1="300" x2="1600" y2="300"/>
+            <line class="tick" x1="0" y1="450" x2="1600" y2="450"/>
+            <line class="tick" x1="0" y1="600" x2="1600" y2="600"/>
+            <line class="tick" x1="400" y1="120" x2="400" y2="780"/>
+            <line class="tick" x1="800" y1="120" x2="800" y2="780"/>
+            <line class="tick" x1="1200" y1="120" x2="1200" y2="780"/>
+            <text class="gridlbl" x="12" y="296">+1.0</text>
+            <text class="gridlbl" x="12" y="446">0.0</text>
+            <text class="gridlbl" x="12" y="596">-1.0</text>
+          </g>
+          <!-- waves -->
+          <path class="wave" pathLength="1200" d="M0,450
+            C100,300 200,600 300,450 S500,200 600,450
+            S800,700 900,450 S1100,260 1200,450 S1400,640 1500,450 L1600,450"/>
+          <path class="wave w2" pathLength="1200" d="M0,450
+            C80,380 160,520 240,450 S400,340 480,450 S640,580 720,450
+            S880,340 960,450 S1120,560 1200,450 S1360,360 1440,450 L1600,450"/>
+          <path class="wave w3" pathLength="1200" d="M0,450
+            C60,430 120,470 180,450 S300,410 360,450 S480,500 540,450
+            S660,390 720,450 S840,510 900,450 S1020,410 1080,450 S1200,490 1260,450 S1380,430 1440,450 L1600,450"/>
+        </svg>
+        <div class="hero">
+          <div class="brand">CORE<span class="dim">X</span></div>
+          <div class="sub">acquiring signal</div>
+        </div>
+        <div class="overlay">
+          <div class="metric"><b>2.4 kHz</b><span>sample rate</span></div>
+          <div class="metric"><b>62</b><span>channels</span></div>
+          <div class="metric"><b>0.12 s</b><span>buffered</span></div>
+          <div style="flex:1"></div>
+          <div class="track" style="width:220px"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="chip">Feels like: lab · instrument</span>
+        <span class="chip">Audience: data / signals</span>
+        <span class="chip">Nice with: FFT plugin on launch</span>
+      </div>
+    </section>
+
+  </div>
+
+  <p class="footer-note">
+    Implementation notes — Qt: a <code>QSplashScreen</code> with a single PNG would be cheapest; V2/V6 also
+    work well as <code>QtQuick</code> items so they can keep animating while plugins load on a worker thread.
+    V4 is the only variant where content is driven by real load events — a small signal bus can stream
+    lines as each plugin/workspace step finishes.
+  </p>
+</div>
+</body>
+</html>

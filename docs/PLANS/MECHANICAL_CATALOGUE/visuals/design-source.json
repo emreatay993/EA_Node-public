@@ -1,0 +1,559 @@
+{
+  "status": "approved-layout-reference",
+  "not_production_screenshots": true,
+  "description": "The eight-node layout was approved in conversation. Background label incorporates the approved Workbench clarification. PLAN.md owns final behavioral contracts; images own visual intent. No table cell search or persistent cross-run session.",
+  "nodes": [
+    {
+      "id": "open",
+      "title": "Open Mechanical Model",
+      "ports": [
+        [
+          "",
+          "",
+          "Model",
+          "Mechanical model"
+        ],
+        [
+          "",
+          "",
+          "Info",
+          "Table"
+        ]
+      ],
+      "sections": [
+        {
+          "title": "Open options",
+          "expanded": true,
+          "items": [
+            [
+              "File",
+              "path",
+              "bracket.wbpz",
+              "Path"
+            ],
+            [
+              "Model / system",
+              "search",
+              "Static Structural (SYS)",
+              "Text"
+            ],
+            [
+              "Mode",
+              "combo",
+              "Background",
+              "Text"
+            ],
+            [
+              "Version",
+              "combo",
+              "Auto · 2026 R1 or newer",
+              "Text"
+            ]
+          ]
+        },
+        {
+          "title": "Session options",
+          "expanded": false,
+          "items": [
+            [
+              "Working folder",
+              "path",
+              "Automatic",
+              "Path"
+            ],
+            [
+              "Timeout (s)",
+              "text",
+              "600",
+              "Number"
+            ]
+          ],
+          "summary": "Working folder · timeout"
+        }
+      ]
+    },
+    {
+      "id": "search",
+      "title": "Search Mechanical Tree",
+      "ports": [
+        [
+          "Model",
+          "Mechanical model",
+          "Objects",
+          "Object list"
+        ],
+        [
+          "",
+          "",
+          "Properties",
+          "Property list"
+        ],
+        [
+          "",
+          "",
+          "Found",
+          "Boolean"
+        ],
+        [
+          "",
+          "",
+          "Details",
+          "Table"
+        ]
+      ],
+      "sections": [
+        {
+          "title": "Search",
+          "expanded": true,
+          "items": [
+            [
+              "Filter",
+              "combo",
+              "Property Value"
+            ],
+            [
+              "Query",
+              "search",
+              "500 N"
+            ]
+          ]
+        },
+        {
+          "title": "Match options",
+          "expanded": false,
+          "summary": "Contains · ignore case · visible properties",
+          "items": [
+            [
+              "Match",
+              "combo",
+              "Contains",
+              "Text"
+            ],
+            [
+              "Case sensitive",
+              "toggle",
+              "Off",
+              "Boolean"
+            ],
+            [
+              "Include hidden properties",
+              "toggle",
+              "Off",
+              "Boolean"
+            ],
+            [
+              "Invert results",
+              "toggle",
+              "Off",
+              "Boolean"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "title": "FEA Table",
+      "ports": [
+        [
+          "Model",
+          "Mechanical model",
+          "Tables",
+          "Table list"
+        ],
+        [
+          "Source",
+          "Object / Property list",
+          "Definitions",
+          "Table"
+        ]
+      ],
+      "sections": [
+        {
+          "title": "Table selection",
+          "expanded": true,
+          "items": [
+            [
+              "Family",
+              "combo",
+              "Auto · match the selected source",
+              "Text"
+            ],
+            [
+              "Table / property",
+              "search",
+              "Result history",
+              "Text"
+            ],
+            [
+              "Component",
+              "combo",
+              "All components",
+              "Text"
+            ]
+          ]
+        },
+        {
+          "title": "Values and units",
+          "expanded": false,
+          "items": [
+            [
+              "Units",
+              "combo",
+              "Preserve source units",
+              "Text"
+            ],
+            [
+              "Rows / sets",
+              "search",
+              "All available",
+              "Selection"
+            ]
+          ],
+          "summary": "Preserve source units · all available rows"
+        }
+      ]
+    },
+    {
+      "id": "views",
+      "title": "Mechanical Camera Views",
+      "ports": [
+        [
+          "Model",
+          "Mechanical model",
+          "Views",
+          "Camera view list"
+        ],
+        [
+          "",
+          "",
+          "Names",
+          "Text list"
+        ],
+        [
+          "",
+          "",
+          "Details",
+          "Table"
+        ]
+      ],
+      "sections": [
+        {
+          "title": "View selection",
+          "expanded": true,
+          "items": [
+            [
+              "Include",
+              "combo",
+              "Saved views + current view"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "image",
+      "title": "Export Mechanical Image",
+      "ports": [
+        [
+          "Model",
+          "Mechanical model",
+          "Images",
+          "Image tree"
+        ],
+        [
+          "",
+          "",
+          "Files",
+          "Path list"
+        ],
+        [
+          "",
+          "",
+          "Details",
+          "Table"
+        ]
+      ],
+      "sections": [
+        {
+          "title": "Selection",
+          "expanded": true,
+          "items": [
+            [
+              "Objects",
+              "search",
+              "Equivalent Stress",
+              "Object / Text list"
+            ],
+            [
+              "Views",
+              "search",
+              "Isometric, Front",
+              "Camera / Text list"
+            ]
+          ]
+        },
+        {
+          "title": "Image options",
+          "expanded": false,
+          "summary": "1600 × 1000 · white background",
+          "items": [
+            [
+              "Width (px)",
+              "slider",
+              "1600",
+              "Integer"
+            ],
+            [
+              "Height (px)",
+              "slider",
+              "1000",
+              "Integer"
+            ],
+            [
+              "Background",
+              "combo",
+              "White",
+              "Text"
+            ],
+            [
+              "Fit view",
+              "toggle",
+              "Off",
+              "Boolean"
+            ]
+          ]
+        },
+        {
+          "title": "Save to disk",
+          "expanded": false,
+          "summary": "Optional folder · file name · overwrite",
+          "items": [
+            [
+              "Folder",
+              "path",
+              "No file output",
+              "Path"
+            ],
+            [
+              "File name",
+              "text",
+              "{object}_{view}.png",
+              "Text"
+            ],
+            [
+              "Overwrite",
+              "toggle",
+              "Off",
+              "Boolean"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "script",
+      "title": "Run Mechanical Script",
+      "ports": [
+        [
+          "Model",
+          "Mechanical model",
+          "Model",
+          "Mechanical model"
+        ],
+        [
+          "Environments",
+          "Object / Text list",
+          "Report",
+          "Table"
+        ]
+      ],
+      "sections": [
+        {
+          "title": "Script",
+          "expanded": true,
+          "items": [
+            [
+              "Scope",
+              "combo",
+              "Each selected environment",
+              "Text"
+            ],
+            [
+              "Code",
+              "textarea",
+              "# 'analysis' is the current environment\nanalysis.Activate()",
+              "Text"
+            ]
+          ]
+        },
+        {
+          "title": "Execution options",
+          "expanded": false,
+          "summary": "Timeout · error handling",
+          "items": [
+            [
+              "Timeout (s)",
+              "text",
+              "600",
+              "Number"
+            ],
+            [
+              "Stop on error",
+              "toggle",
+              "On",
+              "Boolean"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "snippet",
+      "title": "Mechanical APDL Snippet",
+      "ports": [
+        [
+          "Model",
+          "Mechanical model",
+          "Model",
+          "Mechanical model"
+        ],
+        [
+          "",
+          "",
+          "Snippets",
+          "Object list"
+        ],
+        [
+          "",
+          "",
+          "Report",
+          "Table"
+        ]
+      ],
+      "sections": [
+        {
+          "title": "Command snippet",
+          "expanded": true,
+          "items": [
+            [
+              "Environments",
+              "search",
+              "All environments"
+            ],
+            [
+              "Name",
+              "text",
+              "COREX commands"
+            ],
+            [
+              "Commands",
+              "textarea",
+              "! APDL command snippet\n! Executed by the solver"
+            ]
+          ]
+        },
+        {
+          "title": "Solver placement",
+          "expanded": false,
+          "summary": "All load steps · Issue SOLVE: off",
+          "items": [
+            [
+              "Steps",
+              "combo",
+              "All load steps",
+              "Text"
+            ],
+            [
+              "Selected load steps",
+              "text",
+              "1",
+              "Integer list"
+            ],
+            [
+              "Issue SOLVE command",
+              "toggle",
+              "Off",
+              "Boolean"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "save",
+      "title": "Save Mechanical Model",
+      "ports": [
+        [
+          "Model",
+          "Mechanical model",
+          "Model",
+          "Mechanical model"
+        ],
+        [
+          "",
+          "",
+          "Files",
+          "Path list"
+        ],
+        [
+          "",
+          "",
+          "Report",
+          "Table"
+        ]
+      ],
+      "sections": [
+        {
+          "title": "Destination",
+          "expanded": true,
+          "items": [
+            [
+              "File",
+              "path",
+              "bracket-edited.wbpz",
+              "Path"
+            ],
+            [
+              "Format",
+              "combo",
+              "Workbench archive (.wbpz)",
+              "Text"
+            ]
+          ]
+        },
+        {
+          "title": "Save options",
+          "expanded": false,
+          "items": [
+            [
+              "Include result files",
+              "toggle",
+              "On",
+              "Boolean"
+            ],
+            [
+              "Include user files",
+              "toggle",
+              "On",
+              "Boolean"
+            ],
+            [
+              "Include external imported files",
+              "toggle",
+              "On",
+              "Boolean"
+            ],
+            [
+              "Overwrite existing",
+              "toggle",
+              "Off",
+              "Boolean"
+            ]
+          ],
+          "summary": "Include result files · overwrite: off"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Node Overlay Button — UX Variants</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-deep:    #0f1117;
+    --bg-surface: #161b27;
+    --bg-node:    #24262c;
+    --bg-node-h:  #2a2d35;
+    --border:     #4a4f5a;
+    --border-hi:  #5a6270;
+    --accent:     #4a7eff;
+    --accent-dim: rgba(74,126,255,0.22);
+    --success:    #4ea14e;
+    --warn:       #e8a237;
+    --danger:     #e85050;
+    --text-hi:    #e4e8f0;
+    --text-mid:   #9aa3bc;
+    --text-lo:    #5a637a;
+    --shadow:     0 10px 28px rgba(0,0,0,0.5);
+  }
+
+  html, body {
+    background: var(--bg-deep);
+    color: var(--text-hi);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  header p {
+    color: var(--text-mid);
+    margin-bottom: 28px;
+    max-width: 720px;
+    line-height: 1.5;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    padding: 10px 14px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 32px;
+    font-size: 12px;
+    color: var(--text-mid);
+  }
+  .legend b { color: var(--text-hi); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 24px;
+  }
+
+  .variant {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  .variant h2 {
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .variant h2 .num {
+    background: var(--accent);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .variant .desc {
+    color: var(--text-mid);
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .variant .tradeoff {
+    font-size: 11px;
+    color: var(--text-lo);
+    border-top: 1px dashed var(--border);
+    padding-top: 10px;
+    margin-top: auto;
+    line-height: 1.5;
+  }
+  .variant .tradeoff b { color: var(--text-mid); }
+
+  /* The staging area where the node lives */
+  .stage {
+    background:
+      radial-gradient(circle at 50% 50%, #1a1d25 0%, #0f1117 80%),
+      var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    height: 260px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* subtle grid */
+  .stage::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+  }
+
+  /* ============ base node ============ */
+  .node {
+    position: relative;
+    width: 220px;
+    background: var(--bg-node);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    user-select: none;
+    transition: border-color 160ms, background 160ms;
+  }
+  .node:hover {
+    border-color: var(--border-hi);
+  }
+  .node .title {
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    color: var(--text-hi);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, #2d303a 0%, #24262c 100%);
+    border-radius: 6px 6px 0 0;
+  }
+  .node .title .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 6px rgba(78,161,78,0.6);
+  }
+  .node .body {
+    padding: 10px 12px;
+    font-size: 11px;
+    color: var(--text-mid);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .node .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+  }
+  .node .row span:last-child { color: var(--text-hi); }
+  .node .port {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #3a4466;
+    border: 2px solid var(--bg-node);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .node .port.in { left: -6px; }
+  .node .port.out { right: -6px; background: var(--accent); }
+
+  /* ============ button base ============ */
+  .ob {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text-mid);
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 140ms;
+  }
+  .ob:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--text-hi);
+  }
+  .ob.danger:hover {
+    background: rgba(232,80,80,0.2);
+    border-color: var(--danger);
+    color: #ffb8b8;
+  }
+  .ob.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .ob.primary:hover { background: #5d8dff; }
+
+  /* ===================================================== */
+  /* Variant 1 — Floating top toolbar (slides down)        */
+  /* ===================================================== */
+  .v1 .toolbar {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--bg-node-h);
+    border: 1px solid var(--border-hi);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms, transform 180ms cubic-bezier(0.2,0.8,0.2,1);
+  }
+  .v1:hover .toolbar {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  /* ===================================================== */
+  /* Variant 2 — Corner stack (top-right)                  */
+  /* ===================================================== */
+  .v2 .corner {
+    position: absolute;
+    top: 6px; right: 6px;
+    display: flex;
+    gap: 3px;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 160ms, transform 160ms;
+  }
+  .v2 .corner .ob {
+    width: 22px; height: 22px;
+    background: rgba(20,22,28,0.88);
+    backdrop-filter: blur(4px);
+  }
+  .v2:hover .corner {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .v2 .title .dot { display: none; } /* give space */
+
+  /* ===================================================== */
+  /* Variant 3 — Right-edge side rail                      */
+  /* ===================================================== */
+  .v3 .rail {
+    position: absolute;
+    top: 50%;
+    right: -6px;
+    transform: translate(0, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 5px;
+    background: var(--bg-node-h);
+    border: 1px solid var(--border-hi);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-10px, -50%);
+    transition: opacity 180ms, transform 200ms cubic-bezier(0.2,0.8,0.2,1);
+  }
+  .v3:hover .rail {
+    opacity: 1;
+    transform: translate(calc(100% + 6px), -50%);
+    pointer-events: auto;
+  }
+  .v3 .rail .ob { width: 24px; height: 24px; }
+
+  /* ===================================================== */
+  /* Variant 4 — Bottom pill drawer                        */
+  /* ===================================================== */
+  .v4 .drawer {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: rgba(20,22,28,0.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-hi);
+    border-radius: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms, transform 200ms cubic-bezier(0.2,0.8,0.2,1);
+  }
+  .v4 .drawer .ob {
+    width: 22px; height: 22px;
+    border: none;
+    background: transparent;
+  }
+  .v4 .drawer .ob:hover {
+    background: var(--accent-dim);
+  }
+  .v4:hover .drawer {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  /* ===================================================== */
+  /* Variant 5 — Inline hidden reveal (title expands)      */
+  /* ===================================================== */
+  .v5 .title .actions {
+    display: flex;
+    gap: 3px;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-width 220ms ease, opacity 180ms;
+  }
+  .v5 .title .actions .ob {
+    width: 20px; height: 20px;
+    font-size: 10px;
+  }
+  .v5:hover .title .actions {
+    max-width: 120px;
+    opacity: 1;
+  }
+  .v5 .title .dot { transition: margin 180ms; }
+  .v5:hover .title .dot { margin-right: 6px; }
+
+  /* ===================================================== */
+  /* Variant 6 — Full chrome overlay (scrim + actions)     */
+  /* ===================================================== */
+  .v6 .scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(36,38,44,0.0) 0%,
+      rgba(36,38,44,0.82) 100%
+    );
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms;
+  }
+  .v6 .scrim .actions {
+    display: flex;
+    gap: 6px;
+    transform: translateY(8px);
+    transition: transform 200ms cubic-bezier(0.2,0.8,0.2,1);
+  }
+  .v6:hover .scrim {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .v6:hover .scrim .actions {
+    transform: translateY(0);
+  }
+
+  /* ===================================================== */
+  /* Variant 7 — Radial arc (spoke out of corner)          */
+  /* ===================================================== */
+  .v7 .radial {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 28px; height: 28px;
+  }
+  .v7 .radial .trigger {
+    position: relative;
+    z-index: 2;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(74,126,255,0.4);
+    transition: transform 180ms;
+  }
+  .v7 .radial .spoke {
+    position: absolute;
+    top: 0; right: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--bg-node-h);
+    border: 1px solid var(--border-hi);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-mid);
+    transform: translate(0,0) scale(0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 220ms cubic-bezier(0.2,0.8,0.2,1);
+    font-size: 11px;
+  }
+  .v7 .radial .spoke:hover {
+    color: var(--text-hi);
+    border-color: var(--accent);
+  }
+  .v7:hover .radial .trigger { transform: rotate(45deg); }
+  .v7:hover .radial .s1 { transform: translate(-34px, 0) scale(1); opacity: 1; pointer-events: auto; }
+  .v7:hover .radial .s2 { transform: translate(-28px, 22px) scale(1); opacity: 1; pointer-events: auto; }
+  .v7:hover .radial .s3 { transform: translate(-6px, 34px) scale(1); opacity: 1; pointer-events: auto; }
+
+  /* ===================================================== */
+  /* Variant 8 — Tab flap (peel from right edge)           */
+  /* ===================================================== */
+  .v8 .flap {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 4px 5px 4px 6px;
+    background: var(--bg-node-h);
+    border: 1px solid var(--border-hi);
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 220ms cubic-bezier(0.2,0.8,0.2,1), opacity 180ms;
+  }
+  .v8 .flap .ob {
+    width: 20px; height: 20px;
+    font-size: 10px;
+    border: none;
+    background: transparent;
+  }
+  .v8:hover .flap {
+    transform: translateX(100%);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ===================================================== */
+  /* Variant 9 — Ghost border actions (icons sit on edge)  */
+  /* ===================================================== */
+  .v9 .ghost {
+    position: absolute;
+    top: -12px;
+    right: 10px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 160ms, transform 180ms;
+  }
+  .v9 .ghost .ob {
+    width: 24px; height: 24px;
+    background: var(--bg-node);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .v9 .ghost .ob:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+  }
+  .v9:hover .ghost {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* tiny icon glyph helper (using unicode / simple text) */
+  .ic { font-family: 'Segoe UI Symbol', sans-serif; line-height: 1; }
+
+  /* helper caption */
+  .hint {
+    text-align: center;
+    color: var(--text-lo);
+    font-size: 11px;
+    margin-top: -6px;
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+
+  /* pinned state toggle idea shown on variant 1 */
+  .pin-note {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    color: var(--text-lo);
+    font-size: 10px;
+    letter-spacing: 0.3px;
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Node Overlay Button — UX Variants</h1>
+      <p>Nine ideas for replacing always-visible inline buttons with hover-revealed overlays. Hover each node to trigger the animation. Each variant trades discoverability, screen real estate, and interaction precision differently — pick the mix that fits how your users scan a dense graph.</p>
+    </header>
+
+    <div class="legend">
+      <span><b>▶</b> Run</span>
+      <span><b>✎</b> Edit</span>
+      <span><b>⎘</b> Duplicate</span>
+      <span><b>⚙</b> Settings</span>
+      <span><b>⌫</b> Delete</span>
+      <span><b>⤢</b> Expand</span>
+      <span><b>↗</b> Open scope</span>
+    </div>
+
+    <div class="grid">
+
+      <!-- V1 -->
+      <div class="variant">
+        <h2><span class="num">1</span>Floating top toolbar</h2>
+        <p class="desc">A compact toolbar slides down above the node, centered. Classic Figma/Notion pattern — reads as "controls for this element" without stealing body real estate.</p>
+        <div class="stage">
+          <div class="node v1">
+            <span class="port in"></span>
+            <div class="toolbar">
+              <button class="ob primary ic" title="Run">▶</button>
+              <button class="ob ic" title="Edit">✎</button>
+              <button class="ob ic" title="Duplicate">⎘</button>
+              <button class="ob ic" title="Settings">⚙</button>
+              <button class="ob danger ic" title="Delete">⌫</button>
+            </div>
+            <div class="title">MeshRefiner <span class="dot"></span></div>
+            <div class="body">
+              <div class="row"><span>resolution</span><span>1024</span></div>
+              <div class="row"><span>iterations</span><span>12</span></div>
+              <div class="row"><span>status</span><span>ready</span></div>
+            </div>
+            <span class="port out"></span>
+          </div>
+        </div>
+        <p class="hint">Hover the node — toolbar slides in from above.</p>
+        <div class="tradeoff">
+          <b>Strong</b>: high discoverability, doesn't cover content, room for 5–7 actions.<br>
+          <b>Weak</b>: toolbar can collide with the node above it in dense graphs; needs smart flip (below when near top edge).
+        </div>
+      </div>
+
+      <!-- V2 -->
+      <div class="variant">
+        <h2><span class="num">2</span>Corner stack (in-body)</h2>
+        <p class="desc">Icons fade in at the top-right corner, overlaid on the title band. No layout shift, no bleed outside the node's bounding rect — safest for tightly packed graphs.</p>
+        <div class="stage">
+          <div class="node v2">
+            <span class="port in"></span>
+            <div class="corner">
+              <button class="ob ic">▶</button>
+              <button class="ob ic">✎</button>
+              <button class="ob ic">⚙</button>
+              <button class="ob danger ic">⌫</button>
+            </div>
+            <div class="title">MeshRefiner</div>
+            <div class="body">
+              <div class="row"><span>resolution</span><span>1024</span></div>
+              <div class="row"><span>iterations</span><span>12</span></div>
+              <div class="row"><span>status</span><span>ready</span></div>
+            </div>
+            <span class="port out"></span>
+          </div>
+        </div>
+        <p class="hint">Buttons appear inside the title, no bleed.</p>
+        <div class="tradeoff">
+          <b>Strong</b>: zero overlap with siblings, stays inside node bbox, easiest to implement in QML (just toggle opacity).<br>
+          <b>Weak</b>: limited width — 3–4 actions max; competes visually with title text.
+        </div>
+      </div>
+
+      <!-- V3 -->
+      <div class="variant">
+        <h2><span class="num">3</span>Right-edge side rail</h2>
+        <p class="desc">A vertical strip slides out of the right edge. Great when actions relate to outputs/downstream flow — physically anchored to the output port side.</p>
+        <div class="stage">
+          <div class="node v3">
+            <span class="port in"></span>
+            <div class="rail">
+              <button class="ob primary ic">▶</button>
+              <button class="ob ic">✎</button>
+              <button class="ob ic">⎘</button>
+              <button class="ob ic">⚙</button>
+              <button class="ob danger ic">⌫</button>
+            </div>
+            <div class="title">MeshRefiner <span class="dot"></span></div>
+            <div class="body">
+              <div class="row"><span>resolution</span><span>1024</span></div>
+              <div class="row"><span>iterations</span><span>12</span></div>
+              <div class="row"><span>status</span><span>ready</span></div>
+            </div>
+            <span class="port out"></span>
+          </div>
+        </div>
+        <p class="hint">Rail slides out of the right edge.</p>
+        <div class="tradeoff">
+          <b>Strong</b>: scales to many actions, doesn't cover title/body, feels "attached" to the node.<br>
+          <b>Weak</b>: can interfere with connection drags from output port; needs flip to left when near right viewport edge.
+        </div>
+      </div>
+
+      <!-- V4 -->
+      <div class="variant">
+        <h2><span class="num">4</span>Bottom pill drawer</h2>
+        <p class="desc">A floating glass pill hovers at the bottom. Modern macOS/iOS vocabulary — the blur makes it read as "above" the node without adding weight.</p>
+        <div class="stage">
+          <div class="node v4">
+            <span class="port in"></span>
+            <div class="drawer">
+              <button class="ob primary ic">▶</button>
+              <button class="ob ic">✎</button>
+              <button class="ob ic">⎘</button>
+              <button class="ob ic">⚙</button>
+              <button class="ob danger ic">⌫</button>
+            </div>
+            <div class="title">MeshRefiner <span class="dot"></span></div>
+            <div class="body">
+              <div class="row"><span>resolution</span><span>1024</span></div>
+              <div class="row"><span>iterations</span><span>12</span></div>
+              <div class="row"><span>status</span><span>ready</span></div>
+            </div>
+            <span class="port out"></span>
+          </div>
+        </div>
+        <p class="hint">Glass pill fades in at the bottom.</p>
+        <div class="tradeoff">
+          <b>Strong</b>: elegant, doesn't grow node bbox, plays well with status rows in body.<br>
+          <b>Weak</b>: partially occludes the last property row; blur may be heavy in Qt Quick (needs FastBlur / ShaderEffect).
+        </div>
+      </div>
+
+      <!-- V5 -->
+      <div class="variant">
+        <h2><span class="num">5</span>Inline title reveal</h2>
+        <p class="desc">The title band itself expands sideways on hover, pushing the status dot and revealing tiny action icons. No overlay layer at all — pure in-flow.</p>
+        <div class="stage">
+          <div class="node v5" style="width: 240px;">
+            <span class="port in"></span>
+            <div class="title">
+              <span>MeshRefiner</span>
+              <span style="display:flex; align-items:center; gap: 4px;">
+                <span class="actions">
+                  <button class="ob ic">▶</button>
+                  <button class="ob ic">✎</button>
+                  <button class="ob danger ic">⌫</button>
+                </span>
+                <span class="dot"></span>
+              </span>
+            </div>
+            <div class="body">
+              <div class="row"><span>resolution</span><span>1024</span></div>
+              <div class="row"><span>iterations</span><span>12</span></div>
+              <div class="row"><span>status</span><span>ready</span></div>
+            </div>
+            <span class="port out"></span>
+          </div>
+        </div>
+        <p class="hint">Title expands, icons unfurl next to the dot.</p>
+        <div class="tradeoff">
+          <b>Strong</b>: zero overlay plumbing, no z-order fights, bbox stable.<br>
+          <b>Weak</b>: only 2–3 icons fit before the title truncates; requires extra node width budget.
+        </div>
+      </div>
+
+      <!-- V6 -->
+      <div class="variant">
+        <h2><span class="num">6</span>Full-node scrim overlay</h2>
+        <p class="desc">A gradient scrim fades in over the lower half, with primary actions as full buttons. Feels like a video-thumbnail hover — best for "heavy" actions where the user should pause.</p>
+        <div class="stage">
+          <div class="node v6">
+            <span class="port in"></span>
+            <div class="title">MeshRefiner <span class="dot"></span></div>
+            <div class="body">
+              <div class="row"><span>resolution</span><span>1024</span></div>
+              <div class="row"><span>iterations</span><span>12</span></div>
+              <div class="row"><span>status</span><span>ready</span></div>
+            </div>
+            <div class="scrim">
+              <div class="actions">
+                <button class="ob primary ic">▶</button>
+                <button class="ob ic">✎</button>
+                <button class="ob ic">⎘</button>
+                <button class="ob danger ic">⌫</button>
+              </div>
+            </div>
+            <span class="port out"></span>
+          </div>
+        </div>
+        <p class="hint">Scrim fades over the lower half.</p>
+        <div class="tradeoff">
+          <b>Strong</b>: maximum visual clarity, bigger touch targets, easy to emphasize a single primary.<br>
+          <b>Weak</b>: hides property values exactly when user is trying to read them; too heavy for routine actions.
+        </div>
+      </div>
+
+      <!-- V7 -->
+      <div class="variant">
+        <h2><span class="num">7</span>Radial arc menu</h2>
+        <p class="desc">A single "+" trigger in the corner; on hover, 3 spokes fan out along an arc. Playful, space-efficient, one-hand-friendly.</p>
+        <div class="stage">
+          <div class="node v7">
+            <span class="port in"></span>
+            <div class="radial">
+              <div class="trigger">+</div>
+              <div class="spoke s1 ic" title="Run">▶</div>
+              <div class="spoke s2 ic" title="Edit">✎</div>
+              <div class="spoke s3 ic" title="Delete">⌫</div>
+            </div>
+            <div class="title">MeshRefiner <span class="dot"></span></div>
+            <div class="body">
+              <div class="row"><span>resolution</span><span>1024</span></div>
+              <div class="row"><span>iterations</span><span>12</span></div>
+              <div class="row"><span>status</span><span>ready</span></div>
+            </div>
+            <span class="port out"></span>
+          </div>
+        </div>
+        <p class="hint">Trigger rotates 45°, 3 spokes fan out.</p>
+        <div class="tradeoff">
+          <b>Strong</b>: distinctive, small idle footprint, feels premium.<br>
+          <b>Weak</b>: non-standard → users must learn it; spokes collide with neighbor nodes; 3–4 items max before arc gets unwieldy.
+        </div>
+      </div>
+
+      <!-- V8 -->
+      <div class="variant">
+        <h2><span class="num">8</span>Edge flap (tab peel)</h2>
+        <p class="desc">A small "dog-eared" tab slides out from under the right edge. Physical metaphor — feels like lifting a sticker. Great for secondary tools you rarely need.</p>
+        <div class="stage">
+          <div class="node v8">
+            <span class="port in"></span>
+            <div class="flap">
+              <button class="ob ic">✎</button>
+              <button class="ob ic">⎘</button>
+              <button class="ob ic">⚙</button>
+              <button class="ob danger ic">⌫</button>
+            </div>
+            <div class="title">MeshRefiner <span class="dot"></span></div>
+            <div class="body">
+              <div class="row"><span>resolution</span><span>1024</span></div>
+              <div class="row"><span>iterations</span><span>12</span></div>
+              <div class="row"><span>status</span><span>ready</span></div>
+            </div>
+            <span class="port out"></span>
+          </div>
+        </div>
+        <p class="hint">Flap peels out from under the right edge.</p>
+        <div class="tradeoff">
+          <b>Strong</b>: playful, stays hidden when idle, clear affordance.<br>
+          <b>Weak</b>: conflicts with output port area; low discoverability for new users.
+        </div>
+      </div>
+
+      <!-- V9 -->
+      <div class="variant">
+        <h2><span class="num">9</span>Ghost border buttons</h2>
+        <p class="desc">Buttons sit floating on the top border line (classic VSCode file-explorer or GitHub issue-card hover). Subtle, conventional, resilient.</p>
+        <div class="stage">
+          <div class="node v9">
+            <span class="port in"></span>
+            <div class="ghost">
+              <button class="ob ic">▶</button>
+              <button class="ob ic">✎</button>
+              <button class="ob ic">⎘</button>
+              <button class="ob danger ic">⌫</button>
+            </div>
+            <div class="title">MeshRefiner <span class="dot"></span></div>
+            <div class="body">
+              <div class="row"><span>resolution</span><span>1024</span></div>
+              <div class="row"><span>iterations</span><span>12</span></div>
+              <div class="row"><span>status</span><span>ready</span></div>
+            </div>
+            <span class="port out"></span>
+          </div>
+        </div>
+        <p class="hint">Icons appear riding the top border.</p>
+        <div class="tradeoff">
+          <b>Strong</b>: familiar pattern, easy to scan multiple actions, clean idle state.<br>
+          <b>Weak</b>: bleeds outside node bbox upward — same vertical-collision risk as V1 but smaller blast radius.
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top: 40px; padding: 20px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px;">
+      <h2 style="font-size: 14px; margin-bottom: 12px;">Cross-cutting considerations</h2>
+      <ul style="list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 10px; color: var(--text-mid); font-size: 12px; line-height: 1.5;">
+        <li><b style="color: var(--text-hi);">Selection sticky-state.</b> When a node is <i>selected</i>, keep the overlay visible even without hover — users expect the selected node to stay "active".</li>
+        <li><b style="color: var(--text-hi);">Keyboard parity.</b> Whichever variant you pick, ensure Tab/Enter reaches overlay actions when the node is focused; hover-only kills a11y.</li>
+        <li><b style="color: var(--text-hi);">Hover grace period.</b> Add a ~120ms delay before hiding so users can travel from node → overlay without losing it (classic "menu intent" pattern).</li>
+        <li><b style="color: var(--text-hi);">Edge flipping.</b> V1, V3, V9 need smart flip when near viewport edges, or they'll overflow.</li>
+        <li><b style="color: var(--text-hi);">Zoom behavior.</b> Decide if overlay buttons stay screen-sized (constant readable) or scale with the node — mixing them (icons scale, but min-size clamped) usually feels best.</li>
+        <li><b style="color: var(--text-hi);">Running / Halted states.</b> The OPEN and HALTED badges convey state, not action. Keep those always-visible even if action buttons hide on hover.</li>
+      </ul>
+    </div>
+
+    <div style="margin-top: 24px; padding: 16px 20px; background: linear-gradient(135deg, rgba(74,126,255,0.1), transparent); border: 1px solid var(--border); border-radius: 8px; color: var(--text-mid); font-size: 12px; line-height: 1.6;">
+      <b style="color: var(--text-hi);">My picks for this editor:</b> <b>V2 (corner stack)</b> as the primary pattern — safest, highest fit with your current chrome and tightest against the existing <code style="background:rgba(255,255,255,0.05); padding: 1px 4px; border-radius: 3px;">GraphSurfaceButton</code> component. <b>V1 (top toolbar)</b> if you want a more expressive "this node is focused" moment. <b>V5 (inline title reveal)</b> if you want zero overlay plumbing and only need 2–3 actions.
+    </div>
+
+  </div>
+</body>
+</html>

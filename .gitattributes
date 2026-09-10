@@ -1,0 +1,48 @@
+* text=auto eol=lf
+
+# Windows command shell scripts are the only text files kept as CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Source, docs, and project documents should stay LF in every checkout.
+*.py text eol=lf
+*.qml text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.css text eol=lf
+*.svg text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.cxproj text eol=lf
+*.ps1 text eol=lf
+
+# Binary assets and generated package formats should never be normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.wbpz binary
+*.7z binary
+*.exe binary
+*.dll binary
+*.pyd binary
+*.so binary
+*.dylib binary
+*.xlsx binary
+*.xls binary
+*.xlsm binary
+*.docx binary
+*.pptx binary
+*.db binary
+*.sqlite binary

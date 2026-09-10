@@ -1,0 +1,16 @@
+The external-link.svg, file-spreadsheet.svg, minimize-2.svg, pin.svg, chevrons-left.svg, chevrons-right.svg, chevrons-left-light.svg, and chevrons-right-light.svg assets are based on Lucide Icons.
+
+Source:
+- https://lucide.dev/icons/external-link
+- https://lucide.dev/icons/file-spreadsheet
+- https://lucide.dev/icons/minimize-2
+- https://lucide.dev/icons/pin
+- https://lucide.dev/icons/chevrons-left
+- https://lucide.dev/icons/chevrons-right
+
+License:
+- Lucide Icons are released under the ISC License.
+- Some Lucide icons, including external-link, minimize-2, chevrons-left, and chevrons-right, are derived from Feather and are covered by the MIT License notice listed on the Lucide license page.
+
+License reference:
+- https://lucide.dev/license

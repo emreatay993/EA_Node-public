@@ -1,0 +1,189 @@
+{
+  "project_name": "Example NASA-STD-5020B separation check",
+  "analyst": "",
+  "force_units": "N",
+  "moment_units": "N-mm",
+  "fitting_factor": 1.15,
+  "separation_factor": 1.2,
+  "joint_classification": "critical",
+  "program_yield_factor": 1.2,
+  "program_ultimate_factor": 1.4,
+  "test_envelope_factor": 1.0,
+  "fssep_basis_notes": "Critical classification uses max(1.2, program yield factor).",
+  "seal_or_gasket": false,
+  "pressure_containment": false,
+  "combined_loading_expected": true,
+  "advanced": {
+    "combined": {
+      "enabled": true,
+      "theory": "nasa_ultimate",
+      "factor_of_safety": 1.0,
+      "shear_plane": "body",
+      "plastic_bending": false,
+      "geometry": {
+        "diameter": 8.0,
+        "tensile_area": 36.6,
+        "shear_area": 50.3,
+        "minor_diameter_area": 36.6,
+        "section_modulus": 50.0
+      },
+      "material": {
+        "tensile_yield": 900.0,
+        "tensile_ultimate": 1100.0,
+        "shear_ultimate": 635.0,
+        "bending_ultimate": 1100.0,
+        "shear_yield": 0.0
+      }
+    },
+    "slip": {
+      "enabled": true,
+      "mode": "per_fastener",
+      "friction_coefficient": 0.2,
+      "friction_substantiated": false,
+      "clean_uncoated_metal": true,
+      "factor_of_safety": 1.0,
+      "joint_tensile_limit": 0.0,
+      "joint_shear_limit": 0.0
+    },
+    "seal_pressure": {
+      "enabled": false,
+      "pressure": 0.0,
+      "effective_pressure_area": 0.0,
+      "gasket_contact_area": 0.0,
+      "min_contact_pressure": 0.0,
+      "min_residual_clamp": 0.0
+    },
+    "evidence_limits": {
+      "enabled": true,
+      "max_gap_allowed": 0.05,
+      "min_contact_pressure_required": 0.1,
+      "max_separated_area_fraction": 0.1,
+      "max_redistributed_ptl": 6000.0
+    },
+    "contact_evidence": [
+      {
+        "case_id": "LC1",
+        "set_id": "1",
+        "bolt_id": "B1",
+        "region": "under_head_contact",
+        "max_gap": 0.01,
+        "min_contact_pressure": 2.5,
+        "separated_area_fraction": 0.02,
+        "redistributed_ptl": 4300.0,
+        "quality_flags": "sample nonlinear contact row"
+      }
+    ]
+  },
+  "preload": {
+    "ppi_nom": 10000.0,
+    "gamma": 0.25,
+    "cmin": 1.0,
+    "nf": 8,
+    "separation_critical": true,
+    "relaxation_loss": 500.0,
+    "creep_loss": 0.0,
+    "thermal_loss": 250.0
+  },
+  "bolts": [
+    {
+      "bolt_id": "B1",
+      "direct_ptl": 4000.0,
+      "ptl_mode": "direct",
+      "load_row": {
+        "case_id": "LC1",
+        "set_id": "1",
+        "bolt_id": "B1",
+        "fx": 0.0,
+        "fy": 250.0,
+        "fz": 4200.0,
+        "mx": 1000.0,
+        "my": 0.0,
+        "mz": 50.0,
+        "axial": 4200.0,
+        "shear_mag": 300.0,
+        "units": "N,Nmm",
+        "source_type": "beam_probe",
+        "source_name": "B1_BEAM_PROBE",
+        "quality_flags": "check local axis"
+      },
+      "moment_arm": null,
+      "fitting_factor": null,
+      "separation_factor": null,
+      "preload_override": {
+        "ppi_nom": null,
+        "gamma": null,
+        "cmin": null,
+        "nf": null,
+        "separation_critical": null,
+        "relaxation_loss": null,
+        "creep_loss": null,
+        "thermal_loss": null
+      },
+      "geometry_override": {
+        "diameter": null,
+        "tensile_area": null,
+        "shear_area": null,
+        "minor_diameter_area": null,
+        "section_modulus": null
+      },
+      "material_override": {
+        "tensile_yield": null,
+        "tensile_ultimate": null,
+        "shear_ultimate": null,
+        "bending_ultimate": null,
+        "shear_yield": null
+      },
+      "notes": ""
+    },
+    {
+      "bolt_id": "B2",
+      "direct_ptl": null,
+      "ptl_mode": "axial",
+      "load_row": {
+        "case_id": "LC1",
+        "set_id": "1",
+        "bolt_id": "B1",
+        "fx": 0.0,
+        "fy": 250.0,
+        "fz": 4200.0,
+        "mx": 1000.0,
+        "my": 0.0,
+        "mz": 50.0,
+        "axial": 4200.0,
+        "shear_mag": 300.0,
+        "units": "N,Nmm",
+        "source_type": "beam_probe",
+        "source_name": "B1_BEAM_PROBE",
+        "quality_flags": "check local axis"
+      },
+      "moment_arm": null,
+      "fitting_factor": null,
+      "separation_factor": null,
+      "preload_override": {
+        "ppi_nom": 9200.0,
+        "gamma": null,
+        "cmin": null,
+        "nf": null,
+        "separation_critical": null,
+        "relaxation_loss": 650.0,
+        "creep_loss": null,
+        "thermal_loss": null
+      },
+      "geometry_override": {
+        "diameter": null,
+        "tensile_area": 32.0,
+        "shear_area": 45.0,
+        "minor_diameter_area": null,
+        "section_modulus": null
+      },
+      "material_override": {
+        "tensile_yield": null,
+        "tensile_ultimate": 1050.0,
+        "shear_ultimate": null,
+        "bending_ultimate": null,
+        "shear_yield": null
+      },
+      "notes": "Example row override: smaller fastener and lower installation preload."
+    }
+  ]
+}

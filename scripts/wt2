@@ -1,0 +1,213 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+print_usage() {
+  cat <<'EOF'
+Usage:
+  wt2 start <change-a> <change-b> [base-branch]
+  wt2 finish <change-a> <change-b> [base-branch]
+  wt2 merge <branch-a> <branch-b> [base-branch]
+
+What it does:
+  start   Creates two codex branches + two sibling worktrees from origin/<base-branch>.
+  finish  Commits each worktree, pushes both branches, merges into <base-branch>, then cleans up.
+  merge   Merges two existing branches into <base-branch> and pushes.
+
+Examples:
+  wt2 start editor-fix api-cleanup
+  wt2 finish editor-fix api-cleanup
+  wt2 merge codex/editor-fix codex/api-cleanup
+  wt2 merge editor-fix api-cleanup
+  wt2 start ui-tweak parser-fix release/1.2
+EOF
+}
+
+die() {
+  printf 'Error: %s\n' "$*" >&2
+  exit 1
+}
+
+require_repo_root() {
+  git rev-parse --show-toplevel 2>/dev/null || die "Run this inside a git repository."
+}
+
+validate_change_name() {
+  local value="$1"
+  [[ "$value" =~ ^[A-Za-z0-9._-]+$ ]] || die "Invalid change name '$value'. Use letters, numbers, '.', '_' or '-'."
+}
+
+branch_for() {
+  printf 'codex/%s' "$1"
+}
+
+normalize_branch_name() {
+  local value="$1"
+  if [[ "$value" == */* ]]; then
+    printf '%s' "$value"
+  else
+    branch_for "$value"
+  fi
+}
+
+worktree_for() {
+  local repo_root="$1"
+  local change_name="$2"
+  local parent repo_name
+  parent="$(dirname "$repo_root")"
+  repo_name="$(basename "$repo_root")"
+  printf '%s/%s-%s' "$parent" "$repo_name" "$change_name"
+}
+
+start_worktrees() {
+  local change_a="$1"
+  local change_b="$2"
+  local base_branch="${3:-main}"
+  local repo_root
+  repo_root="$(require_repo_root)"
+
+  validate_change_name "$change_a"
+  validate_change_name "$change_b"
+
+  git -C "$repo_root" fetch origin
+  git -C "$repo_root" show-ref --verify --quiet "refs/remotes/origin/$base_branch" || die "origin/$base_branch not found."
+
+  for change_name in "$change_a" "$change_b"; do
+    local branch_name worktree_path
+    branch_name="$(branch_for "$change_name")"
+    worktree_path="$(worktree_for "$repo_root" "$change_name")"
+
+    git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch_name" && die "Local branch exists: $branch_name"
+    [[ ! -e "$worktree_path" ]] || die "Worktree path already exists: $worktree_path"
+
+    git -C "$repo_root" worktree add "$worktree_path" -b "$branch_name" "origin/$base_branch"
+    printf 'Created: %s (%s)\n' "$worktree_path" "$branch_name"
+  done
+}
+
+commit_and_push_one() {
+  local repo_root="$1"
+  local change_name="$2"
+  local branch_name worktree_path current_branch
+
+  branch_name="$(branch_for "$change_name")"
+  worktree_path="$(worktree_for "$repo_root" "$change_name")"
+
+  [[ -e "$worktree_path/.git" ]] || die "Worktree not found: $worktree_path"
+
+  current_branch="$(git -C "$worktree_path" rev-parse --abbrev-ref HEAD)"
+  [[ "$current_branch" == "$branch_name" ]] || die "Expected branch '$branch_name' in $worktree_path, found '$current_branch'."
+
+  git -C "$worktree_path" add -A
+  if git -C "$worktree_path" diff --cached --quiet; then
+    printf 'No local changes in %s; skipping commit.\n' "$branch_name"
+  else
+    git -C "$worktree_path" commit -m "$change_name"
+  fi
+
+  git -C "$worktree_path" push -u origin "$branch_name"
+  printf 'Pushed: %s\n' "$branch_name"
+}
+
+cleanup_one() {
+  local repo_root="$1"
+  local change_name="$2"
+  local branch_name worktree_path
+
+  branch_name="$(branch_for "$change_name")"
+  worktree_path="$(worktree_for "$repo_root" "$change_name")"
+
+  git -C "$repo_root" worktree remove "$worktree_path"
+
+  if git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch_name"; then
+    git -C "$repo_root" branch -d "$branch_name"
+  fi
+}
+
+finish_worktrees() {
+  local change_a="$1"
+  local change_b="$2"
+  local base_branch="${3:-main}"
+  local repo_root
+  repo_root="$(require_repo_root)"
+
+  validate_change_name "$change_a"
+  validate_change_name "$change_b"
+
+  commit_and_push_one "$repo_root" "$change_a"
+  commit_and_push_one "$repo_root" "$change_b"
+
+  git -C "$repo_root" checkout "$base_branch"
+  git -C "$repo_root" pull --ff-only origin "$base_branch"
+
+  for change_name in "$change_a" "$change_b"; do
+    local branch_name
+    branch_name="$(branch_for "$change_name")"
+    git -C "$repo_root" merge --no-ff "$branch_name" -m "merge $branch_name"
+    printf 'Merged: %s -> %s\n' "$branch_name" "$base_branch"
+  done
+
+  git -C "$repo_root" push origin "$base_branch"
+  printf 'Pushed: %s\n' "$base_branch"
+
+  cleanup_one "$repo_root" "$change_a"
+  cleanup_one "$repo_root" "$change_b"
+  printf 'Cleaned up worktrees and local branches.\n'
+}
+
+merge_existing_branches() {
+  local branch_a_input="$1"
+  local branch_b_input="$2"
+  local base_branch="${3:-main}"
+  local repo_root branch_a branch_b
+  repo_root="$(require_repo_root)"
+  branch_a="$(normalize_branch_name "$branch_a_input")"
+  branch_b="$(normalize_branch_name "$branch_b_input")"
+
+  git -C "$repo_root" fetch origin
+  git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch_a" || die "Local branch not found: $branch_a"
+  git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch_b" || die "Local branch not found: $branch_b"
+
+  git -C "$repo_root" checkout "$base_branch"
+  git -C "$repo_root" pull --ff-only origin "$base_branch"
+
+  git -C "$repo_root" merge --no-ff "$branch_a" -m "merge $branch_a"
+  printf 'Merged: %s -> %s\n' "$branch_a" "$base_branch"
+  git -C "$repo_root" merge --no-ff "$branch_b" -m "merge $branch_b"
+  printf 'Merged: %s -> %s\n' "$branch_b" "$base_branch"
+
+  git -C "$repo_root" push origin "$base_branch"
+  printf 'Pushed: %s\n' "$base_branch"
+}
+
+main() {
+  [[ $# -ge 1 ]] || {
+    print_usage
+    exit 1
+  }
+
+  local command="$1"
+  shift
+
+  case "$command" in
+    start)
+      [[ $# -ge 2 && $# -le 3 ]] || die "start requires <change-a> <change-b> [base-branch]"
+      start_worktrees "$@"
+      ;;
+    finish)
+      [[ $# -ge 2 && $# -le 3 ]] || die "finish requires <change-a> <change-b> [base-branch]"
+      finish_worktrees "$@"
+      ;;
+    merge)
+      [[ $# -ge 2 && $# -le 3 ]] || die "merge requires <branch-a> <branch-b> [base-branch]"
+      merge_existing_branches "$@"
+      ;;
+    -h|--help|help)
+      print_usage
+      ;;
+    *)
+      die "Unknown command: $command"
+      ;;
+  esac
+}
+
+main "$@"

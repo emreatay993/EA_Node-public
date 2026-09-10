@@ -1,0 +1,96 @@
+{
+  "kind": "planning-visual-references",
+  "production_qml_proof": false,
+  "files": [
+    {
+      "path": "01-catalogue.png",
+      "bytes": 181715,
+      "sha256": "fb4bb0db88834e3ab3e763958da194a082a197a7d548f77194f0732ec16fe33f"
+    },
+    {
+      "path": "01-catalogue.svg",
+      "bytes": 20676,
+      "sha256": "eb9cd7a5483c53ce4200a345a03de29d9ac6e450f37cd616e151e88665e838f7"
+    },
+    {
+      "path": "02-catalogue.png",
+      "bytes": 172221,
+      "sha256": "dac753fe200809b0f68120a2728f6c62b9675f11b58807eef01f5838267b0667"
+    },
+    {
+      "path": "02-catalogue.svg",
+      "bytes": 18850,
+      "sha256": "beefd6c95d3370017483f8945f86c427889d24a10db34a8b5958f2ea56af87de"
+    },
+    {
+      "path": "03-catalogue.png",
+      "bytes": 191635,
+      "sha256": "3963d09724754de943a7a57c8f09f1cf30145747a89e0784bee534fb6e6abde9"
+    },
+    {
+      "path": "03-catalogue.svg",
+      "bytes": 23416,
+      "sha256": "4496d3e3f79bb58ff3b51895a0518b04af89c318ad9679a88c25a157b8abe75f"
+    },
+    {
+      "path": "04-icons.png",
+      "bytes": 68919,
+      "sha256": "89bcd4472dea365fe2f506f5b5546ed6f1c98f7e13f2b37a749e4c0f5b8138b4"
+    },
+    {
+      "path": "04-icons.svg",
+      "bytes": 9826,
+      "sha256": "a5b3b9bb550a91249fe1abf89cde1758d5ee527ed3b2db311002c8d618447d5b"
+    },
+    {
+      "path": "design-source.json",
+      "bytes": 12149,
+      "sha256": "b16ccae5c59c316255eccf46ea7249e831e30ffbd5192a9c378be462c121d590"
+    },
+    {
+      "path": "icons/image.svg",
+      "bytes": 354,
+      "sha256": "0b45784de44348fd880de415a06261afb4f764f1d235ebcc26bd87fdac8a0ed1"
+    },
+    {
+      "path": "icons/open.svg",
+      "bytes": 284,
+      "sha256": "2d69827c8c9630501f86ad89013a335d92fc0f3bad4baf9d28cf2875ccef0afa"
+    },
+    {
+      "path": "icons/save.svg",
+      "bytes": 280,
+      "sha256": "ccb4977ba2bd80277fb83dec4f644699d855e9478d96fa8ee17fef9b81bfd7fe"
+    },
+    {
+      "path": "icons/script.svg",
+      "bytes": 299,
+      "sha256": "e0863ed52b84fbba7f57c8133bba313381df860d55d6553218d54d19e6571537"
+    },
+    {
+      "path": "icons/search.svg",
+      "bytes": 313,
+      "sha256": "b0e5b28efcc92f74b8b166f265a35fca1120f01d30a6cfa6c49c9018dd968176"
+    },
+    {
+      "path": "icons/snippet.svg",
+      "bytes": 305,
+      "sha256": "a473332bb380ff302b1a8ef681bc3b5a30b9477b792f2304b014f38d95024a4a"
+    },
+    {
+      "path": "icons/table.svg",
+      "bytes": 311,
+      "sha256": "ee4bd50206f9d7d6f51f0ea9e1e9ab03cbf08dd88289c01992d27fb9d20a0bce"
+    },
+    {
+      "path": "icons/views.svg",
+      "bytes": 316,
+      "sha256": "555ee1583d06b87f6481ce76ebbc9ad0bf6f0dd4b18cf9eb8dd24172364a6b23"
+    },
+    {
+      "path": "render_previews.py",
+      "bytes": 1887,
+      "sha256": "b4946599a8196133281f4b50325cf137fc53fe94ae1db28c467532bc87a88931"
+    }
+  ]
+}

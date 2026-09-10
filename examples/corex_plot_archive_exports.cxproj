@@ -1,0 +1,257 @@
+{
+  "active_workspace_id": "ws_corex_plot_archive_exports",
+  "metadata": {
+    "artifact_store": {
+      "artifacts": {},
+      "staged": {}
+    },
+    "custom_workflows": [],
+    "ui": {
+      "passive_style_presets": {
+        "edge_presets": [],
+        "node_presets": []
+      },
+      "script_editor": {
+        "floating": false,
+        "visible": false,
+        "width": 0.0
+      }
+    },
+    "workflow_settings": {
+      "environment": {
+        "python_path": "",
+        "working_directory": ""
+      },
+      "general": {
+        "author": "",
+        "description": "COREX plot data-port example",
+        "project_name": "COREX Plot - Archive Export Ports"
+      },
+      "logging": {
+        "capture_console": true,
+        "level": "info"
+      },
+      "plugins": {
+        "enabled": []
+      },
+      "solver_config": {
+        "enable_parallel": true,
+        "memory_limit_gb": 12,
+        "thread_count": 8
+      }
+    },
+    "workspace_order": [
+      "ws_corex_plot_archive_exports"
+    ]
+  },
+  "name": "COREX Plot - Archive Export Ports",
+  "project_id": "proj_corex_plot_archive_exports",
+  "schema_version": 5,
+  "workspace_order": [
+    "ws_corex_plot_archive_exports"
+  ],
+  "workspaces": [
+    {
+      "active_view_id": "view_corex_plot_archive_exports",
+      "dirty": true,
+      "edges": [
+        {
+          "edge_id": "edge_series_plot",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_series",
+          "source_port_key": "value",
+          "target_node_id": "node_line_plot",
+          "target_port_key": "series",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_summary_logger",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_summarize_exports",
+          "source_port_key": "result",
+          "target_node_id": "node_log_exports",
+          "target_port_key": "message",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_exports_payload",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_line_plot",
+          "source_port_key": "exports",
+          "target_node_id": "node_summarize_exports",
+          "target_port_key": "payload",
+          "visual_style": {}
+        }
+      ],
+      "name": "COREX Plot - Archive Export Ports",
+      "nodes": [
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 260.0,
+          "custom_width": 430.0,
+          "exposed_ports": {
+            "data_export": true,
+            "exports": true,
+            "series": true,
+            "static_export": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_line_plot",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "archive_export_on_run": true,
+            "backend": "auto",
+            "data_export_format": "csv",
+            "render_in_canvas": true,
+            "static_export_format": "png",
+            "title": "Archived monthly revenue",
+            "x_label": "Month",
+            "y_label": "Revenue"
+          },
+          "title": "Line Plot - archive exports",
+          "type_id": "plot.line",
+          "visual_style": {},
+          "x": 450.0,
+          "y": 80.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 300.0,
+          "exposed_ports": {
+            "message": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_log_exports",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "level": "info",
+            "message": "Export artifact refs"
+          },
+          "title": "Log export artifact refs",
+          "type_id": "core.logger",
+          "visual_style": {},
+          "x": 1370.0,
+          "y": 80.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 300.0,
+          "exposed_ports": {
+            "as_text": true,
+            "value": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_series",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "value": [
+              {
+                "label": "North",
+                "x": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ],
+                "y": [
+                  8.0,
+                  12.0,
+                  15.0,
+                  18.0,
+                  23.0,
+                  31.0
+                ]
+              },
+              {
+                "label": "South",
+                "x": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ],
+                "y": [
+                  5.0,
+                  7.0,
+                  11.0,
+                  13.0,
+                  17.0,
+                  20.0
+                ]
+              }
+            ]
+          },
+          "title": "Line series data",
+          "type_id": "core.constant",
+          "visual_style": {},
+          "x": 120.0,
+          "y": 130.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 350.0,
+          "exposed_ports": {
+            "payload": true,
+            "result": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_summarize_exports",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "script": "exports = input_data or {}\n\ndef ref_text(value):\n    if value is None:\n        return '<missing>'\n    return getattr(value, 'ref', str(value))\n\nstatic_ref = exports.get('static_export') if isinstance(exports, dict) else None\ndata_ref = exports.get('data_export') if isinstance(exports, dict) else None\nstatic_meta = exports.get('static_metadata', {}) if isinstance(exports, dict) else {}\ndata_meta = exports.get('data_metadata', {}) if isinstance(exports, dict) else {}\noutput_data = (\n    'Static export: ' + ref_text(static_ref)\n    + ' | Data export: ' + ref_text(data_ref)\n    + ' | static backend: ' + str(static_meta.get('backend_id', '<unknown>'))\n    + ' | rows: ' + str(((data_meta.get('metadata') or {}).get('row_count', '<unknown>')))\n)\n"
+          },
+          "title": "Summarize Exports",
+          "type_id": "core.python_script",
+          "visual_style": {},
+          "x": 950.0,
+          "y": 80.0
+        }
+      ],
+      "views": [
+        {
+          "hide_optional_ports": false,
+          "name": "V1",
+          "pan_x": 120.0,
+          "pan_y": 120.0,
+          "scope_path": [],
+          "view_id": "view_corex_plot_archive_exports",
+          "zoom": 0.86
+        }
+      ],
+      "workspace_id": "ws_corex_plot_archive_exports"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "title": "Mockup blade-out secondary ESL - format demonstration",
+  "notes": "All paths are relative to this file's folder. Values are small and readable on purpose; the modal stress fields are linear combinations of the two unit fields and the load history is P_true(t)/1.6, so a derive on this dataset should report lambda (effective DLF) close to 1.6. Bounds are double-acting (+/-50 kN) because the second channel's true load is negative.",
+  "units": { "force": "N", "moment": "N.mm", "stress": "MPa", "length": "mm" },
+  "msup": {
+    "modal_stress_csv": "modal_stress.csv",
+    "modal_coordinates": "run.mcf",
+    "modal_forces_csv": "modal_forces.csv",
+    "steady_state_csv": "steady_field.csv",
+    "include_steady_bias": false
+  },
+  "target": { "mode": "reconstruct" },
+  "interface_loads_csv": "interface_history.csv",
+  "rig": {
+    "unit_fields": { "layout": "wide", "csv": "rig_unit_fields.csv" },
+    "channels": [
+      {
+        "name": "P1_fwd_vert",
+        "case_label": "Case1",
+        "unit_load": 1000.0,
+        "point": [138.2, -58.4, 320.0],
+        "direction": [0.0, 0.0, -1.0],
+        "bounds": [-50000.0, 50000.0],
+        "interface_channel": "Fz_front_mount",
+        "apdl_node": 900001,
+        "notes": "Mockup vertical actuator at the front mount"
+      },
+      {
+        "name": "P2_fwd_lat",
+        "case_label": "Case2",
+        "unit_load": 1000.0,
+        "point": [150.0, 0.0, 340.0],
+        "direction": [0.0, -1.0, 0.0],
+        "bounds": [-50000.0, 50000.0],
+        "interface_channel": "Fy_front_mount",
+        "apdl_node": 900002,
+        "notes": "Mockup lateral actuator; true load is negative, hence double-acting bounds"
+      }
+    ]
+  },
+  "interfaces": [
+    {
+      "name": "front_mount",
+      "node_list_csv": "front_mount_nodes.csv",
+      "ref_point": [120.0, 0.0, 0.0]
+    }
+  ],
+  "mapping": { "coord_tol": 0.1, "kdtree_max_dist": 1.0, "min_id_match_fraction": 0.9 },
+  "instants": {
+    "mode": "auto",
+    "n_suggestions": 3,
+    "quadrature": true,
+    "hotspot_top_percent": 30.0,
+    "cluster_dt": 0.002,
+    "mars_envelope": {
+      "max_vm_csv": "max_von_mises.csv",
+      "time_of_max_vm_csv": "time_of_max_von_mises.csv"
+    }
+  },
+  "solve": {
+    "tier": "both",
+    "weighting": "vm",
+    "vm_weight_exponent": 1.0,
+    "region": { "mode": "top_vm_percent", "value": 100.0 }
+  },
+  "acceptance": { "under_test_tol": 0.05, "vm_floor_frac": 0.10, "min_peak_ratio": 0.99 },
+  "scaling": {
+    "rt_factor": 1.0,
+    "basis_note": "mockup - no room-temperature scaling applied"
+  },
+  "outputs": { "directory": "esl_out", "apdl_snippet": true, "top_n_hotspots": 10 }
+}

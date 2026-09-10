@@ -1,0 +1,75 @@
+Tabler Icons source: https://github.com/tabler/tabler-icons
+Source commit: 6d128ed935d4546607b1e4d5d08c8b27bdbe7758
+Additional package source: https://unpkg.com/@tabler/icons@3.17.0/
+
+Included files:
+- calendar.svg: copied from icons/outline/calendar.svg
+- code.svg: copied from icons/outline/code.svg
+- clock-update.svg: copied from icons/outline/clock-up.svg and renamed locally to preserve the COREX uiIcons key.
+- door-enter.svg: copied from icons/outline/door-enter.svg
+- settings.svg: copied from icons/outline/settings.svg
+- text-decrease.svg: copied from icons/outline/text-decrease.svg
+- text-increase.svg: copied from icons/outline/text-increase.svg
+- format-bold.svg: copied from icons/outline/bold.svg and renamed locally to preserve the COREX uiIcons key.
+- format-italic.svg: copied from icons/outline/italic.svg and renamed locally to preserve the COREX uiIcons key.
+- format-underline.svg: copied from icons/outline/underline.svg and renamed locally to preserve the COREX uiIcons key.
+- format-strikethrough.svg: copied from icons/outline/strikethrough.svg and renamed locally to preserve the COREX uiIcons key.
+- format-align-left.svg: copied from icons/outline/align-left.svg and renamed locally to preserve the COREX uiIcons key.
+- format-align-center.svg: copied from icons/outline/align-center.svg and renamed locally to preserve the COREX uiIcons key.
+- format-align-right.svg: copied from icons/outline/align-right.svg and renamed locally to preserve the COREX uiIcons key.
+- format-align-justify.svg: copied from icons/outline/align-justified.svg and renamed locally to preserve the COREX uiIcons key.
+- format-list-bulleted.svg: copied from @tabler/icons 3.17.0 icons/outline/list.svg and renamed locally to preserve the COREX uiIcons key.
+- format-list-numbered.svg: copied from @tabler/icons 3.17.0 icons/outline/list-numbers.svg and renamed locally to preserve the COREX uiIcons key.
+- text-wrap.svg: copied from icons/outline/text-wrap.svg
+- text-color.svg: copied from icons/outline/text-color.svg
+- color-picker.svg: copied from icons/outline/color-picker.svg
+- circle-filled.svg: copied from icons/filled/circle.svg and renamed locally to preserve the COREX uiIcons key.
+- navigate.svg: copied from icons/outline/arrows-horizontal.svg and renamed locally to preserve the COREX uiIcons key.
+- navigate-previous.svg: copied from icons/outline/chevron-left.svg and renamed locally to preserve the COREX uiIcons key.
+- navigate-next.svg: copied from icons/outline/chevron-right.svg and renamed locally to preserve the COREX uiIcons key.
+- rotate-clockwise.svg: copied from icons/outline/rotate-clockwise.svg
+- flip-horizontal.svg: copied from icons/outline/flip-horizontal.svg
+- flip-vertical.svg: copied from icons/outline/flip-vertical.svg
+- content-only.svg: copied from @tabler/icons 3.17.0 icons/outline/focus-2.svg and renamed locally to preserve the COREX uiIcons key.
+- node-chrome.svg: copied from @tabler/icons 3.17.0 icons/outline/layout-navbar.svg and renamed locally to preserve the COREX uiIcons key.
+- title-heading.svg: copied from @tabler/icons 3.17.0 icons/outline/heading.svg and renamed locally to preserve the COREX uiIcons key.
+- frame-corners.svg: copied from @tabler/icons 3.17.0 icons/outline/border-corners.svg and renamed locally to preserve the COREX uiIcons key.
+- format-bold-italic.svg: locally composed from icons/outline/bold.svg and icons/outline/italic.svg geometry, renamed locally to preserve the COREX uiIcons key.
+- copy-text-style.svg: locally composed from icons/outline/copy.svg and text glyph geometry, renamed locally to preserve the COREX uiIcons key.
+- paste-text-style.svg: locally composed from icons/outline/clipboard.svg and text glyph geometry, renamed locally to preserve the COREX uiIcons key.
+- external-link.svg: copied from icons/outline/external-link.svg
+- internalize-source.svg: copied from icons/outline/package-import.svg and renamed locally to preserve the COREX uiIcons key.
+- edit.svg: copied from icons/outline/edit.svg
+- chevron-up.svg: copied from icons/outline/chevron-up.svg
+- chevron-down.svg: copied from icons/outline/chevron-down.svg
+- link.svg: copied from icons/outline/link.svg
+- file-text.svg: copied from icons/outline/file-text.svg
+- file-type-html.svg: copied from icons/outline/file-type-html.svg
+- folder.svg: copied from icons/outline/folder.svg
+- folder-open.svg: copied from icons/outline/folder-open.svg
+- layout-dashboard.svg: copied from icons/outline/layout-dashboard.svg
+- hierarchy-2.svg: copied from icons/outline/hierarchy-2.svg
+- world-www.svg: copied from icons/outline/world-www.svg
+- plus.svg: copied from icons/outline/plus.svg
+- x.svg: copied from icons/outline/x.svg
+- video-bookmarks.svg: copied from icons/outline/bookmarks.svg and renamed locally to preserve the COREX uiIcons key.
+- video-bookmark-add.svg: copied from icons/outline/bookmark-plus.svg and renamed locally to preserve the COREX uiIcons key.
+- video-bookmark-jump.svg: copied from icons/outline/bookmark.svg and renamed locally to preserve the COREX uiIcons key.
+- video-capture-frame.svg: copied from icons/outline/camera-plus.svg and renamed locally to preserve the COREX uiIcons key.
+- video-timestamp-note.svg: copied from icons/outline/clock-edit.svg and renamed locally to preserve the COREX uiIcons key.
+- video-clip-range.svg: copied from icons/outline/scissors.svg and renamed locally to preserve the COREX uiIcons key.
+- video-clip-in.svg: copied from icons/outline/brackets-contain-start.svg and renamed locally to preserve the COREX uiIcons key.
+- video-clip-out.svg: copied from icons/outline/brackets-contain-end.svg and renamed locally to preserve the COREX uiIcons key.
+- video-trim-save.svg: copied from icons/outline/scissors.svg and renamed locally to preserve the COREX uiIcons key.
+- video-seek-back-10.svg: copied from icons/outline/rewind-backward-10.svg and renamed locally to preserve the COREX uiIcons key.
+- video-seek-forward-10.svg: copied from icons/outline/rewind-forward-10.svg and renamed locally to preserve the COREX uiIcons key.
+- video-rewind.svg: copied from icons/outline/player-track-prev.svg and renamed locally to preserve the COREX uiIcons key.
+- video-fit.svg: copied from icons/outline/aspect-ratio.svg and renamed locally to preserve the COREX uiIcons key.
+- video-fill.svg: copied from icons/outline/crop.svg and renamed locally to preserve the COREX uiIcons key.
+- video-loop.svg: copied from icons/outline/repeat.svg and renamed locally to preserve the COREX uiIcons key.
+- arrow-back-up.svg: copied from icons/outline/arrow-back-up.svg
+- check.svg: copied from icons/outline/check.svg
+- pinned-off.svg: copied from icons/outline/pinned-off.svg
+- send.svg: copied from icons/outline/send.svg
+
+License: MIT. See TABLER_LICENSE.txt in this directory.

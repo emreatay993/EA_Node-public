@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Minimal Ghost Toolbar — Ownership Indicator Variants</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-deep:    #e6e9f0;
+    --bg-surface: #f1f3f8;
+    --panel-ink:  #2c2f36;
+    --muted:      #6b7185;
+    --soft:       #a4aabd;
+
+    /* Model Viewer-style warm node (matches the reference screenshot) */
+    --node-fill:      #fbe7d2;
+    --node-header:    #fbe7d2;
+    --node-text:      #3d2a1d;
+    --node-accent:    #d66a1d;   /* top stripe + blocked ink */
+    --node-rail:      #c85b10;   /* outline / caret color in current build */
+    --node-inner:     #f7ecdc;
+
+    --accent:         #4DA8DA;
+  }
+
+  html, body {
+    background: radial-gradient(ellipse at top, #f6f8fc 0%, var(--bg-deep) 70%);
+    color: var(--panel-ink);
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1520px;
+    margin: 0 auto;
+    padding: 36px 28px 96px;
+  }
+
+  header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  header p {
+    color: var(--muted);
+    max-width: 780px;
+    line-height: 1.55;
+    margin-bottom: 28px;
+  }
+
+  .callout {
+    background: linear-gradient(180deg, rgba(214,106,29,0.08), rgba(214,106,29,0.02));
+    border: 1px solid rgba(214,106,29,0.28);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 40px;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .callout strong { color: var(--panel-ink); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 22px;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 1px solid #dde1ec;
+    border-radius: 12px;
+    padding: 22px 22px 20px;
+    box-shadow: 0 1px 2px rgba(30,40,60,0.04), 0 6px 20px rgba(30,40,60,0.05);
+    display: flex;
+    flex-direction: column;
+  }
+  .card header {
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    margin-bottom: 4px;
+  }
+  .card .sub {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  /* ── Preview stage: toolbar above a Model Viewer-style node ────────────────── */
+  .stage {
+    position: relative;
+    background: linear-gradient(180deg, #eef1f7, #e4e8f0);
+    border: 1px solid #d5dae6;
+    border-radius: 10px;
+    padding: 22px 18px 18px;
+    height: 240px;
+    overflow: hidden;
+  }
+
+  /* Ghost toolbar: a row of icon buttons with no chrome */
+  .ghost-toolbar {
+    position: absolute;
+    left: 50%;
+    top: 14px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0;
+  }
+  .ghost-toolbar .btn {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #3b3f49;
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    cursor: default;
+    opacity: 0.88;
+  }
+  .ghost-toolbar .btn:hover {
+    background: rgba(77,168,218,0.14);
+  }
+  .ghost-toolbar .sep {
+    width: 1px;
+    height: 14px;
+    background: rgba(60,65,80,0.22);
+    margin: 0 5px;
+  }
+  .ghost-toolbar svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Mock Model Viewer node */
+  .node {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 78px;
+    width: 300px;
+    background: var(--node-fill);
+    border: 1.25px solid var(--node-rail);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(30,20,10,0.08);
+  }
+  .node-stripe {
+    height: 5px;
+    background: linear-gradient(90deg, #f48a2b, #d66a1d);
+  }
+  .node-head {
+    padding: 12px 14px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .node-mark {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    background:
+      linear-gradient(135deg, #f5a636 0 45%, transparent 45% 100%),
+      linear-gradient(225deg, #2c2f36 0 45%, transparent 45% 100%);
+    background-size: 100% 100%, 100% 100%;
+  }
+  .node-title {
+    font-weight: 600;
+    color: var(--node-text);
+    font-size: 14px;
+    letter-spacing: -0.005em;
+  }
+
+  /* Ownership indicator layer — positioned between toolbar row (top:14 + ~26px) and node top (78px). */
+  .indicator-layer {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 42px;
+    width: 240px;
+    height: 38px;
+    pointer-events: none;
+  }
+
+  /* ── Concept A: current diamond caret (baseline for comparison) ── */
+  .concept-diamond .indicator-layer::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 22px;
+    width: 9px;
+    height: 9px;
+    background: var(--node-rail);
+    border: 1px solid var(--node-rail);
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  /* ── Concept B: hairline tether ── */
+  .concept-hairline .indicator-layer::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 4px;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, var(--node-rail) 40%, var(--node-rail));
+    transform: translateX(-0.5px);
+    opacity: 0.75;
+  }
+
+  /* ── Concept C: accent underline beneath icon row ── */
+  .concept-underline .indicator-layer {
+    top: 10px;
+  }
+  .concept-underline .indicator-layer::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 168px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--node-rail);
+    transform: translateX(-50%);
+    opacity: 0.85;
+  }
+
+  /* ── Concept D: dotted trail ── */
+  .concept-dots .indicator-layer::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 8px;
+    width: 3px;
+    height: 26px;
+    transform: translateX(-50%);
+    background-image: radial-gradient(var(--node-rail) 1.2px, transparent 1.6px);
+    background-size: 3px 7px;
+    background-repeat: repeat-y;
+    opacity: 0.9;
+  }
+
+  /* ── Concept E: spotlight glow ── */
+  .concept-glow .indicator-layer {
+    top: 16px;
+    width: 260px;
+    height: 44px;
+  }
+  .concept-glow .indicator-layer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% 95%, rgba(214,106,29,0.38), rgba(214,106,29,0.08) 55%, transparent 75%);
+    filter: blur(2px);
+  }
+
+  /* ── Concept F: corner brackets echoing node width ── */
+  .concept-brackets .indicator-layer {
+    top: 4px;
+    width: 260px;
+    height: 40px;
+  }
+  .concept-brackets .indicator-layer::before,
+  .concept-brackets .indicator-layer::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 14px;
+    height: 10px;
+    border: 1.5px solid var(--node-rail);
+    opacity: 0.75;
+  }
+  .concept-brackets .indicator-layer::before {
+    left: 0;
+    border-right: none;
+    border-bottom: none;
+    border-top-left-radius: 4px;
+  }
+  .concept-brackets .indicator-layer::after {
+    right: 0;
+    border-left: none;
+    border-bottom: none;
+    border-top-right-radius: 4px;
+  }
+
+  /* ── Concept G: slim chevron ── */
+  .concept-chevron .indicator-layer::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 18px;
+    width: 14px;
+    height: 7px;
+    transform: translateX(-50%);
+    background:
+      linear-gradient(135deg, transparent 46%, var(--node-rail) 46% 54%, transparent 54%) no-repeat,
+      linear-gradient(45deg,  transparent 46%, var(--node-rail) 46% 54%, transparent 54%) no-repeat;
+    background-size: 50% 100%, 50% 100%;
+    background-position: left, right;
+    opacity: 0.85;
+  }
+
+  /* ── Concept H: gradient wash (pure color transition) ── */
+  .concept-wash .indicator-layer {
+    top: 18px;
+    width: 260px;
+    height: 44px;
+  }
+  .concept-wash .indicator-layer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(214,106,29,0.10) 45%, rgba(214,106,29,0.22) 100%);
+    mask-image: radial-gradient(ellipse at 50% 100%, black 0%, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at 50% 100%, black 0%, black 40%, transparent 80%);
+  }
+
+  /* ── Concept I: framed tab-root (a tiny 'hinge' echoing the node top-edge) ── */
+  .concept-hinge .indicator-layer {
+    top: 24px;
+    width: 60px;
+    height: 22px;
+  }
+  .concept-hinge .indicator-layer::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 0;
+    height: 14px;
+    border: 1.25px solid var(--node-rail);
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    background: linear-gradient(180deg, rgba(214,106,29,0.04), rgba(214,106,29,0.10));
+  }
+
+  /* Voting footer */
+  .vote-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .vote-row .pill {
+    background: #f2f4fa;
+    border: 1px solid #dde1ec;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--panel-ink);
+  }
+  .vote-row .pill.good { background: #ecf7ef; border-color: #cfe6d6; color: #1e6b38; }
+  .vote-row .pill.meh  { background: #fff6e6; border-color: #ecd9b3; color: #7a5a18; }
+  .vote-row .pill.bad  { background: #fbecec; border-color: #eacfcf; color: #8b2e2e; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Minimal Ghost Toolbar — Ownership Indicator Concepts</h1>
+    <p>The minimal-ghost style strips away the chrome, so the current rotated-diamond caret sits alone above the node and reads as an unrelated glyph. Below are eight quieter ways to express the same "this toolbar belongs to this node" relationship. All variants reuse the node's outline/header color so the cue blends in on both light and dark graph themes.</p>
+  </header>
+
+  <div class="callout">
+    <strong>How to read these mocks:</strong> each tile shows the same Model Viewer node and the same ghost-toolbar row. The only thing that changes is the ownership indicator between them. Concept A reproduces today's behavior as a reference.
+  </div>
+
+  <div class="grid">
+
+    <!-- Concept A — baseline -->
+    <div class="card concept-diamond">
+      <header>
+        <h2>A · Current diamond caret <span style="color:var(--soft);font-weight:400;">(baseline)</span></h2>
+        <div class="sub">A 9×9 square rotated 45°, filled in the node's outline color. Reads clearly on chrome styles; looks orphaned here.</div>
+      </header>
+      <div class="stage">
+        <div class="ghost-toolbar">
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><rect x="4" y="4" width="12" height="12" rx="2"/></svg></button>
+          <div class="sep"></div>
+          <button class="btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+        </div>
+        <div class="indicator-layer"></div>
+        <div class="node">
+          <div class="node-stripe"></div>
+          <div class="node-head">
+            <div class="node-mark"></div>
+            <div class="node-title">Model Viewer</div>
+          </div>
+        </div>
+      </div>
+      <div class="vote-row">Current <span class="pill bad">Feels disconnected</span></div>
+    </div>
+
+    <!-- Concept B — hairline tether -->
+    <div class="card concept-hairline">
+      <header>
+        <h2>B · Hairline tether</h2>
+        <div class="sub">A 1 px vertical line fading in from the toolbar baseline down to the node top-edge. Pure geometric link, no distinct shape.</div>
+      </header>
+      <div class="stage">
+        <div class="ghost-toolbar">
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><rect x="4" y="4" width="12" height="12" rx="2"/></svg></button>
+          <div class="sep"></div>
+          <button class="btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+        </div>
+        <div class="indicator-layer"></div>
+        <div class="node">
+          <div class="node-stripe"></div>
+          <div class="node-head">
+            <div class="node-mark"></div>
+            <div class="node-title">Model Viewer</div>
+          </div>
+        </div>
+      </div>
+      <div class="vote-row"><span class="pill good">Clean</span><span class="pill">Low visual weight</span></div>
+    </div>
+
+    <!-- Concept C — accent underline -->
+    <div class="card concept-underline">
+      <header>
+        <h2>C · Accent underline</h2>
+        <div class="sub">A 2 px rounded bar under the icon row, tinted with the node's outline color. Frames the toolbar without touching the node.</div>
+      </header>
+      <div class="stage">
+        <div class="ghost-toolbar">
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><rect x="4" y="4" width="12" height="12" rx="2"/></svg></button>
+          <div class="sep"></div>
+          <button class="btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+        </div>
+        <div class="indicator-layer"></div>
+        <div class="node">
+          <div class="node-stripe"></div>
+          <div class="node-head">
+            <div class="node-mark"></div>
+            <div class="node-title">Model Viewer</div>
+          </div>
+        </div>
+      </div>
+      <div class="vote-row"><span class="pill good">Strong identity</span><span class="pill meh">Adds a small horizontal element</span></div>
+    </div>
+
+    <!-- Concept D — dotted trail -->
+    <div class="card concept-dots">
+      <header>
+        <h2>D · Dotted trail</h2>
+        <div class="sub">A tiny column of dots descending from toolbar to node top. Reads as "connected to this one", stays unobtrusive.</div>
+      </header>
+      <div class="stage">
+        <div class="ghost-toolbar">
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><rect x="4" y="4" width="12" height="12" rx="2"/></svg></button>
+          <div class="sep"></div>
+          <button class="btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+        </div>
+        <div class="indicator-layer"></div>
+        <div class="node">
+          <div class="node-stripe"></div>
+          <div class="node-head">
+            <div class="node-mark"></div>
+            <div class="node-title">Model Viewer</div>
+          </div>
+        </div>
+      </div>
+      <div class="vote-row"><span class="pill">Playful</span><span class="pill meh">Slightly dated</span></div>
+    </div>
+
+    <!-- Concept E — spotlight glow -->
+    <div class="card concept-glow">
+      <header>
+        <h2>E · Spotlight glow</h2>
+        <div class="sub">A soft radial glow behind the toolbar in the node's tint. No hard shape — suggests "this toolbar is lit by that node".</div>
+      </header>
+      <div class="stage">
+        <div class="ghost-toolbar">
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><rect x="4" y="4" width="12" height="12" rx="2"/></svg></button>
+          <div class="sep"></div>
+          <button class="btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+        </div>
+        <div class="indicator-layer"></div>
+        <div class="node">
+          <div class="node-stripe"></div>
+          <div class="node-head">
+            <div class="node-mark"></div>
+            <div class="node-title">Model Viewer</div>
+          </div>
+        </div>
+      </div>
+      <div class="vote-row"><span class="pill good">Elegant</span><span class="pill meh">Less crisp on light themes</span></div>
+    </div>
+
+    <!-- Concept F — corner brackets -->
+    <div class="card concept-brackets">
+      <header>
+        <h2>F · Corner brackets</h2>
+        <div class="sub">Two small ⌐ / ¬ corner marks at the toolbar's edges, echoing the node's rounded corners. Frames the icon row as a companion surface of the node below.</div>
+      </header>
+      <div class="stage">
+        <div class="ghost-toolbar">
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><rect x="4" y="4" width="12" height="12" rx="2"/></svg></button>
+          <div class="sep"></div>
+          <button class="btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+        </div>
+        <div class="indicator-layer"></div>
+        <div class="node">
+          <div class="node-stripe"></div>
+          <div class="node-head">
+            <div class="node-mark"></div>
+            <div class="node-title">Model Viewer</div>
+          </div>
+        </div>
+      </div>
+      <div class="vote-row"><span class="pill">Architectural</span><span class="pill meh">Two elements instead of one</span></div>
+    </div>
+
+    <!-- Concept G — slim chevron -->
+    <div class="card concept-chevron">
+      <header>
+        <h2>G · Slim chevron</h2>
+        <div class="sub">A 14×7 down-pointing chevron (two hairlines, no fill). Same directional hint as the caret, but airy — no filled blob.</div>
+      </header>
+      <div class="stage">
+        <div class="ghost-toolbar">
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><rect x="4" y="4" width="12" height="12" rx="2"/></svg></button>
+          <div class="sep"></div>
+          <button class="btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+        </div>
+        <div class="indicator-layer"></div>
+        <div class="node">
+          <div class="node-stripe"></div>
+          <div class="node-head">
+            <div class="node-mark"></div>
+            <div class="node-title">Model Viewer</div>
+          </div>
+        </div>
+      </div>
+      <div class="vote-row"><span class="pill good">Directional &amp; tidy</span><span class="pill">Closest to current idea</span></div>
+    </div>
+
+    <!-- Concept H — gradient wash -->
+    <div class="card concept-wash">
+      <header>
+        <h2>H · Gradient wash</h2>
+        <div class="sub">No shape at all — a translucent vertical tint fading from transparent down into the node's color. Pure color association.</div>
+      </header>
+      <div class="stage">
+        <div class="ghost-toolbar">
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><rect x="4" y="4" width="12" height="12" rx="2"/></svg></button>
+          <div class="sep"></div>
+          <button class="btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+        </div>
+        <div class="indicator-layer"></div>
+        <div class="node">
+          <div class="node-stripe"></div>
+          <div class="node-head">
+            <div class="node-mark"></div>
+            <div class="node-title">Model Viewer</div>
+          </div>
+        </div>
+      </div>
+      <div class="vote-row"><span class="pill">Calmest option</span><span class="pill meh">Subtle — may miss at a glance</span></div>
+    </div>
+
+    <!-- Concept I — tab hinge -->
+    <div class="card concept-hinge">
+      <header>
+        <h2>I · Tab hinge</h2>
+        <div class="sub">A small rounded "tab root" rising out of the node's top edge, matching its outline. The toolbar sits on top of this hinge like a floating label.</div>
+      </header>
+      <div class="stage">
+        <div class="ghost-toolbar">
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><rect x="4" y="4" width="12" height="12" rx="2"/></svg></button>
+          <div class="sep"></div>
+          <button class="btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg></button>
+          <button class="btn"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+        </div>
+        <div class="indicator-layer"></div>
+        <div class="node">
+          <div class="node-stripe"></div>
+          <div class="node-head">
+            <div class="node-mark"></div>
+            <div class="node-title">Model Viewer</div>
+          </div>
+        </div>
+      </div>
+      <div class="vote-row"><span class="pill good">Makes structural sense</span><span class="pill meh">Adds a small chrome piece — least "ghosty"</span></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,140 @@
+flowchart LR
+    BOOT[python -m ea_node_editor.bootstrap -> bootstrap.main -> app.run] --> SPLASH[OpeningSplash + RegistryLoader]
+    SPLASH --> SW[create_shell_window / ShellWindow facade]
+    U[User] --> MS[MainShell.qml]
+    SW --> MS
+    MS --> GC[GraphCanvas.qml]
+    MS --> GSD[GraphicsSettingsDialog]
+    MS --> GSO[GraphSearchOverlay]
+    MS --> CQI[ConnectionQuickInsertOverlay]
+    MS --> AOM[AddOnManagerPane]
+    MS --> SEO[ScriptEditorOverlay]
+    MS --> GHO[GraphHintOverlay]
+    MS --> CFO[ContentFullscreenOverlay]
+    MS --> INS[InspectorPane user-facing IDs]
+
+    GC --> ROOTLAYERS[GraphCanvasRootLayers]
+    GC --> GCINPUT[GraphCanvasInputLayers]
+    GC --> GCCM[GraphCanvasContextMenus]
+    GC --> GCVIEWCTRL[GraphCanvasViewportController]
+    GC --> GSTATE[graphCanvasStateBridge]
+    GC --> GCOMMAND[graphCanvasCommandBridge]
+    GC --> GVIEW[graphCanvasViewBridge]
+
+    ROOTLAYERS --> GCBG[GraphCanvasBackground]
+    ROOTLAYERS --> BACKDROP[Backdrop GraphCanvasWorldLayer]
+    ROOTLAYERS --> EDGE[EdgeLayer]
+    ROOTLAYERS --> BACKDROPINPUT[Backdrop input GraphCanvasWorldLayer]
+    ROOTLAYERS --> GCDP[GraphCanvasDropPreview]
+    ROOTLAYERS --> WORLD[GraphCanvasWorldLayer]
+    ROOTLAYERS --> GCMINI[GraphCanvasMinimapOverlay]
+    WORLD --> NODEDEL[GraphCanvasNodeDelegate]
+    BACKDROP --> NODEDEL
+    NODEDEL --> GNH[GraphNodeHost]
+    GNH --> NSL[GraphNodeSurfaceLoader]
+    GNH --> HDR[GraphNodeHeaderLayer]
+    NODECARD[NodeCard wrapper] --> GNH
+    GNH --> INS
+
+    GSD --> SW
+    GSO --> SW
+    CQI --> SW
+    AOM --> SW
+    SEO --> SW
+    GHO --> SW
+    CFO --> SW
+
+    SW --> APC[AppPreferencesController]
+    SW --> RUN[RunController]
+    SW --> RPROJ[RunProjectionController]
+    SW --> REVENT[RunEventController]
+    SW --> PSC[ProjectSessionController]
+    SW --> WSEL[WorkspaceSelectionContext]
+    SW --> WNAV[WorkspaceNavigationController]
+    SW --> WEDIT[WorkspaceEditController]
+    SW --> WDROP[WorkspaceDropConnectController]
+    SW --> WFLOW[WorkflowLibraryController]
+    SW --> WPKG[WorkspacePackageIOController]
+    SW --> MEDIA[MediaPanelActionService]
+    SW --> CEXP[CanvasExportPresenter]
+    SW --> SEARCH[window_search_scope_state]
+    SW --> INSPECTOR_HELPERS[library, inspector, and quick-insert projection owners]
+    SW --> TBRIDGE
+    SW --> THEME[theme registry and stylesheet builder]
+    SW --> GTBRIDGE
+    SW --> GTHEME[graph theme registry/runtime]
+
+    SW --> GS[GraphSceneBridge]
+    SW --> VP[ViewportBridge]
+    SW --> BRIDGES[Focused QML bridges and status surfaces]
+
+    GS --> GR[(GraphModel)]
+    GS --> HIER[graph.hierarchy]
+    GS --> XFORM[graph.transforms]
+    GS --> HIST[(RuntimeGraphHistory)]
+
+    WNAV --> NAV[WorkspaceViewNavOps]
+    WEDIT --> EFFECTS[MutationUiEffects]
+    WDROP --> EFFECTS
+    WEDIT --> GI[GraphInteractions]
+    WPKG --> IO[WorkspaceIOOps]
+    MEDIA --> GS
+    MEDIA --> WEDIT
+    MEDIA --> WDROP
+    MEDIA --> PSC
+CEXP --> GS
+CEXP --> GC
+    INSPECTOR_HELPERS --> EFFECTIVE[graph.effective_ports]
+
+    WEDIT --> GS
+    WDROP --> GS
+    GI --> GS
+    NAV --> WM[WorkspaceManager]
+    WM --> GR
+
+    WFLOW --> CWF[custom_workflows codec]
+    CWF --> GCWF[(custom_workflows_global.json)]
+
+    APC --> APPPREF[(app_preferences.json)]
+    THEME --> TOKENS[stitch_dark and stitch_light tokens]
+
+    RUN --> SER[JsonProjectSerializer]
+    PSC --> SER
+    PSC --> SESS[SessionAutosaveStore]
+
+    SER --> MIG[JsonProjectMigration]
+    SER --> CODEC[JsonProjectCodec]
+    SER --> SFE[(.cxproj project files)]
+    SESS --> LAST[(last_session.json envelope)]
+    SESS --> AUTO[(autosave.cxproj)]
+
+    PLUGDIR[(Loose corex .py files)] --> PARSER[Bounded static declaration parser]
+    PKGDIR[(Installed schema-2 packages)] --> PKGMGR[Package hash/path/limit validation]
+    PKGMGR --> PARSER
+    BUILTINS[nodes/builtin_functions inert sources] --> PARSER
+    PARSER --> CAND[Fresh candidate NodeRegistry]
+    CAND --> GEN[(Immutable content-addressed generation)]
+    CAND --> REPLACE[RegistryReplacementCoordinator]
+    GEN --> REPLACE
+    REPLACE --> PUBGUARD[Registry publication guard]
+    PUBGUARD --> REG[Current NodeRegistry]
+    ADDONS[3 private shipped add-on catalogs] --> CAND
+    TRUSTED[Private trusted factories / generated descriptors] --> CAND
+    SW --> REG
+
+    RUN --> RUNTIME[CorexRuntime prepare + dispatch]
+    RUNTIME --> EXEC[ExecutionBackendClient]
+    EXEC --> TRANSPORT[Selected ProcessExecutionClient, ExternalPythonExecutionClient, or TrustedInProcessExecutionClient]
+    TRANSPORT --> WORKER[worker_main / load_runtime_snapshot / run_workflow]
+    WORKER -->|typed events via selected transport, backend, and runtime| ACCEPT
+    RUNTIME --> ACCEPT[Validate, accept in SolutionStore, and enrich settlements]
+    ACCEPT --> EXECSIGNAL[ShellWindow.execution_event]
+    EXECSIGNAL -->|one queued connection| REVENT
+    REVENT --> RPROJ
+    REVENT --> VIEWERCONSUMER[ViewerSessionBridge direct consumer]
+    WORKER --> WREG[Worker NodeRegistry from attested agreement]
+    WORKER --> VERIFY[Verify generation root and member digests]
+    VERIFY --> FUNC[Lazy import + PythonFunctionAdapter]
+    WREG --> TRUSTEDRUN[Private trusted factory execution]
+
+    SW --> METRICS[telemetry.system_metrics]

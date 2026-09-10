@@ -1,0 +1,50 @@
+{
+  "nodes.comments.close": {
+    "text": "Close",
+    "category": "general"
+  },
+  "nodes.comments.reply": {
+    "text": "Reply",
+    "category": "general"
+  },
+  "nodes.comments.edit": {
+    "text": "Edit",
+    "category": "general"
+  },
+  "nodes.comments.edit_comment": {
+    "text": "Edit comment",
+    "category": "general"
+  },
+  "nodes.comments.pin": {
+    "text": "Pin",
+    "category": "general"
+  },
+  "nodes.comments.unpin": {
+    "text": "Unpin",
+    "category": "general"
+  },
+  "nodes.comments.resolve": {
+    "text": "Resolve",
+    "category": "general"
+  },
+  "nodes.comments.reopen": {
+    "text": "Reopen",
+    "category": "general"
+  },
+  "nodes.comments.delete": {
+    "text": "Delete",
+    "category": "general"
+  },
+  "nodes.comments.delete_comment": {
+    "text": "Delete comment",
+    "category": "general"
+  },
+  "nodes.library.tooltip.input": {
+    "text": "Input:",
+    "category": "general"
+  },
+  "nodes.library.tooltip.output": {
+    "text": "Output:",
+    "category": "general"
+  }
+}

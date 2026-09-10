@@ -1,0 +1,53 @@
+flowchart TD
+    A[App start via package module] --> B[bootstrap.main chooses preferred venv and imports app.run]
+    B --> C[app.run loads startup preferences, creates QApplication, applies icon and stylesheet]
+    C --> D[Show OpeningSplash and start RegistryLoader]
+    D --> DA[Statically parse built-ins, add-ons, loose files, and schema-2 packages into a candidate registry and immutable generations]
+    DA --> E[When boot animation and registry are ready, create_shell_window]
+    E --> F[ShellWindow builds serializer, session store, graph model, workspace manager, runtime history, controllers, bridges, and execution client]
+    F --> G[Load MainShell.qml with focused context properties and GraphCanvas]
+    G --> H[Startup sequence restores session, metadata defaults, workspace tabs, active workspace, and script editor state]
+    H --> I[GraphCanvas composes root bindings, scene and interaction state, viewport controller, root layers, input layers, and context menus]
+    I --> J[QML renders nodes, edges, backdrop layers, minimap, shell overlays, user-facing node labels, ThemeBridge chrome palettes, and graphThemeBridge node and edge palettes]
+
+    J --> K[User edits graph, runs scoped graph search, toggles add-ons, navigates scope, or opens Graphics Settings]
+    K --> L[GraphCanvasInputLayers, GraphCanvasNodeDelegate or GraphNodeHost, and EdgeLayer issue bridge requests]
+    L --> M[ShellWindow delegates to controllers, GraphSceneBridge helpers, GraphInteractions, and workspace ops]
+    L --> MQ[Optional dangling wire release opens quick insert]
+    MQ --> M
+    M --> N[GraphModel mutates and RuntimeGraphHistory records undo or redo snapshots]
+    N --> O[Scene payloads, workspace ownership, and view state republish through graphCanvasStateBridge and graphCanvasViewBridge]
+    O --> J
+
+    J --> PA[New Plugin or Reload Plugins]
+    PA --> PB[Save and parse source without import]
+    PB --> PC[Refuse while run or viewer is active]
+    PC --> PD[Validate all open graphs against a fresh candidate]
+    PD --> PE[Materialize generation and atomically replace registry consumers]
+    PE --> O
+
+    J --> GP[Graphics Settings dialog updates app_preferences.json]
+    GP --> GQ[ShellWindow reapplies graphics flags plus shell theme bridge and stylesheet and resolves graphThemeBridge]
+    GQ --> J
+
+    J --> R[Inline property payloads render inside GraphNodeHost standard surfaces]
+    R --> M
+
+    J --> S[Optional publish subnode as custom workflow]
+    S --> T[Snapshot fragment stored in metadata.custom_workflows and merged with custom_workflows_global.json]
+    T --> U[Node library refresh includes local and global workflow entries]
+
+    J --> V[User clicks Run]
+    V --> W[RunController builds ExecutionRequest plus runtime_snapshot]
+    W --> X[CorexRuntime prepares and dispatches the accepted run]
+    X --> XB[ExecutionBackendClient pins the selected process, external, or trusted transport]
+    XB --> Y[Selected transport sends StartRunCommand; worker validates agreement, resolves artifacts, compiles, and executes]
+    Y --> Z[Typed run, node_settled, and log events return through the selected transport]
+    Z --> ZR[CorexRuntime validates events, accepts solution records, and enriches settlements]
+    ZR --> ZE[ShellWindow.execution_event makes one queued hop to RunEventController]
+    ZE --> ZP[RunProjectionController updates state, status, focus, and actions]
+    ZE --> ZV[ViewerSessionBridge consumes the event directly after run-state routing]
+
+    J --> ZB[Autosave tick or manual save]
+    ZB --> ZC[ProjectSessionController persists view state, script editor state, workspace ownership, and artifact refs]
+    ZC --> ZD[Serializer writes stable graph metadata and values only; no source refs, bundle refs, roots, or digests]

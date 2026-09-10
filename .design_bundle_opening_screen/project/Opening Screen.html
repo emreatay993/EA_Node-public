@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>COREX · Opening Screen explorations</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #05080F; color: #E6EEFB;
+    font-family: "Segoe UI", "Segoe UI Variable", Inter, system-ui, sans-serif; }
+  #root { min-height: 100vh; }
+
+  /* shared splash animations */
+  @keyframes corexSheen {
+    0%   { transform: translateX(-120%); }
+    100% { transform: translateX(340%); }
+  }
+  @keyframes corexCaret {
+    0%, 49%   { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+  @keyframes corexLogIn {
+    from { opacity: 0; transform: translateX(-4px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="splash/tokens.jsx"></script>
+<script type="text/babel" src="splash/variant1_forging_core.jsx"></script>
+<script type="text/babel" src="splash/variant2_graph_assembly.jsx"></script>
+<script type="text/babel" src="splash/variant3_signal_trace.jsx"></script>
+<script type="text/babel" src="splash/variant4_orbital_boot.jsx"></script>
+<script type="text/babel" src="splash/variant5_diagnostic.jsx"></script>
+
+<script type="text/babel">
+const PAGE_BG = '#05080F';
+const FG = '#E6EEFB';
+const FG_MUTED = '#8895B2';
+const FG_DIM = '#4A566F';
+const RULE = '#1F2A40';
+
+function Notes({ title, chips = [], children }) {
+  return (
+    <div style={{
+      width: 720, marginTop: 20, color: FG_MUTED, fontSize: 12.5, lineHeight: 1.55,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: FG, letterSpacing: 0.2 }}>{title}</div>
+        {chips.map((c, i) => (
+          <span key={i} style={{
+            fontSize: 10, textTransform: 'uppercase', letterSpacing: 1.2,
+            padding: '3px 8px', border: `1px solid ${RULE}`, borderRadius: 2,
+            color: FG_MUTED, fontWeight: 500,
+          }}>{c}</span>
+        ))}
+      </div>
+      <div style={{ maxWidth: 640 }}>{children}</div>
+    </div>
+  );
+}
+
+function VariantCell({ index, title, subtitle, chips, notes, children }) {
+  return (
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      {/* Variant header, positioned outside the splash card */}
+      <div style={{ marginBottom: 18 }}>
+        <div style={{
+          fontSize: 10, color: FG_DIM, letterSpacing: 1.8,
+          textTransform: 'uppercase', fontWeight: 600, fontFamily: '"Cascadia Mono", Consolas, monospace',
+        }}>Variant · 0{index}</div>
+        <div style={{
+          fontSize: 22, fontWeight: 600, color: FG, marginTop: 4, letterSpacing: -0.2,
+        }}>{title}</div>
+        <div style={{ fontSize: 13, color: FG_MUTED, marginTop: 2 }}>{subtitle}</div>
+      </div>
+      {children}
+      <Notes title="Design notes" chips={chips}>{notes}</Notes>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div style={{
+      minHeight: '100vh', background: PAGE_BG,
+      paddingBottom: 80,
+      backgroundImage:
+        `radial-gradient(circle at 20% 10%, rgba(47,107,255,0.06), transparent 50%),` +
+        `radial-gradient(circle at 80% 80%, rgba(0,209,255,0.04), transparent 50%)`,
+    }}>
+      {/* Intro header */}
+      <div style={{ padding: '56px 64px 24px', maxWidth: 1200 }}>
+        <div style={{
+          fontSize: 10, color: FG_DIM, letterSpacing: 2, textTransform: 'uppercase',
+          fontWeight: 600, fontFamily: '"Cascadia Mono", Consolas, monospace',
+        }}>COREX · Design exploration</div>
+        <h1 style={{
+          fontSize: 34, fontWeight: 600, color: FG,
+          margin: '10px 0 14px', letterSpacing: -0.5,
+        }}>Opening screen — 5 directions</h1>
+        <p style={{
+          fontSize: 14, color: FG_MUTED, lineHeight: 1.6, maxWidth: 720, margin: 0,
+        }}>
+          Frameless 720×440 splash windows, shown on black the way they'd appear
+          over the OS. All five animate in a 2–5s boot loop and share the same
+          palette — pulled from the COREX app icon (navy <span style={mono}>#0B0F1A</span>,
+          blue→cyan gradient <span style={mono}>#2F6BFF → #00D1FF</span>,
+          soft accent <span style={mono}>#6FA8FF</span>) and keep the signature
+          warm-yellow port as the single "live" color. Typography is Segoe UI
+          for chrome, Cascadia Mono for anything data-shaped.
+        </p>
+        <div style={{
+          marginTop: 20, display: 'flex', gap: 24, flexWrap: 'wrap',
+          fontSize: 11, color: FG_DIM, letterSpacing: 0.3,
+        }}>
+          <Token swatch="#0B0F1A" label="card bg · #0B0F1A" />
+          <Token swatch="linear-gradient(135deg,#2F6BFF,#00D1FF)" label="brand gradient" />
+          <Token swatch="#6FA8FF" label="soft accent" />
+          <Token swatch="#FFDA6B" label="port (the live color)" />
+          <Token swatch="#67D487" label="ok" />
+          <Token swatch="#E8A838" label="warn" />
+        </div>
+      </div>
+
+      {/* Grid of variants — two per row */}
+      <div style={{
+        padding: '40px 64px',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 720px)',
+        gap: '72px 64px', justifyContent: 'start',
+      }}>
+        <VariantCell
+          index="1"
+          title="Forging Core"
+          subtitle="The app icon assembles itself — ceremonial, brand-forward."
+          chips={['brand', 'centerpiece']}
+          notes={<>
+            Four outer node rings fade in, connectors grow toward the center,
+            the core ignites, and the wordmark resolves. A literal boot of the
+            logo. Most recognizable; best if the splash needs to double as a
+            brand moment. Progress bar uses the actual brand gradient.
+          </>}
+        >
+          <V1ForgingCore />
+        </VariantCell>
+
+        <VariantCell
+          index="2"
+          title="Graph Assembly"
+          subtitle="A live mini-graph wires itself up on the real canvas."
+          chips={['canvas-native', 'category-coded']}
+          notes={<>
+            Three category-coded node cards (I/O · Logic · Physics) land on the
+            grid and a bezier edge draws between them with a traveling data
+            pulse. Reads as "the editor is already running" — the splash IS a
+            graph. Most honest to what the product does.
+          </>}
+        >
+          <V2GraphAssembly />
+        </VariantCell>
+
+        <VariantCell
+          index="3"
+          title="Signal Trace"
+          subtitle="A single pipeline of ports lights up step by step."
+          chips={['minimal', 'typographic']}
+          notes={<>
+            One row of eight warm-yellow ports, linked by a thin gradient edge.
+            The active port pulses; done ports are filled; idle ones are dim.
+            Current task label sits dead-center in Cascadia Mono with a caret.
+            The most restrained variant — could ship as a 1s splash.
+          </>}
+        >
+          <V3SignalTrace />
+        </VariantCell>
+
+        <VariantCell
+          index="4"
+          title="Orbital Boot"
+          subtitle="Core pulses; orbit nodes spin while subsystems warm."
+          chips={['hero', 'checklist']}
+          notes={<>
+            The core from the logo pulses at left; three orbital nodes rotate
+            around it, each standing for a subsystem (Runtime · Registry · Viewer).
+            Right side lists tasks with OK / … / idle markers — the most
+            informative option if you want users to see viewer status explicitly.
+          </>}
+        >
+          <V4OrbitalBoot />
+        </VariantCell>
+
+        <VariantCell
+          index="5"
+          title="Diagnostic"
+          subtitle="Port matrix resolves the registry; log streams alongside."
+          chips={['technical', 'engineer audience']}
+          notes={<>
+            Leans all the way into COREX's dry, technical voice. A 6×10 grid of
+            port handles lights up cell-by-cell while a Cascadia Mono boot log
+            streams on the right, tagged <span style={mono}>[OK]</span> /
+            <span style={mono}> [WARN]</span> / <span style={mono}>[INFO]</span>.
+            No brand moment — pure JetBrains-style status. Strongest fit for
+            engineers who'd rather see what's happening than a logo animation.
+          </>}
+        >
+          <V5Diagnostic />
+        </VariantCell>
+
+        {/* Comparison note cell */}
+        <div style={{
+          width: 720,
+          padding: '28px 32px',
+          border: `1px dashed ${RULE}`,
+          borderRadius: 8,
+          color: FG_MUTED, fontSize: 13, lineHeight: 1.65,
+          alignSelf: 'start',
+          background: 'rgba(47,107,255,0.02)',
+        }}>
+          <div style={{
+            fontSize: 10, color: FG_DIM, letterSpacing: 2, textTransform: 'uppercase',
+            fontWeight: 600, fontFamily: '"Cascadia Mono", Consolas, monospace',
+            marginBottom: 12,
+          }}>How to choose</div>
+          <ul style={{ paddingLeft: 18, margin: 0 }}>
+            <li style={{ marginBottom: 8 }}><strong style={{ color: FG }}>Brand-forward launch → 01.</strong> The logo itself is the hero.</li>
+            <li style={{ marginBottom: 8 }}><strong style={{ color: FG }}>"Feels like the product" → 02.</strong> Splash uses the same canvas, nodes, ports, edges as the editor.</li>
+            <li style={{ marginBottom: 8 }}><strong style={{ color: FG }}>Sub-2s splash → 03.</strong> Works at any duration; scales down cleanly.</li>
+            <li style={{ marginBottom: 8 }}><strong style={{ color: FG }}>engineering viewer / subsystem status matters → 04.</strong> Puts runtime, registry, engineering viewer on screen with live state.</li>
+            <li><strong style={{ color: FG }}>Engineer audience, hackable vibe → 05.</strong> Looks like a boot trace, not a marketing splash.</li>
+          </ul>
+          <div style={{ marginTop: 16, fontSize: 12, color: FG_DIM }}>
+            Happy to combine — e.g. <strong style={{ color: FG_MUTED }}>01 → 02</strong>
+            &nbsp;(logo ignites, dissolves into a live graph) or
+            <strong style={{ color: FG_MUTED }}>&nbsp;04 + 05</strong>
+            &nbsp;(orbital brand moment at top, diagnostic log docked below).
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const mono = {
+  fontFamily: '"Cascadia Mono", Consolas, monospace',
+  color: '#C9D3E8', fontSize: '0.92em',
+  padding: '0 4px',
+};
+
+function Token({ swatch, label }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span style={{
+        width: 14, height: 14, borderRadius: 3,
+        background: swatch, border: `1px solid ${RULE}`,
+      }} />
+      <span style={{ fontFamily: '"Cascadia Mono", Consolas, monospace', fontSize: 11 }}>{label}</span>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

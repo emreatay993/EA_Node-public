@@ -1,0 +1,26 @@
+{
+  "inspector.axis.reset": {
+    "text": "Reset axis to automatic range and linear scale",
+    "category": "general"
+  },
+  "inspector.node_definition.ungroup": {
+    "text": "Ungroup this subnode; child nodes move to the parent scope.",
+    "category": "warning"
+  },
+  "inspector.node_links.add": {
+    "text": "Add a link to the selected node",
+    "category": "tutorial"
+  },
+  "inspector.pane.collapse": {
+    "text": "Collapse properties pane",
+    "category": "general"
+  },
+  "inspector.pane.expand": {
+    "text": "Expand properties pane",
+    "category": "general"
+  },
+  "inspector.ports.delete_selected": {
+    "text": "Delete the selected subnode port; affected connections may be removed.",
+    "category": "warning"
+  }
+}

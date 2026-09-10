@@ -1,0 +1,28 @@
+{
+  "schema_version": 2,
+  "package_profile": "source",
+  "packages": {
+    "corex": {
+      "distribution": "corex-node-editor",
+      "version": "0.1.0",
+      "source": "..",
+      "editable": true,
+      "extras": [
+        "all"
+      ],
+      "required": true,
+      "console_scripts": []
+    },
+    "mars": {
+      "distribution": "mars-modal-response-solver",
+      "version": "1.0.0",
+      "source": "../../MARS_",
+      "editable": true,
+      "extras": [],
+      "required": false,
+      "console_scripts": [
+        "MARSBatch"
+      ]
+    }
+  }
+}

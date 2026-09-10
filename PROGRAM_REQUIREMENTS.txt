@@ -1,0 +1,158 @@
+﻿CANONICAL SPEC NOTICE (2026-03-01)
+- This file is retained as upstream draft input.
+- Canonical implementation specs now live under docs/specs/INDEX.md.
+
+
+
+------------------------
+
+Workspace Manager:
+- Program should have a WorkspaceManager which has the following features
+
+The application supports multiple independent node graphs, called Workspaces.
+
+A Workspace Tab Bar is shown at the bottom of the main canvas area.
+
+Each tab corresponds to exactly one workspace (graph).
+
+User actions
+
+Create workspace: + button or menu File â†’ New Workspace.
+
+Rename workspace: double-click tab title (or context menu â†’ Rename).
+
+Close workspace: tab close button (with â€œunsaved changesâ€ warning if needed).
+
+Duplicate workspace: context menu â†’ Duplicate.
+
+Reorder tabs: drag-and-drop.
+
+Switch workspace: click tab; shortcuts Ctrl+Tab / Ctrl+Shift+Tab.
+
+Behavior / acceptance criteria
+
+Each workspace has its own:
+
+nodes/edges
+
+selection state
+
+pan/zoom state
+
+undo/redo stack (recommended)
+
+Switching tabs is instant and preserves each workspaceâ€™s view state.
+
+Workspace tabs persist across restarts (serialize list + active tab + per-workspace state).
+
+Implementation note (Qt/PyQt)
+
+Use a QTabBar/QTabWidget (or a custom tab strip) where each tab hosts a NodeGraphView (e.g., QGraphicsView-based) backed by its own scene/model.
+
+I also want the â€œViews >> V1â€ concept
+
+Thatâ€™s usually multiple views of the same workspace (e.g., split views or separate viewports). Spec it separately:
+
+Feature: Views (Multiple Viewports per Workspace)
+
+A workspace can have multiple views (V1, V2â€¦) showing the same graph.
+
+Each view has independent pan/zoom but shares the same underlying node/edge model.
+
+
+--------------------------------------------------
+
+
+Nodes:
+- Each node, even if it is custom-made, should have its own exec/completed input/outputs that can be exposed from its properties
+- Each node should be collapsible such that when collapsed, it reduces to node that shows only its icon or name. Also input outputs should collapse as if they connect from a single point from left(inputs), and right (outputs)
+- It should be easy to add properties to each node (for example via decorators etc, but I am open to ideas), such that properties added are shown right after they are added.
+
+-------------------
+
+
+- Node Library:
+	- Functions:
+		- Users should be able to search through the nodes, based on filters such as existing input or output data types, node categories or strings containing the node name.
+
+-------------------
+
+
+
+Error Handling:
+- When a node in that step fails to run, program center the screen to the node (at that zoom level) of that step (even if it is in a supernode and shows a comit style thinking box reporting the error that caused the flow to abort.
+
+
+
+
+Status bar layout (left â†’ right), each as a small widget:
+1) Engine status segment: icon + text (Ready/Running/Paused/Error) and optional PID/job id.
+2) Job summary segment: Running / Queued / Completed / Failed counts.
+3) System metrics segment: CPU % and RAM used/total (GB), updated every 1s via QTimer.
+4) Notifications segment: warning/error icon + count; clicking opens the log/notifications dock.
+
+Implementation requirements:
+- Use QMainWindow.setStatusBar(QStatusBar).
+- Use addPermanentWidget for right-aligned segments; leftmost uses showMessage or a left widget.
+- Create a reusable StatusItem widget (QWidget) containing an icon + QLabel, optional click (mousePressEvent or QToolButton).
+- Provide an API on the main window:
+  set_engine_state(state: Literal["ready","running","paused","error"], details: str="")
+  set_job_counts(running:int, queued:int, done:int, failed:int)
+  set_metrics(cpu_percent:float, ram_used_gb:float, ram_total_gb:float)
+  set_notification_counts(warnings:int, errors:int)
+- Styling: dark UI; status bar has accent blue background, white text, compact height (~26px).
+- No blocking calls in the UI thread; metrics updates must be lightweight.
+
+
+-------------------------------------------
+
+Performance Requirements:
+Stack: PyQt6, QGraphicsScene/QGraphicsView, custom QGraphicsItem (no per-node QGraphicsProxyWidget for main graph).
+Target scale: at least 1000 nodes and 5000 edges in one scene.
+Responsiveness target: p95 frame time <= 33 ms during pan/zoom with target graph loaded.
+Interaction target: drag/select/connect operations feel real-time with no multi-second stalls.
+Startup target: open target graph in under 3 s on reference hardware.
+Qt Rendering and View Settings
+
+Use QGraphicsView::MinimalViewportUpdate (or benchmark against BoundingRectViewportUpdate).
+Enable optimization flags: DontSavePainterState, DontAdjustForAntialiasing (if visual quality allows).
+Use caching where beneficial: view background cache and item-level cache for expensive static visuals.
+Fix scene rect explicitly; avoid frequent sceneRect recomputation.
+Antialiasing policy: disable or reduce while panning/zooming; restore on interaction stop.
+Benchmark item index mode: BspTreeIndex for mostly static scenes, NoIndex for highly dynamic scenes.
+Node/Edge Item Requirements
+
+paint() must be allocation-free in hot path (no per-frame object creation).
+Precompute and cache edge paths (QPainterPath) and text layout.
+Cache stable boundingRect() and shape() results.
+Level-of-detail rendering: simplify nodes/edges/labels when zoomed out.
+Only update dirty items; avoid full-scene invalidation.
+Python Overhead Controls
+
+Keep graph model separate from UI items.
+Batch graph mutations; do not emit per-item update signals in large loops.
+Coalesce frequent updates with short timer-based debounce (8-16 ms window).
+Use lightweight Python objects (dataclass(slots=True) / __slots__) in core graph data.
+Keep Python out of ultra-hot render loops; move hotspots to NumPy/Cython/C++ if profiling proves need.
+No blocking work on UI thread.
+Concurrency Rules
+
+UI thread: rendering, input, scene mutations only.
+Worker threads (QThreadPool/QRunnable) for compute-heavy tasks (layout, validation, analytics).
+Cross-thread communication via queued signals only.
+Profiling and Acceptance Tests
+
+Must include scripted stress scenarios: load, pan, zoom, box-select, mass connect/disconnect.
+Measure and report: FPS/frame time percentiles, mutation latency, memory usage.
+Profiling tools: cProfile/py-spy plus in-app timers around load, layout, paint, and update phases.
+Release gate: all performance targets met on reference hardware with target-scale graph.
+
+Some Recommended settings for performance:
+view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.MinimalViewportUpdate)
+view.setOptimizationFlag(QGraphicsView.OptimizationFlag.DontSavePainterState, True)
+view.setOptimizationFlag(QGraphicsView.OptimizationFlag.DontAdjustForAntialiasing, True)
+scene.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.BspTreeIndex)  # benchmark vs NoIndex
+
+
+--------------------
+

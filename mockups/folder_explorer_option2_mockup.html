@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Folder Explorer Option 2 Mockup</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --canvas: #eef2f6;
+      --grid: rgba(64, 76, 92, 0.12);
+      --node: #ffffff;
+      --node-border: #c8d1dc;
+      --node-title: #f6eadc;
+      --accent: #0eb887;
+      --text: #17202b;
+      --muted: #627184;
+      --line: #dce3eb;
+      --row-hover: #eaf6ff;
+      --row-selected: #d8ecff;
+      --blue: #2870d6;
+      --folder: #f7c64d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        var(--canvas);
+      background-size: 32px 32px;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 32px;
+    }
+
+    .canvas {
+      position: relative;
+      width: min(1180px, 100%);
+      height: min(760px, calc(100vh - 64px));
+      min-height: 620px;
+      overflow: hidden;
+      border: 1px solid #d4dce6;
+      background:
+        radial-gradient(circle at 72% 18%, rgba(14, 184, 135, 0.08), transparent 32%),
+        rgba(248, 250, 252, 0.75);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+    }
+
+    .node {
+      position: absolute;
+      left: 52px;
+      top: 40px;
+      width: min(1000px, calc(100% - 104px));
+      height: 590px;
+      border: 1px solid var(--node-border);
+      border-radius: 8px;
+      background: var(--node);
+      overflow: hidden;
+      box-shadow: 0 18px 34px rgba(34, 43, 55, 0.22);
+    }
+
+    .node::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 5px;
+      background: var(--accent);
+      z-index: 2;
+    }
+
+    .titlebar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 18px 0;
+      background: var(--node-title);
+      border-bottom: 1px solid #ead7c2;
+    }
+
+    .titlebar .label {
+      font-size: 16px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .surface {
+      height: calc(100% - 56px);
+      background: #f8fbfd;
+      display: grid;
+      grid-template-rows: 44px 1fr;
+    }
+
+    .pathbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      background: #f4f8fb;
+      min-width: 0;
+    }
+
+    .crumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--blue);
+      font-size: 14px;
+      min-width: 0;
+    }
+
+    .sep {
+      color: #a2adbb;
+      font-size: 20px;
+      margin-top: -1px;
+    }
+
+    .table {
+      min-width: 0;
+      overflow: hidden;
+      background: #ffffff;
+      display: grid;
+      grid-template-rows: 34px 1fr 20px;
+    }
+
+    .thead,
+    .row {
+      display: grid;
+      grid-template-columns: minmax(330px, 1.6fr) minmax(190px, 0.75fr) minmax(130px, 0.52fr) minmax(110px, 0.45fr);
+      min-width: 820px;
+    }
+
+    .thead {
+      border-bottom: 1px solid var(--line);
+      color: #1f2935;
+      background: #fbfdff;
+      font-size: 14px;
+    }
+
+    .th,
+    .cell {
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      border-right: 1px solid var(--line);
+      min-width: 0;
+    }
+
+    .th:last-child,
+    .cell:last-child {
+      border-right: 0;
+    }
+
+    .sort {
+      width: 0;
+      height: 0;
+      margin-right: 8px;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 7px solid #697788;
+    }
+
+    .tbody {
+      overflow: hidden;
+      min-width: 820px;
+    }
+
+    .row {
+      height: 36px;
+      font-size: 14px;
+      border-bottom: 1px solid #eef2f6;
+      user-select: none;
+      cursor: default;
+    }
+
+    .row:hover {
+      background: var(--row-hover);
+    }
+
+    .row.selected {
+      background: var(--row-selected);
+      outline: 1px solid #7bb4ee;
+      outline-offset: -1px;
+    }
+
+    .name-cell {
+      gap: 8px;
+    }
+
+    .name-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .parent-row .name-text {
+      font-weight: 600;
+      color: #111820;
+    }
+
+    .drag-grip {
+      width: 14px;
+      height: 18px;
+      flex: 0 0 auto;
+      border-radius: 4px;
+      background:
+        radial-gradient(circle, #9aa6b4 1.3px, transparent 1.5px) 0 1px / 6px 6px;
+      opacity: 0;
+    }
+
+    .row:hover .drag-grip,
+    .row.selected .drag-grip {
+      opacity: 1;
+    }
+
+    .scrollbar {
+      height: 20px;
+      background: #f1f3f6;
+      border-top: 1px solid #e5e9ef;
+      min-width: 820px;
+      position: relative;
+    }
+
+    .scrollbar::before {
+      content: "";
+      position: absolute;
+      left: 34px;
+      right: 302px;
+      top: 7px;
+      height: 5px;
+      border-radius: 999px;
+      background: #8b929b;
+    }
+
+    .pointer {
+      position: absolute;
+      left: 790px;
+      top: 520px;
+      width: 210px;
+      border: 1px solid #b9c5d2;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 10px 24px rgba(35, 46, 60, 0.18);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pointer .path {
+      min-width: 0;
+      font-size: 12px;
+      color: #445266;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ghost {
+      position: absolute;
+      left: 508px;
+      top: 212px;
+      width: 190px;
+      height: 34px;
+      border: 1px dashed #4aa6ff;
+      border-radius: 5px;
+      background: rgba(216, 236, 255, 0.74);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      color: #1b5fa8;
+      font-size: 13px;
+      transform: rotate(-1deg);
+      box-shadow: 0 8px 14px rgba(39, 112, 214, 0.14);
+    }
+
+    svg {
+      flex: 0 0 auto;
+      display: block;
+    }
+
+    .folder-fill {
+      fill: var(--folder);
+      stroke: #d89b12;
+    }
+
+    .file-fill {
+      fill: #f7f9fc;
+      stroke: #aeb9c7;
+    }
+
+    .up-fill {
+      fill: #111820;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 14px;
+      }
+
+      .canvas {
+        min-height: 560px;
+        height: calc(100vh - 28px);
+      }
+
+      .node {
+        left: 14px;
+        top: 18px;
+        width: calc(100% - 28px);
+        height: 500px;
+      }
+
+      .pointer,
+      .ghost {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="canvas" aria-label="Canvas mockup">
+    <section class="node" aria-label="Folder Explorer node">
+      <header class="titlebar">
+        <svg width="28" height="24" viewBox="0 0 28 24" aria-hidden="true">
+          <path class="folder-fill" d="M2.5 6.5h8l2 2h13v11.5a1.5 1.5 0 0 1-1.5 1.5h-20a1.5 1.5 0 0 1-1.5-1.5z"/>
+          <path class="folder-fill" d="M2.5 4.5A1.5 1.5 0 0 1 4 3h6.8l2 2H24a1.5 1.5 0 0 1 1.5 1.5v2h-23z"/>
+        </svg>
+        <div class="label">Folder Explorer</div>
+      </header>
+
+      <div class="surface">
+        <nav class="pathbar" aria-label="Folder path">
+          <span class="crumb">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 10.5 12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H4.5A1.5 1.5 0 0 1 3 19.5z" fill="#f6f9fc" stroke="#9aa7b8" stroke-width="1.5"/>
+            </svg>
+            Home
+          </span>
+          <span class="sep">›</span>
+          <span class="crumb">Sample</span>
+        </nav>
+
+        <div class="table">
+          <div class="thead">
+            <div class="th"><span class="sort"></span>Name</div>
+            <div class="th">Date modified</div>
+            <div class="th">Type</div>
+            <div class="th">Size</div>
+          </div>
+
+          <div class="tbody">
+            <div class="row parent-row selected">
+              <div class="cell name-cell">
+                <span class="drag-grip"></span>
+                <svg width="20" height="18" viewBox="0 0 20 18" aria-hidden="true">
+                  <path class="up-fill" d="M10 2 2.5 9.5h5V16h5V9.5h5z"/>
+                </svg>
+                <span class="name-text">..</span>
+              </div>
+              <div class="cell muted"></div>
+              <div class="cell muted">Parent folder</div>
+              <div class="cell muted"></div>
+            </div>
+
+            <div class="row">
+              <div class="cell name-cell">
+                <span class="drag-grip"></span>
+                <svg width="22" height="18" viewBox="0 0 24 18" aria-hidden="true">
+                  <path class="folder-fill" d="M1.5 5h7l1.7 2h12.3v9.2c0 .7-.6 1.3-1.3 1.3H2.8c-.7 0-1.3-.6-1.3-1.3z"/>
+                  <path class="folder-fill" d="M1.5 2.8c0-.7.6-1.3 1.3-1.3h6.4l1.7 2h10.3c.7 0 1.3.6 1.3 1.3V7h-21z"/>
+                </svg>
+                <span class="name-text">Default</span>
+              </div>
+              <div class="cell">11/26/2024 3:06 PM</div>
+              <div class="cell">File folder</div>
+              <div class="cell"></div>
+            </div>
+
+            <div class="row">
+              <div class="cell name-cell">
+                <span class="drag-grip"></span>
+                <svg width="22" height="18" viewBox="0 0 24 18" aria-hidden="true">
+                  <path class="folder-fill" d="M1.5 5h7l1.7 2h12.3v9.2c0 .7-.6 1.3-1.3 1.3H2.8c-.7 0-1.3-.6-1.3-1.3z"/>
+                  <path class="folder-fill" d="M1.5 2.8c0-.7.6-1.3 1.3-1.3h6.4l1.7 2h10.3c.7 0 1.3.6 1.3 1.3V7h-21z"/>
+                </svg>
+                <span class="name-text">dummy</span>
+              </div>
+              <div class="cell">10/21/2023 10:09 PM</div>
+              <div class="cell">File folder</div>
+              <div class="cell"></div>
+            </div>
+
+            <div class="row">
+              <div class="cell name-cell">
+                <span class="drag-grip"></span>
+                <svg width="22" height="18" viewBox="0 0 24 18" aria-hidden="true">
+                  <path class="folder-fill" d="M1.5 5h7l1.7 2h12.3v9.2c0 .7-.6 1.3-1.3 1.3H2.8c-.7 0-1.3-.6-1.3-1.3z"/>
+                  <path class="folder-fill" d="M1.5 2.8c0-.7.6-1.3 1.3-1.3h6.4l1.7 2h10.3c.7 0 1.3.6 1.3 1.3V7h-21z"/>
+                </svg>
+                <span class="name-text">user</span>
+              </div>
+              <div class="cell">4/27/2026 12:40 AM</div>
+              <div class="cell">File folder</div>
+              <div class="cell"></div>
+            </div>
+
+            <div class="row">
+              <div class="cell name-cell">
+                <span class="drag-grip"></span>
+                <svg width="22" height="18" viewBox="0 0 24 18" aria-hidden="true">
+                  <path class="folder-fill" d="M1.5 5h7l1.7 2h12.3v9.2c0 .7-.6 1.3-1.3 1.3H2.8c-.7 0-1.3-.6-1.3-1.3z"/>
+                  <path class="folder-fill" d="M1.5 2.8c0-.7.6-1.3 1.3-1.3h6.4l1.7 2h10.3c.7 0 1.3.6 1.3 1.3V7h-21z"/>
+                </svg>
+                <span class="name-text">Public</span>
+              </div>
+              <div class="cell">11/27/2024 1:54 AM</div>
+              <div class="cell">File folder</div>
+              <div class="cell"></div>
+            </div>
+
+            <div class="row">
+              <div class="cell name-cell">
+                <span class="drag-grip"></span>
+                <svg width="22" height="18" viewBox="0 0 24 18" aria-hidden="true">
+                  <path class="folder-fill" d="M1.5 5h7l1.7 2h12.3v9.2c0 .7-.6 1.3-1.3 1.3H2.8c-.7 0-1.3-.6-1.3-1.3z"/>
+                  <path class="folder-fill" d="M1.5 2.8c0-.7.6-1.3 1.3-1.3h6.4l1.7 2h10.3c.7 0 1.3.6 1.3 1.3V7h-21z"/>
+                </svg>
+                <span class="name-text">TEMP</span>
+              </div>
+              <div class="cell">2/2/2026 10:28 AM</div>
+              <div class="cell">File folder</div>
+              <div class="cell"></div>
+            </div>
+
+            <div class="row">
+              <div class="cell name-cell">
+                <span class="drag-grip"></span>
+                <svg width="18" height="22" viewBox="0 0 18 22" aria-hidden="true">
+                  <path class="file-fill" d="M2.5 1.5h8l5 5v13A1.5 1.5 0 0 1 14 21H2.5A1.5 1.5 0 0 1 1 19.5V3A1.5 1.5 0 0 1 2.5 1.5z"/>
+                  <path d="M10.5 1.7v4.8h4.8" fill="none" stroke="#aeb9c7" stroke-width="1.2"/>
+                </svg>
+                <span class="name-text">app.R</span>
+              </div>
+              <div class="cell">4/21/2026 9:12 PM</div>
+              <div class="cell">R File</div>
+              <div class="cell">4 KB</div>
+            </div>
+          </div>
+
+          <div class="scrollbar" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="ghost" aria-hidden="true">
+      <svg width="20" height="16" viewBox="0 0 24 18">
+        <path class="folder-fill" d="M1.5 5h7l1.7 2h12.3v9.2c0 .7-.6 1.3-1.3 1.3H2.8c-.7 0-1.3-.6-1.3-1.3z"/>
+        <path class="folder-fill" d="M1.5 2.8c0-.7.6-1.3 1.3-1.3h6.4l1.7 2h10.3c.7 0 1.3.6 1.3 1.3V7h-21z"/>
+      </svg>
+      <span>dummy</span>
+    </div>
+
+    <aside class="pointer" aria-label="Path pointer node">
+      <svg width="22" height="18" viewBox="0 0 24 18" aria-hidden="true">
+        <path class="folder-fill" d="M1.5 5h7l1.7 2h12.3v9.2c0 .7-.6 1.3-1.3 1.3H2.8c-.7 0-1.3-.6-1.3-1.3z"/>
+        <path class="folder-fill" d="M1.5 2.8c0-.7.6-1.3 1.3-1.3h6.4l1.7 2h10.3c.7 0 1.3.6 1.3 1.3V7h-21z"/>
+      </svg>
+      <div class="path">C:\Users\user\dummy</div>
+    </aside>
+  </main>
+</body>
+</html>

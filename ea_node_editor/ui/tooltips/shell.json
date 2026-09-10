@@ -1,0 +1,30 @@
+{
+  "shell.node_library.collapse": {
+    "text": "Collapse node library",
+    "category": "general"
+  },
+  "shell.node_library.expand": {
+    "text": "Expand node library",
+    "category": "general"
+  },
+  "shell.run_toolbar.pause_resume": {
+    "text": "Pause / Resume",
+    "category": "general"
+  },
+  "shell.tab_strip.scroll_left": {
+    "text": "Scroll tabs left",
+    "category": "general"
+  },
+  "shell.tab_strip.scroll_right": {
+    "text": "Scroll tabs right",
+    "category": "general"
+  },
+  "shell.workspace_console.collapse_output_panel": {
+    "text": "Collapse output panel",
+    "category": "general"
+  },
+  "shell.workspace_console.expand_output_panel": {
+    "text": "Expand output panel",
+    "category": "general"
+  }
+}

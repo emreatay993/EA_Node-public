@@ -1,0 +1,260 @@
+/* COREX Node Editor — Colors & Type
+ * Extracted from ea_node_editor/ui/theme/tokens.py and ea_node_editor/ui/graph_theme/tokens.py
+ * Two base shell themes (Stitch Dark, Stitch Light) plus graph-theme node/edge palettes.
+ */
+
+:root,
+[data-theme="stitch-dark"] {
+  /* --- Shell: backgrounds --- */
+  --app-bg: #1f1f1f;
+  --panel-bg: #1b1d22;
+  --panel-alt-bg: #24262c;
+  --toolbar-bg: #2a2b30;
+  --console-bg: #15181d;
+  --canvas-bg: #1d1f24;
+  --canvas-minor-grid: #2b2f38;
+  --canvas-major-grid: #323746;
+
+  /* --- Shell: text --- */
+  --app-fg: #e8e8e8;
+  --muted-fg: #d0d5de;
+  --group-title-fg: #bdc5d3;
+  --panel-title-fg: #f0f4fb;
+  --inline-driven-fg: #bdc5d3;
+
+  /* --- Shell: chrome --- */
+  --border: #3a3d45;
+  --hover: #33373f;
+  --pressed: #2d3139;
+  --splitter-handle: #272b33;
+  --splitter-handle-hover: #323742;
+  --scrollbar-handle: #4d5361;
+
+  /* --- Inputs --- */
+  --input-bg: #22242a;
+  --input-border: #4a4f5a;
+  --input-fg: #f0f2f5;
+
+  /* --- Inspector --- */
+  --inspector-card-bg: #20242b;
+  --inspector-section-header-bg: #32363f;
+  --inspector-selected-bg: #2f4a66;
+  --inspector-selected-border: #60cdff;
+  --inspector-danger-bg: #392629;
+  --inspector-danger-border: #b96a72;
+  --inspector-danger-fg: #f1b0b7;
+
+  /* --- Accent (shell) --- */
+  --accent: #60cdff;          /* bright cyan — selection, focus rings */
+  --accent-strong: #1d8ce0;   /* ink blue — primary CTA, active */
+
+  /* --- Status bar --- */
+  --status-bg: #24a2dc;
+  --status-border: #1b7daf;
+  --status-fg: #ffffff;
+  --status-hover-bg: rgba(255, 255, 255, 0.13);
+
+  /* --- Tabs --- */
+  --tab-bg: #2a2d34;
+  --tab-fg: #d8deea;
+  --tab-selected-bg: #2f343e;
+  --tab-selected-fg: #f2f4f8;
+
+  /* --- Graph node card (Stitch Dark graph theme) --- */
+  --node-card-bg: #1b1d22;
+  --node-card-border: #3a3d45;
+  --node-card-selected-border: #60cdff;
+  --node-header-bg: #2a2b30;
+  --node-header-fg: #f0f4fb;
+  --node-scope-badge-bg: #1d8ce0;
+  --node-scope-badge-border: #60cdff;
+  --node-scope-badge-fg: #f2f4f8;
+  --node-inline-row-bg: #24262c;
+  --node-inline-row-border: #4a4f5a;
+  --node-inline-label-fg: #d0d5de;
+  --node-port-label-fg: #d0d5de;
+  --node-port-fill: #ffda6b;     /* the signature warm yellow port handle */
+  --node-port-border: #ffe48b;
+  --node-port-ring-fill: #44ffc857;
+  --node-port-ring-border: #66ffe29a;
+
+  /* --- Graph edges --- */
+  --edge-warning: #e8a838;
+  --edge-selected: #f0f4fb;
+  --edge-preview: #60cdff;
+  --edge-valid-drag: #60cdff;
+  --edge-invalid-drag: #d0d5de;
+
+  /* --- Category accents (node headers by category) --- */
+  --cat-default: #4aa9d6;
+  --cat-core: #2f89ff;
+  --cat-io: #22b455;
+  --cat-physics: #d88c32;
+  --cat-logic: #b35bd1;
+  --cat-hpc: #c75050;
+
+  /* --- Port-kind indicator colors --- */
+  --port-data: #7aa8ff;
+  --port-exec: #67d487;
+  --port-completed: #e4ce7d;
+  --port-failed: #d94f4f;
+
+  /* --- Run-state semantics (derived from port-kind + edge warn) --- */
+  --run-idle: #6b7280;
+  --run-running: #60cdff;
+  --run-completed: #67d487;
+  --run-failed: #d94f4f;
+  --run-warning: #e8a838;
+
+  /* --- Spacing & radii (inferred from styles.py padding & radius values) --- */
+  --radius-sm: 3px;   /* buttons, inputs */
+  --radius-md: 4px;   /* scrollbar handles */
+  --radius-lg: 6px;   /* option cards */
+  --radius-xl: 8px;   /* settings cards, nodes */
+  --radius-pill: 999px;
+
+  --space-1: 2px;
+  --space-2: 3px;
+  --space-3: 4px;
+  --space-4: 6px;
+  --space-5: 8px;
+  --space-6: 11px;
+  --space-7: 18px;
+  --space-8: 24px;
+
+  /* Subtle shadow system (Qt widgets are flat; shadow is used sparingly) */
+  --shadow-node: 0 1px 0 rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+  --shadow-popup: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-inset-input: inset 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="stitch-light"] {
+  --app-bg: #eef2f6;
+  --panel-bg: #f5f7fa;
+  --panel-alt-bg: #ffffff;
+  --toolbar-bg: #e5ebf2;
+  --console-bg: #ffffff;
+  --canvas-bg: #f3f5f8;
+  --canvas-minor-grid: #d9dfe8;
+  --canvas-major-grid: #c0c9d6;
+
+  --app-fg: #17212b;
+  --muted-fg: #5f6b7a;
+  --group-title-fg: #4f5e70;
+  --panel-title-fg: #1b2733;
+  --inline-driven-fg: #4f5e70;
+
+  --border: #b7c2ce;
+  --hover: #dbe4ee;
+  --pressed: #cfd9e6;
+  --splitter-handle: #c3ccd8;
+  --splitter-handle-hover: #abb8c8;
+  --scrollbar-handle: #98a6b8;
+
+  --input-bg: #ffffff;
+  --input-border: #96a6ba;
+  --input-fg: #17212b;
+
+  --inspector-card-bg: #ffffff;
+  --inspector-section-header-bg: #e3eaf1;
+  --inspector-selected-bg: #d8ebf9;
+  --inspector-selected-border: #1d8ce0;
+  --inspector-danger-bg: #fae7e9;
+  --inspector-danger-border: #d28c94;
+  --inspector-danger-fg: #98434c;
+
+  --accent: #1d8ce0;
+  --accent-strong: #b9dcf7;
+
+  --status-bg: #dceefb;
+  --status-border: #9ec8e5;
+  --status-fg: #173449;
+  --status-hover-bg: rgba(0, 0, 0, 0.08);
+
+  --tab-bg: #dce4ec;
+  --tab-fg: #314154;
+  --tab-selected-bg: #edf3f8;
+  --tab-selected-fg: #162231;
+
+  --node-card-bg: #f5f7fa;
+  --node-card-border: #b7c2ce;
+  --node-card-selected-border: #1d8ce0;
+  --node-header-bg: #e5ebf2;
+  --node-header-fg: #1b2733;
+  --node-scope-badge-bg: #b9dcf7;
+  --node-scope-badge-border: #1d8ce0;
+  --node-scope-badge-fg: #162231;
+  --node-inline-row-bg: #ffffff;
+  --node-inline-row-border: #96a6ba;
+  --node-inline-label-fg: #5f6b7a;
+  --node-port-label-fg: #5f6b7a;
+  --node-port-fill: #ffda6b;
+  --node-port-border: #e7c35d;
+  --node-port-ring-fill: #33a7d98a;
+  --node-port-ring-border: #5598c971;
+
+  --edge-warning: #d58e1e;
+  --edge-selected: #1b2733;
+  --edge-preview: #1d8ce0;
+  --edge-valid-drag: #1d8ce0;
+  --edge-invalid-drag: #5f6b7a;
+}
+
+/* ──────────────────────────────────────────────────────────── */
+/*  Type system                                                 */
+/*  COREX is a Windows desktop app and ships with Segoe UI as   */
+/*  the primary UI face (see styles.py: `font-family: 'Segoe UI'`) */
+/*  and an implicit monospace face for code/console.             */
+/* ──────────────────────────────────────────────────────────── */
+
+:root {
+  --font-ui: "Segoe UI", "Segoe UI Variable", "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Cascadia Mono", "Cascadia Code", "Consolas", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-xs: 10.5px;    /* micro labels, port-kind tags */
+  --text-sm: 11px;      /* section titles, secondary */
+  --text-base: 12px;    /* Qt default; body of most widgets */
+  --text-md: 13px;      /* node header, panel titles */
+  --text-lg: 14px;      /* inspector title */
+  --text-xl: 16px;      /* dialog titles */
+  --text-2xl: 20px;
+  --text-3xl: 28px;
+
+  --lh-tight: 1.15;
+  --lh-normal: 1.4;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --tracking-wide: 0.4px;   /* panel title */
+  --tracking-tight: 0.5px;  /* uppercase section titles */
+}
+
+/* Semantic typography tokens */
+.corex-h1 { font: var(--fw-semibold) var(--text-3xl)/var(--lh-tight) var(--font-ui); color: var(--panel-title-fg); }
+.corex-h2 { font: var(--fw-semibold) var(--text-2xl)/var(--lh-tight) var(--font-ui); color: var(--panel-title-fg); }
+.corex-h3 { font: var(--fw-semibold) var(--text-lg)/var(--lh-normal) var(--font-ui); color: var(--app-fg); }
+.corex-panel-title {
+  font: var(--fw-bold) var(--text-md)/var(--lh-normal) var(--font-ui);
+  color: var(--panel-title-fg);
+  letter-spacing: var(--tracking-wide);
+}
+.corex-section-title {
+  font: var(--fw-semibold) var(--text-sm)/var(--lh-normal) var(--font-ui);
+  color: var(--muted-fg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-tight);
+}
+.corex-body { font: var(--fw-regular) var(--text-base)/var(--lh-normal) var(--font-ui); color: var(--app-fg); }
+.corex-label { font: var(--fw-regular) var(--text-base)/var(--lh-normal) var(--font-ui); color: var(--muted-fg); }
+.corex-node-title { font: var(--fw-semibold) var(--text-md)/var(--lh-tight) var(--font-ui); color: var(--node-header-fg); }
+.corex-port-label { font: var(--fw-regular) var(--text-sm)/var(--lh-normal) var(--font-ui); color: var(--node-port-label-fg); }
+.corex-code, .corex-mono {
+  font: var(--fw-regular) var(--text-base)/var(--lh-normal) var(--font-mono);
+  color: var(--app-fg);
+}
+.corex-status { font: var(--fw-regular) var(--text-base)/var(--lh-normal) var(--font-ui); color: var(--status-fg); }
+
+html, body { font-family: var(--font-ui); }

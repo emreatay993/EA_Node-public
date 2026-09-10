@@ -1,0 +1,81 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #f4f7fb;
+  color: #172033;
+  font-family:
+    Inter,
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.corex-editor {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.corex-editor .excalidraw {
+  --color-primary: #2364aa;
+  --color-primary-darker: #154b82;
+  --color-primary-darkest: #0c355f;
+  --color-primary-light: #e6f0fb;
+  height: 100%;
+}
+
+.corex-status {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  z-index: 5;
+  max-width: min(30rem, calc(100vw - 2rem));
+  padding: 5px 8px;
+  border: 1px solid rgba(23, 32, 51, 0.14);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #3d4b63;
+  font-size: 12px;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+.corex-loading {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+}
+
+.corex-loading h1,
+.corex-loading p {
+  margin: 0;
+}
+
+.corex-loading h1 {
+  color: #172033;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.corex-loading p {
+  color: #526178;
+  font-size: 13px;
+}

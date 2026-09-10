@@ -1,0 +1,149 @@
+! ======================================================================
+! Reaction-to-force handoff for Ansys Mechanical
+!
+! Usage:
+!   Place this command snippet in load step N+1, before that step solves.
+!   It reads reactions from load step N and applies them as nodal forces
+!   in the current load step.
+!
+! Notes:
+!   - The named selection must be sent to the solver.
+!   - Face/edge/vertex/default element-face named selections normally arrive
+!     as node components. Element-face selections sent as Mesh200 arrive as
+!     MESH200 element components and are converted to nodes here.
+!   - Source load step reactions must be present in the result file.
+!   - This single-block form enters /POST1 and SET in the target step. Use the
+!     two-block button workflow when source-step ramp history must be preserved.
+! ======================================================================
+
+! ----------------------- USER SETTINGS -------------------------------
+RTF_NS_NAME='MY_NAMED_SELECTION'
+RTF_SOURCE_LS=1
+RTF_FORCE_SCALE=1.0
+
+RTF_APPLY_FX=1
+RTF_APPLY_FY=1
+RTF_APPLY_FZ=1
+
+RTF_DELETE_UX=1
+RTF_DELETE_UY=1
+RTF_DELETE_UZ=1
+! --------------------- END USER SETTINGS -----------------------------
+
+/COM,BEGIN reaction_to_force_next_step
+
+! Remove stale handoff arrays from any previous solve attempt.
+*DEL,RTF_NODE_IDS,,NOPR
+*DEL,RTF_FORCE_X,,NOPR
+*DEL,RTF_FORCE_Y,,NOPR
+*DEL,RTF_FORCE_Z,,NOPR
+
+FINISH
+/PREP7
+ALLSEL,ALL
+
+! Resolve the Mechanical named selection to active nodes.
+! Node components are used directly. MESH200 element-face components are
+! reduced to their attached active nodes. Other component types are rejected.
+*GET,RTF_COMP_TYPE,COMP,RTF_NS_NAME,TYPE
+
+*IF,RTF_COMP_TYPE,EQ,1,THEN
+  CMSEL,S,RTF_NS_NAME
+*ELSEIF,RTF_COMP_TYPE,EQ,2,THEN
+  ESEL,NONE
+  CMSEL,S,RTF_NS_NAME
+  *GET,RTF_ELEM_COUNT,ELEM,0,COUNT
+  *IF,RTF_ELEM_COUNT,LE,0,THEN
+    *MSG,ERROR,RTF_ELEM_COUNT
+Named selection selected %G elements; expected at least one.
+  *ENDIF
+  *GET,RTF_FIRST_ELEM,ELEM,0,NUM,MIN
+  *GET,RTF_ELEM_TYPE,ELEM,RTF_FIRST_ELEM,ATTR,TYPE
+  *GET,RTF_ELEM_NAME,ETYP,RTF_ELEM_TYPE,ATTR,ENAM
+  *IF,RTF_ELEM_NAME,NE,200,THEN
+    *MSG,ERROR,RTF_ELEM_NAME
+Named selection type is incorrect (%G): use face, edge, element face, or nodal.
+  *ENDIF
+  NSLE,S,ACTIVE
+*ELSE
+  *MSG,ERROR,RTF_COMP_TYPE
+Named selection type is incorrect (%G): use face, edge, element face, or nodal.
+*ENDIF
+
+! Save the handoff node selection before switching to /POST1.
+*GET,RTF_NODE_COUNT,NODE,0,COUNT
+*IF,RTF_NODE_COUNT,LE,0,THEN
+  *MSG,ERROR,RTF_NODE_COUNT
+Named selection selected %G nodes; expected at least one.
+*ENDIF
+CM,RTF_SOURCE_NODES,NODE
+
+! Save the clean target-step database before SET changes database DOF values.
+SAVE,RTFDB,DB
+FINISH
+/POST1
+
+! Read the final substep from the requested source load step.
+SET,RTF_SOURCE_LS,LAST
+CMSEL,S,RTF_SOURCE_NODES
+*GET,RTF_NODE_COUNT,NODE,0,COUNT
+
+*DIM,RTF_NODE_IDS,ARRAY,RTF_NODE_COUNT
+*DIM,RTF_FORCE_X,ARRAY,RTF_NODE_COUNT
+*DIM,RTF_FORCE_Y,ARRAY,RTF_NODE_COUNT
+*DIM,RTF_FORCE_Z,ARRAY,RTF_NODE_COUNT
+*VGET,RTF_NODE_IDS(1),NODE,,NLIST
+
+*DO,RTF_INDEX,1,RTF_NODE_COUNT
+  RTF_NODE_ID=RTF_NODE_IDS(RTF_INDEX)
+  RTF_CURRENT_FX=0
+  RTF_CURRENT_FY=0
+  RTF_CURRENT_FZ=0
+  *GET,RTF_CURRENT_FX,NODE,RTF_NODE_ID,RF,FX
+  *GET,RTF_CURRENT_FY,NODE,RTF_NODE_ID,RF,FY
+  *GET,RTF_CURRENT_FZ,NODE,RTF_NODE_ID,RF,FZ
+  RTF_FORCE_X(RTF_INDEX)=RTF_CURRENT_FX
+  RTF_FORCE_Y(RTF_INDEX)=RTF_CURRENT_FY
+  RTF_FORCE_Z(RTF_INDEX)=RTF_CURRENT_FZ
+*ENDDO
+
+! Save only the extracted parameters, then restore the clean target-step DB.
+PARSAV,ALL,RTFPARM,PARM
+FINISH
+RESUME,RTFDB,DB
+PARRES,CHANGE,RTFPARM,PARM
+/SOLU
+CMSEL,S,RTF_SOURCE_NODES
+
+! Remove displacement constraints on the handoff nodes before applying forces.
+*IF,RTF_DELETE_UX,NE,0,THEN
+  DDELE,ALL,UX
+*ENDIF
+*IF,RTF_DELETE_UY,NE,0,THEN
+  DDELE,ALL,UY
+*ENDIF
+*IF,RTF_DELETE_UZ,NE,0,THEN
+  DDELE,ALL,UZ
+*ENDIF
+
+! Apply the source-step reactions as nodal forces in the current step.
+*DO,RTF_INDEX,1,RTF_NODE_COUNT
+  RTF_NODE_ID=RTF_NODE_IDS(RTF_INDEX)
+  *IF,RTF_APPLY_FX,NE,0,THEN
+    RTF_APPLIED_FX=RTF_FORCE_X(RTF_INDEX)*RTF_FORCE_SCALE
+    F,RTF_NODE_ID,FX,RTF_APPLIED_FX
+  *ENDIF
+  *IF,RTF_APPLY_FY,NE,0,THEN
+    RTF_APPLIED_FY=RTF_FORCE_Y(RTF_INDEX)*RTF_FORCE_SCALE
+    F,RTF_NODE_ID,FY,RTF_APPLIED_FY
+  *ENDIF
+  *IF,RTF_APPLY_FZ,NE,0,THEN
+    RTF_APPLIED_FZ=RTF_FORCE_Z(RTF_INDEX)*RTF_FORCE_SCALE
+    F,RTF_NODE_ID,FZ,RTF_APPLIED_FZ
+  *ENDIF
+*ENDDO
+
+! Step the replacement force at the start of the current load step.
+KBC,1
+ALLSEL,ALL
+/COM,END reaction_to_force_next_step

@@ -1,0 +1,3 @@
+case_id,set_id,bolt_id,region,max_gap,min_contact_pressure,separated_area_fraction,redistributed_ptl,quality_flags
+LC1,1,B1,under_head_contact,0.01,2.5,0.02,4300,sample nonlinear contact row
+LC1,1,B2,gasket_land,0.02,2.1,0.04,4200,

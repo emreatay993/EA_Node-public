@@ -1,0 +1,384 @@
+{
+  "active_workspace_id": "ws_engineering_viewer_capabilities",
+  "metadata": {
+    "artifact_store": {
+      "artifacts": {
+        "engineering_viewer.cad_source": {
+          "artifact_kind": "engineering_source",
+          "io_dir": "in",
+          "managed_relative_path": "workspaces/Model Viewer Capabilities [39f5dadc]/nodes/Path Pointer - Colored XCAF STEP [b21868de]/in/engineering/source/colored_housing.step",
+          "node_folder": "Path Pointer - Colored XCAF STEP [b21868de]",
+          "node_id": "node_cad_source",
+          "node_title": "Colored XCAF STEP",
+          "node_type": "Path Pointer",
+          "node_workspace_id": "ws_engineering_viewer_capabilities",
+          "node_workspace_name": "Model Viewer Capabilities",
+          "relative_path": "workspaces/Model Viewer Capabilities [39f5dadc]/nodes/Path Pointer - Colored XCAF STEP [b21868de]/in/engineering/source/colored_housing.step",
+          "runtime_artifact": {
+            "data_type_id": "COREX.DataTypes.Path",
+            "format": "step",
+            "provenance": "corex.example.engineering_viewer",
+            "schema_version": 1,
+            "sha256": "bf222e28abdd7cc6cb66c76209e1f4dde882171e8ec571929d33f8ae8508606a",
+            "size_bytes": 17834
+          },
+          "workspace_folder": "Model Viewer Capabilities [39f5dadc]"
+        },
+        "engineering_viewer.fe_source": {
+          "artifact_kind": "engineering_source",
+          "io_dir": "in",
+          "managed_relative_path": "workspaces/Model Viewer Capabilities [39f5dadc]/nodes/Path Pointer - RGBA FE Mesh [4358e3d1]/in/engineering/source/rgba_overlay.vtu",
+          "node_folder": "Path Pointer - RGBA FE Mesh [4358e3d1]",
+          "node_id": "node_fe_source",
+          "node_title": "RGBA FE Mesh",
+          "node_type": "Path Pointer",
+          "node_workspace_id": "ws_engineering_viewer_capabilities",
+          "node_workspace_name": "Model Viewer Capabilities",
+          "relative_path": "workspaces/Model Viewer Capabilities [39f5dadc]/nodes/Path Pointer - RGBA FE Mesh [4358e3d1]/in/engineering/source/rgba_overlay.vtu",
+          "runtime_artifact": {
+            "data_type_id": "COREX.DataTypes.Path",
+            "format": "vtu",
+            "provenance": "corex.example.engineering_viewer",
+            "schema_version": 1,
+            "sha256": "c404bc495c0c48e9b44092ff30d6e9ddaae98bc52ced4c10203685668675af4a",
+            "size_bytes": 158362
+          },
+          "workspace_folder": "Model Viewer Capabilities [39f5dadc]"
+        }
+      },
+      "staged": {}
+    },
+    "custom_workflows": [],
+    "ui": {
+      "passive_style_presets": {
+        "edge_presets": [],
+        "node_presets": []
+      },
+      "script_editor": {
+        "floating": false,
+        "visible": false,
+        "width": 0.0
+      }
+    },
+    "workflow_settings": {
+      "environment": {
+        "python_path": "",
+        "working_directory": ""
+      },
+      "general": {
+        "author": "",
+        "description": "A self-contained colored CAD and RGBA FE multi-scene walkthrough for the fullscreen and detached Model Viewer controls.",
+        "project_name": "Model Viewer Capabilities"
+      },
+      "logging": {
+        "capture_console": true,
+        "level": "info"
+      },
+      "plugins": {
+        "enabled": []
+      },
+      "solver_config": {
+        "enable_parallel": true,
+        "memory_limit_gb": 12,
+        "thread_count": 8
+      }
+    },
+    "workspace_order": [
+      "ws_engineering_viewer_capabilities"
+    ]
+  },
+  "name": "Model Viewer Capabilities",
+  "project_id": "proj_engineering_viewer_capabilities",
+  "schema_version": 5,
+  "workspace_order": [
+    "ws_engineering_viewer_capabilities"
+  ],
+  "workspaces": [
+    {
+      "active_view_id": "view_engineering_viewer_capabilities",
+      "dirty": true,
+      "edges": [
+        {
+          "edge_id": "edge_cad_scene",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_cad_import",
+          "source_port_key": "scene",
+          "target_node_id": "node_engineering_viewer",
+          "target_port_key": "scene_1",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_fe_scene",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_fe_import",
+          "source_port_key": "scene",
+          "target_node_id": "node_engineering_viewer",
+          "target_port_key": "scene_2",
+          "visual_style": {}
+        }
+      ],
+      "name": "Model Viewer Capabilities",
+      "nodes": [
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 330.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "path": true,
+            "scene": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_cad_import",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "length_unit": "mm",
+            "path": "saved://engineering_viewer.cad_source"
+          },
+          "title": "CAD Import",
+          "type_id": "engineering.cad_import",
+          "x": -500.0,
+          "y": 20.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 340.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "exists": true,
+            "path": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_cad_source",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "mode": "file",
+            "must_exist": true,
+            "path": "saved://engineering_viewer.cad_source",
+            "show_full_path": false
+          },
+          "title": "Colored XCAF STEP",
+          "type_id": "io.path_pointer",
+          "visual_style": {},
+          "x": -910.0,
+          "y": -30.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 640.0,
+          "custom_width": 860.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "scene_1": true,
+            "scene_2": true,
+            "selections": true,
+            "session": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_engineering_viewer",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "camera_bookmarks": [
+              {
+                "camera_state": {
+                  "focal_point": [
+                    32.0,
+                    12.0,
+                    9.0
+                  ],
+                  "parallel_projection": false,
+                  "parallel_scale": 36.0,
+                  "position": [
+                    92.0,
+                    -72.0,
+                    66.0
+                  ],
+                  "view_angle": 30.0,
+                  "viewup": [
+                    0.0,
+                    0.0,
+                    1.0
+                  ],
+                  "zoom": 1.0
+                },
+                "created_at": "2026-07-14T00:00:00",
+                "name": "ISO Perspective"
+              },
+              {
+                "camera_state": {
+                  "focal_point": [
+                    32.0,
+                    12.0,
+                    9.0
+                  ],
+                  "parallel_projection": true,
+                  "parallel_scale": 36.0,
+                  "position": [
+                    32.0,
+                    -92.0,
+                    9.0
+                  ],
+                  "view_angle": 30.0,
+                  "viewup": [
+                    0.0,
+                    0.0,
+                    1.0
+                  ],
+                  "zoom": 1.0
+                },
+                "created_at": "2026-07-14T00:00:00",
+                "name": "Front Orthographic"
+              }
+            ],
+            "clip_axis": "x",
+            "clip_enabled": false,
+            "clip_offset": 0.0,
+            "parallel_projection": false,
+            "representation": "surface_with_edges",
+            "saved_selections": {
+              "published_name": "",
+              "scene_fingerprint": "",
+              "schema": "engineering_selection_set.v2",
+              "selections": []
+            },
+            "scene_input_ids": [
+              "scene_1",
+              "scene_2"
+            ],
+            "scene_styles": {
+              "scene_2": {
+                "color": "",
+                "opacity": 0.32
+              }
+            },
+            "show_attribute_colors": true,
+            "show_mesh_edges": true,
+            "show_orientation_triad": true,
+            "show_view_cube": true,
+            "show_world_axes": true,
+            "viewer_background": "theme"
+          },
+          "title": "Model Viewer",
+          "type_id": "model.viewer",
+          "x": -70.0,
+          "y": 20.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 330.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "path": true,
+            "scene": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_fe_import",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "length_unit": "mm",
+            "path": "saved://engineering_viewer.fe_source"
+          },
+          "title": "FE Import",
+          "type_id": "engineering.fe_import",
+          "x": -500.0,
+          "y": 360.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 340.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "exists": true,
+            "path": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_fe_source",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "mode": "file",
+            "must_exist": true,
+            "path": "saved://engineering_viewer.fe_source",
+            "show_full_path": false
+          },
+          "title": "RGBA FE Mesh",
+          "type_id": "io.path_pointer",
+          "visual_style": {},
+          "x": -910.0,
+          "y": 350.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 1040.0,
+          "custom_width": 2150.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_walkthrough",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "title": "Model Viewer Capabilities"
+          },
+          "title": "Model Viewer Capabilities",
+          "type_id": "passive.annotation.group_backdrop",
+          "visual_style": {},
+          "x": -1240.0,
+          "y": -260.0
+        }
+      ],
+      "views": [
+        {
+          "hide_optional_ports": false,
+          "name": "Capabilities",
+          "pan_x": 235.0,
+          "pan_y": 20.0,
+          "scope_path": [],
+          "view_id": "view_engineering_viewer_capabilities",
+          "zoom": 0.72
+        }
+      ],
+      "workspace_id": "ws_engineering_viewer_capabilities"
+    }
+  ]
+}

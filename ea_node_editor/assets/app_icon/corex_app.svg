@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+
+    <linearGradient id="conn-tl" x1="286.72" y1="286.72" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2F6BFF"/>
+      <stop offset="100%" stop-color="#00D1FF"/>
+    </linearGradient>
+    <linearGradient id="conn-tr" x1="737.28" y1="286.72" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2F6BFF"/>
+      <stop offset="100%" stop-color="#00D1FF"/>
+    </linearGradient>
+    <linearGradient id="conn-bl" x1="286.72" y1="737.28" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2F6BFF"/>
+      <stop offset="100%" stop-color="#00D1FF"/>
+    </linearGradient>
+    <linearGradient id="conn-br" x1="737.28" y1="737.28" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2F6BFF"/>
+      <stop offset="100%" stop-color="#00D1FF"/>
+    </linearGradient>
+    <radialGradient id="core-gradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00D1FF"/>
+      <stop offset="100%" stop-color="#2F6BFF"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="25.6" y="25.6"
+        width="972.8"
+        height="972.8"
+        rx="146.29"
+        fill="#0B0F1A"/>
+  <rect x="29.6" y="29.6"
+        width="964.8"
+        height="964.8"
+        rx="142.29"
+        fill="none"
+        stroke="#2A2F3A"
+        stroke-width="8"/>
+  <circle cx="512" cy="512" r="143.36" fill="#6FA8FF" fill-opacity="0.10"/>
+  <circle cx="512" cy="512" r="102.4" fill="#6FA8FF" fill-opacity="0.22"/>
+
+  <line x1="286.72" y1="286.72" x2="512" y2="512"
+        stroke="url(#conn-tl)"
+        stroke-width="28.44"
+        stroke-linecap="round"/>
+  <line x1="737.28" y1="286.72" x2="512" y2="512"
+        stroke="url(#conn-tr)"
+        stroke-width="28.44"
+        stroke-linecap="round"/>
+  <line x1="286.72" y1="737.28" x2="512" y2="512"
+        stroke="url(#conn-bl)"
+        stroke-width="28.44"
+        stroke-linecap="round"/>
+  <line x1="737.28" y1="737.28" x2="512" y2="512"
+        stroke="url(#conn-br)"
+        stroke-width="28.44"
+        stroke-linecap="round"/>
+  <line x1="368.64" y1="368.64" x2="655.36" y2="655.36"
+        stroke="#6FA8FF"
+        stroke-opacity="0.92"
+        stroke-width="11.38"
+        stroke-linecap="round"/>
+  <line x1="655.36" y1="368.64" x2="368.64" y2="655.36"
+        stroke="#6FA8FF"
+        stroke-opacity="0.92"
+        stroke-width="11.38"
+        stroke-linecap="round"/>
+
+  <circle cx="286.72" cy="286.72" r="46.08"
+          fill="#1A2130"
+          stroke="#2F6BFF"
+          stroke-width="16"/>
+  <circle cx="737.28" cy="286.72" r="46.08"
+          fill="#1A2130"
+          stroke="#2F6BFF"
+          stroke-width="16"/>
+  <circle cx="286.72" cy="737.28" r="46.08"
+          fill="#1A2130"
+          stroke="#2F6BFF"
+          stroke-width="16"/>
+  <circle cx="737.28" cy="737.28" r="46.08"
+          fill="#1A2130"
+          stroke="#2F6BFF"
+          stroke-width="16"/>
+  <circle cx="512" cy="512" r="76.8" fill="url(#core-gradient)"/>
+  <circle cx="512" cy="512" r="107.52"
+          fill="none"
+          stroke="#6FA8FF"
+          stroke-opacity="0.35"
+          stroke-width="10.67"/>
+</svg>

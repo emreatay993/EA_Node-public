@@ -1,0 +1,71 @@
+import QtQuick
+
+// Throwaway mockup theme source. One instance lives in Main.qml and is passed
+// by reference into every concept + shared component, so flipping `isDark`
+// re-themes the whole gallery instantly. NOT a singleton (per project rule);
+// values mirror the real app's Stitch Dark / Stitch Light tokens.
+QtObject {
+    id: t
+
+    property bool isDark: true
+
+    // ---- surfaces ----
+    readonly property color appBg:      isDark ? "#1f1f1f" : "#eef2f6"
+    readonly property color panelBg:    isDark ? "#1b1d22" : "#f5f7fa"
+    readonly property color panelAltBg: isDark ? "#24262c" : "#ffffff"
+    readonly property color toolbarBg:  isDark ? "#2a2b30" : "#e5ebf2"
+    readonly property color canvasBg:   isDark ? "#1d1f24" : "#f3f5f8"
+    readonly property color inputBg:    isDark ? "#22242a" : "#ffffff"
+
+    // ---- lines ----
+    readonly property color border:      isDark ? "#3a3d45" : "#b7c2ce"
+    readonly property color inputBorder: isDark ? "#4a4f5a" : "#96a6ba"
+    readonly property color gridMinor:   isDark ? "#2b2f38" : "#d9dfe8"
+    readonly property color gridMajor:   isDark ? "#323746" : "#c0c9d6"
+
+    // ---- states ----
+    readonly property color hover:   isDark ? "#33373f" : "#dbe4ee"
+    readonly property color pressed: isDark ? "#2d3139" : "#cfd9e6"
+
+    // ---- text ----
+    readonly property color appFg:   isDark ? "#e8e8e8" : "#17212b"
+    readonly property color inputFg: isDark ? "#f0f2f5" : "#17212b"
+    readonly property color mutedFg: isDark ? "#9aa3af" : "#5b6b7b"
+
+    // ---- accent ----
+    readonly property color accent:       isDark ? "#60CDFF" : "#1D8CE0"
+    readonly property color accentStrong: isDark ? "#1D8CE0" : "#b9dcf7"
+    // contrast colour to lay text/glyphs on top of a solid accent fill
+    readonly property color onAccent:     isDark ? "#0c2230" : "#ffffff"
+
+    // ---- node card specifics ----
+    readonly property color nodeBg:       isDark ? "#1b1d22" : "#f5f7fa"
+    readonly property color nodeHeaderBg: isDark ? "#2a2b30" : "#e5ebf2"
+
+    readonly property string fontFamily: "Segoe UI"
+
+    // Per-link-type accent used by chips/cards. Kept constant across themes so a
+    // "web" link always reads blue, a "folder" always amber, etc.
+    function typeColor(kind) {
+        var map = {
+            web:       "#4aa3ff",
+            file:      "#f0a84a",
+            folder:    "#f0c84a",
+            workspace: "#b07cff",
+            node:      "#46c98b"
+        };
+        return map[kind] !== undefined ? map[kind] : String(accent);
+    }
+
+    // Human label for a link kind (used in tabs / preview headers).
+    function typeLabel(kind) {
+        var map = { web: "Web", file: "File", folder: "Folder", workspace: "Workspace", node: "Node" };
+        return map[kind] !== undefined ? map[kind] : kind;
+    }
+
+    // Glyph name for a link kind.
+    function typeGlyph(kind) {
+        var map = { web: "globe", file: "document", folder: "folder", workspace: "workspace", node: "node" };
+        return map[kind] !== undefined ? map[kind] : "chain";
+    }
+}

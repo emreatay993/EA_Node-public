@@ -1,0 +1,3 @@
+case_id,speed_rpm,radial_load_n,axial_load_n,inlet_temp_c,ambient_temp_c,oil_flow_l_min,equivalent_dynamic_load_n
+OP-001,6000,3000,500,70,40,0.15,
+OP-002,12000,5000,1000,85,60,0.12,

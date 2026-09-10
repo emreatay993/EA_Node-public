@@ -1,0 +1,204 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "CL-01",
+      "query": "stress_1200_nodes",
+      "primary_owner": "docs/agent_maps/feature_routes/performance_harness_graph_stress.md",
+      "secondary_owners": [],
+      "focused_test": "tests/test_track_h_perf_harness.py",
+      "not_first_paths": []
+    },
+    {
+      "id": "CL-02",
+      "query": "notched port rendering",
+      "primary_owner": "docs/agent_maps/feature_routes/performance_harness_graph_stress.md",
+      "secondary_owners": [
+        "docs/agent_maps/subsystems/graph_canvas.md"
+      ],
+      "focused_test": "tests/test_track_h_perf_harness.py",
+      "not_first_paths": [
+        "ea_node_editor/ui_qml/components/graph/EdgeLayer.qml"
+      ]
+    },
+    {
+      "id": "CL-03",
+      "query": "benchmark report fields",
+      "primary_owner": "docs/agent_maps/feature_routes/performance_harness_graph_stress.md",
+      "secondary_owners": [],
+      "focused_test": "tests/test_track_h_perf_harness.py",
+      "not_first_paths": []
+    },
+    {
+      "id": "CL-04",
+      "query": "script editor panel width",
+      "primary_owner": "docs/agent_maps/subsystems/qml_shell_and_bridges.md",
+      "secondary_owners": [],
+      "focused_test": "tests/test_script_editor_dock.py",
+      "not_first_paths": [
+        "ea_node_editor/graph/",
+        "ea_node_editor/ui/editor/"
+      ]
+    },
+    {
+      "id": "CL-05",
+      "query": "viewer settings expansion",
+      "primary_owner": "docs/agent_maps/feature_routes/neutral_cad_fe_engineering_viewer.md",
+      "secondary_owners": [],
+      "focused_test": "tests/test_engineering_viewer_example_project.py",
+      "not_first_paths": []
+    },
+    {
+      "id": "CL-06",
+      "query": "fullscreen toolbar click",
+      "primary_owner": "docs/agent_maps/feature_routes/viewer_session_overlay_fullscreen.md",
+      "secondary_owners": [],
+      "focused_test": "tests/test_content_fullscreen_bridge.py",
+      "not_first_paths": [
+        "ea_node_editor/ui_qml/graph_scene_bridge.py"
+      ]
+    },
+    {
+      "id": "CL-07",
+      "query": "graph scene projection",
+      "primary_owner": "docs/agent_maps/feature_routes/graph_scene_payload_and_projection.md",
+      "secondary_owners": [],
+      "focused_test": "tests/test_graph_scene_bridge_bind_regression.py",
+      "not_first_paths": []
+    },
+    {
+      "id": "CL-08",
+      "query": "viewer session ownership",
+      "primary_owner": "docs/agent_maps/feature_routes/viewer_session_overlay_fullscreen.md",
+      "secondary_owners": [],
+      "focused_test": "tests/test_viewer_session_bridge.py",
+      "not_first_paths": [
+        "ea_node_editor/ui_qml/graph_scene_bridge.py"
+      ]
+    },
+    {
+      "id": "CL-09",
+      "query": "node registry builtins",
+      "primary_owner": "docs/agent_maps/subsystems/nodes_registry_builtins.md",
+      "secondary_owners": [],
+      "focused_test": "tests/test_registry_validation.py",
+      "not_first_paths": [
+        "ea_node_editor/ui_qml/"
+      ]
+    },
+    {
+      "id": "CL-10",
+      "query": "runtime snapshot",
+      "primary_owner": "docs/agent_maps/subsystems/execution.md",
+      "secondary_owners": [],
+      "focused_test": "tests/test_handle_registry_leases.py",
+      "not_first_paths": [
+        "ea_node_editor/persistence/",
+        "ea_node_editor/ui_qml/"
+      ]
+    },
+    {
+      "id": "CL-11",
+      "query": "grip flow state",
+      "primary_owner": "docs/agent_maps/feature_routes/node_execution_visualization.md",
+      "primary_path": "ea_node_editor/ui_qml/graph_canvas_state/execution_state_props.py",
+      "secondary_owners": [],
+      "focused_test": "tests/test_port_flow_state.py",
+      "not_first_paths": [
+        "ea_node_editor/graph/effective_ports.py",
+        "ea_node_editor/execution/protocol_codec.py"
+      ]
+    },
+    {
+      "id": "CL-12",
+      "query": "live port runtime state",
+      "primary_owner": "docs/agent_maps/feature_routes/node_execution_visualization.md",
+      "primary_path": "ea_node_editor/ui_qml/graph_canvas_state/execution_state_props.py",
+      "secondary_owners": [],
+      "focused_test": "tests/test_port_flow_state.py",
+      "not_first_paths": [
+        "ea_node_editor/graph/effective_ports.py",
+        "ea_node_editor/execution/protocol_codec.py"
+      ]
+    },
+    {
+      "id": "CL-13",
+      "query": "per-port execution states",
+      "primary_owner": "docs/agent_maps/feature_routes/node_execution_visualization.md",
+      "primary_path": "ea_node_editor/ui_qml/graph_canvas_state/execution_state_props.py",
+      "secondary_owners": [],
+      "focused_test": "tests/test_port_flow_state.py",
+      "not_first_paths": [
+        "ea_node_editor/graph/effective_ports.py",
+        "ea_node_editor/execution/protocol_codec.py"
+      ]
+    },
+    {
+      "id": "CL-14",
+      "query": "signal_plot",
+      "primary_owner": "docs/agent_maps/feature_routes/plotter_nodes.md",
+      "primary_path": "ea_node_editor/nodes/builtin_functions/plot_signal.py",
+      "secondary_owners": [],
+      "focused_test": "tests/test_plot_node_contracts.py",
+      "not_first_paths": []
+    },
+    {
+      "id": "CL-15",
+      "query": "inline list height",
+      "primary_owner": "docs/agent_maps/feature_routes/surface_input_and_inline_controls.md",
+      "primary_path": "ea_node_editor/ui_qml/components/graph/surface_controls/GraphSurfaceListEditor.qml",
+      "secondary_owners": [],
+      "focused_test": "tests/test_graph_surface_input_inline.py",
+      "not_first_paths": []
+    },
+    {
+      "id": "CL-16",
+      "query": "list editor",
+      "primary_owner": "docs/agent_maps/feature_routes/surface_input_and_inline_controls.md",
+      "primary_path": "ea_node_editor/ui_qml/components/graph/surface_controls/GraphSurfaceListEditor.qml",
+      "secondary_owners": [],
+      "focused_test": "tests/test_graph_surface_input_inline.py",
+      "not_first_paths": [
+        "tests/test_script_editor_dock.py"
+      ]
+    },
+    {
+      "id": "CL-17",
+      "query": "expandable inline controls",
+      "primary_owner": "docs/agent_maps/feature_routes/surface_input_and_inline_controls.md",
+      "primary_path": "ea_node_editor/ui_qml/components/graph/GraphInlinePropertiesLayer.qml",
+      "secondary_owners": [],
+      "focused_test": "tests/test_graph_surface_input_inline.py",
+      "not_first_paths": []
+    },
+    {
+      "id": "CL-18",
+      "query": "settings band geometry",
+      "primary_owner": "docs/agent_maps/feature_routes/graph_scene_payload_and_projection.md",
+      "primary_path": "ea_node_editor/ui_qml/graph_scene_payload/factory.py",
+      "secondary_owners": [],
+      "focused_test": "tests/test_graph_scene_presentation_facts.py",
+      "not_first_paths": []
+    },
+    {
+      "id": "CL-19",
+      "query": "standard_inline_property_row_height",
+      "primary_owner": "docs/agent_maps/feature_routes/surface_input_and_inline_controls.md",
+      "primary_path": "ea_node_editor/ui_qml/graph_geometry/standard_metrics.py",
+      "secondary_owners": [],
+      "focused_test": "tests/test_graph_surface_input_inline.py",
+      "not_first_paths": []
+    },
+    {
+      "id": "CL-20",
+      "query": "signal plot inline control height",
+      "primary_owner": "docs/agent_maps/feature_routes/surface_input_and_inline_controls.md",
+      "primary_path": "ea_node_editor/ui_qml/components/graph/GraphInlinePropertiesLayer.qml",
+      "secondary_owners": [],
+      "focused_test": "tests/test_graph_surface_input_inline.py",
+      "not_first_paths": [
+        "ea_node_editor/execution/plot_backend.py"
+      ]
+    }
+  ]
+}

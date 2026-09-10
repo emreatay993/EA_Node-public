@@ -1,0 +1,194 @@
+{
+  "fullscreen.close": {
+    "text": "Close fullscreen",
+    "category": "general"
+  },
+  "fullscreen.pdf.previous_page": {
+    "text": "Previous page (Left or Page Up)",
+    "category": "general"
+  },
+  "fullscreen.pdf.next_page": {
+    "text": "Next page (Right or Page Down)",
+    "category": "general"
+  },
+  "fullscreen.pdf.find": {
+    "text": "Find in PDF (Ctrl+F)",
+    "category": "general"
+  },
+  "fullscreen.pdf.zoom_out": {
+    "text": "Zoom out (Ctrl+-)",
+    "category": "general"
+  },
+  "fullscreen.pdf.zoom_in": {
+    "text": "Zoom in (Ctrl+Plus)",
+    "category": "general"
+  },
+  "fullscreen.pdf.fit_page": {
+    "text": "Fit whole page",
+    "category": "general"
+  },
+  "fullscreen.pdf.fit_width": {
+    "text": "Fit page width",
+    "category": "general"
+  },
+  "fullscreen.pdf.actual_size": {
+    "text": "Actual size (Ctrl+0)",
+    "category": "general"
+  },
+  "fullscreen.pdf.rotate_clockwise": {
+    "text": "Rotate clockwise (R, Shift+R reverses)",
+    "category": "general"
+  },
+  "fullscreen.pdf.search_previous": {
+    "text": "Previous match (Shift+Enter)",
+    "category": "general"
+  },
+  "fullscreen.pdf.search_next": {
+    "text": "Next match (Enter)",
+    "category": "general"
+  },
+  "fullscreen.pdf.search_clear": {
+    "text": "Clear PDF search",
+    "category": "general"
+  },
+  "fullscreen.pdf.previous_page_short": {
+    "text": "Previous page",
+    "category": "general"
+  },
+  "fullscreen.pdf.next_page_short": {
+    "text": "Next page",
+    "category": "general"
+  },
+  "fullscreen.mail.zoom_out": {
+    "text": "Zoom out (Ctrl+-)",
+    "category": "general"
+  },
+  "fullscreen.mail.zoom_in": {
+    "text": "Zoom in (Ctrl+Plus)",
+    "category": "general"
+  },
+  "fullscreen.mail.fit_message": {
+    "text": "Fit whole message",
+    "category": "general"
+  },
+  "fullscreen.mail.fit_width": {
+    "text": "Fit message width",
+    "category": "general"
+  },
+  "fullscreen.mail.actual_size": {
+    "text": "Actual size (Ctrl+0)",
+    "category": "general"
+  },
+  "fullscreen.plot.hover_readout": {
+    "text": "Hover readout",
+    "category": "general"
+  },
+  "fullscreen.plot.vertical_guide": {
+    "text": "Vertical guide",
+    "category": "general"
+  },
+  "fullscreen.plot.crosshair": {
+    "text": "Crosshair",
+    "category": "general"
+  },
+  "fullscreen.source.choose_file": {
+    "text": "Choose source file",
+    "category": "general"
+  },
+  "fullscreen.toolbar.options_suffix": {
+    "text": " options",
+    "category": "general"
+  },
+  "fullscreen.video.play": {
+    "text": "Play",
+    "category": "general"
+  },
+  "fullscreen.video.pause": {
+    "text": "Pause",
+    "category": "general"
+  },
+  "fullscreen.video.rewind_start": {
+    "text": "Rewind to start",
+    "category": "general"
+  },
+  "fullscreen.video.seek_back_10": {
+    "text": "Seek back 10 seconds",
+    "category": "general"
+  },
+  "fullscreen.video.seek_forward_10": {
+    "text": "Seek forward 10 seconds",
+    "category": "general"
+  },
+  "fullscreen.video.disable_loop": {
+    "text": "Disable loop",
+    "category": "general"
+  },
+  "fullscreen.video.loop": {
+    "text": "Loop",
+    "category": "general"
+  },
+  "fullscreen.video.unmute": {
+    "text": "Unmute",
+    "category": "general"
+  },
+  "fullscreen.video.mute": {
+    "text": "Mute",
+    "category": "general"
+  },
+  "fullscreen.video.fit_video": {
+    "text": "Fit video",
+    "category": "general"
+  },
+  "fullscreen.video.fill_video": {
+    "text": "Fill video",
+    "category": "general"
+  },
+  "fullscreen.video.add_bookmark": {
+    "text": "Add bookmark",
+    "category": "general"
+  },
+  "fullscreen.video.set_clip_in": {
+    "text": "Set clip in",
+    "category": "general"
+  },
+  "fullscreen.video.set_clip_out": {
+    "text": "Set clip out",
+    "category": "general"
+  },
+  "fullscreen.video.replace_trimmed_video": {
+    "text": "Replace with trimmed video",
+    "category": "general"
+  },
+  "fullscreen.video.save_trimmed_copy": {
+    "text": "Save trimmed copy",
+    "category": "general"
+  },
+  "fullscreen.video.clear_clip_range": {
+    "text": "Clear clip range",
+    "category": "general"
+  },
+  "fullscreen.video.bookmark_jump": {
+    "text": "Jump to bookmark",
+    "category": "general"
+  },
+  "fullscreen.video.bookmark_delete": {
+    "text": "Delete bookmark",
+    "category": "general"
+  },
+  "fullscreen.web_board.open_editor": {
+    "text": "Open fullscreen editor",
+    "category": "general"
+  },
+  "fullscreen.web_board.editor_unavailable": {
+    "text": "Fullscreen editor unavailable",
+    "category": "inactive"
+  },
+  "fullscreen.timestamp.previous_month": {
+    "text": "Previous month",
+    "category": "general"
+  },
+  "fullscreen.timestamp.next_month": {
+    "text": "Next month",
+    "category": "general"
+  }
+}

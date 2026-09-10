@@ -1,0 +1,305 @@
+# encoding: utf-8
+"""
+Solve an Ansys Workbench archive in place.
+
+Usage:
+  RunWB2.exe -B -R solve_workbench_archive_in_place.wbjn
+
+Place this journal next to exactly one unsolved .wbpz archive, or set
+WBJN_ARCHIVE_DIR to the folder that contains the archive. The journal restores
+the archive as <base>.wbpj, updates all Workbench systems, saves the project,
+and writes <base>_SOLVED.wbpz. Existing solved archives are preserved by using
+a timestamped output name.
+"""
+
+import datetime
+import codecs
+import os
+import re
+import sys
+import traceback
+
+
+LOG_PATH = None
+LOG_BUFFER = []
+
+
+def _timestamp():
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _archive_timestamp():
+    return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+
+def _print_line(text):
+    try:
+        print(text)
+    except Exception:
+        pass
+
+
+def _write_line(path, text):
+    handle = codecs.open(path, "a", "utf-8")
+    try:
+        handle.write(text + os.linesep)
+        handle.flush()
+    finally:
+        handle.close()
+
+
+def log(stage, message):
+    line = "{0} [{1}] {2}".format(_timestamp(), stage, message)
+    _print_line(line)
+    LOG_BUFFER.append(line)
+    if LOG_PATH:
+        _write_line(LOG_PATH, line)
+
+
+def set_log_path(path):
+    global LOG_PATH
+    LOG_PATH = path
+    parent = os.path.dirname(os.path.abspath(path))
+    if parent and not os.path.isdir(parent):
+        os.makedirs(parent)
+    handle = codecs.open(LOG_PATH, "w", "utf-8")
+    try:
+        handle.write("{0} [START] Workbench archive solve journal log{1}".format(_timestamp(), os.linesep))
+        handle.write("{0} [START] Log path: {1}{2}".format(_timestamp(), LOG_PATH, os.linesep))
+        for line in LOG_BUFFER:
+            handle.write(line + os.linesep)
+        handle.flush()
+    finally:
+        handle.close()
+
+
+def _safe_attr(obj, name):
+    try:
+        value = getattr(obj, name)
+        if value is None:
+            return ""
+        return str(value)
+    except Exception:
+        return ""
+
+
+def _script_directory():
+    try:
+        script_file = globals().get("__file__", "")
+    except Exception:
+        script_file = ""
+    if script_file:
+        try:
+            script_dir = os.path.dirname(os.path.abspath(script_file))
+            if os.path.isdir(script_dir):
+                return script_dir
+        except Exception:
+            pass
+
+    try:
+        for arg in sys.argv:
+            if str(arg).lower().endswith(".wbjn"):
+                script_dir = os.path.dirname(os.path.abspath(arg))
+                if os.path.isdir(script_dir):
+                    return script_dir
+    except Exception:
+        pass
+
+    return ""
+
+
+def _search_directory():
+    env_dir = os.environ.get("WBJN_ARCHIVE_DIR", "").strip()
+    if env_dir:
+        candidate = os.path.abspath(os.path.expanduser(env_dir))
+        if not os.path.isdir(candidate):
+            raise RuntimeError("WBJN_ARCHIVE_DIR is not a directory: {0}".format(candidate))
+        return candidate
+
+    script_dir = _script_directory()
+    if script_dir:
+        return script_dir
+
+    return os.getcwd()
+
+
+def _is_solved_archive(path):
+    stem = os.path.splitext(os.path.basename(path))[0]
+    if re.search(r"_SOLVED$", stem, re.IGNORECASE):
+        return True
+    if re.search(r"_SOLVED_[0-9]{8}_[0-9]{6}$", stem, re.IGNORECASE):
+        return True
+    return False
+
+
+def _find_archive(search_dir):
+    all_archives = []
+    input_archives = []
+    for name in sorted(os.listdir(search_dir)):
+        path = os.path.join(search_dir, name)
+        if not os.path.isfile(path):
+            continue
+        if not name.lower().endswith(".wbpz"):
+            continue
+        all_archives.append(path)
+        if not _is_solved_archive(path):
+            input_archives.append(path)
+
+    log("DISCOVERY", "Search directory: {0}".format(search_dir))
+    log("DISCOVERY", "All .wbpz archives found: {0}".format(len(all_archives)))
+    for path in all_archives:
+        marker = "ignored solved output" if _is_solved_archive(path) else "input candidate"
+        log("DISCOVERY", "{0}: {1}".format(marker, path))
+
+    if len(input_archives) == 0:
+        raise RuntimeError("Expected exactly one unsolved .wbpz archive, found none in {0}".format(search_dir))
+    if len(input_archives) > 1:
+        names = ", ".join([os.path.basename(path) for path in input_archives])
+        raise RuntimeError("Expected exactly one unsolved .wbpz archive, found {0}: {1}".format(len(input_archives), names))
+    return input_archives[0]
+
+
+def _solved_archive_path(search_dir, base_name):
+    default_path = os.path.join(search_dir, base_name + "_SOLVED.wbpz")
+    if not os.path.exists(default_path):
+        return default_path
+
+    timestamp = _archive_timestamp()
+    timestamped_path = os.path.join(search_dir, base_name + "_SOLVED_" + timestamp + ".wbpz")
+    if not os.path.exists(timestamped_path):
+        log("ARCHIVE", "Solved archive already exists; using timestamped output: {0}".format(timestamped_path))
+        return timestamped_path
+
+    index = 1
+    while True:
+        candidate = os.path.join(search_dir, base_name + "_SOLVED_" + timestamp + "_{0:02d}.wbpz".format(index))
+        if not os.path.exists(candidate):
+            log("ARCHIVE", "Timestamped solved archive already exists; using numbered output: {0}".format(candidate))
+            return candidate
+        index += 1
+
+
+def _system_label(system, index):
+    display_text = _safe_attr(system, "DisplayText")
+    name = _safe_attr(system, "Name")
+    label = display_text or name or str(system)
+    return "#{0}: name={1}; display={2}; repr={3}".format(index, name, display_text, label)
+
+
+def _workbench_messages():
+    try:
+        return list(GetMessages())
+    except Exception:
+        return []
+
+
+def _log_workbench_messages(stage):
+    messages = _workbench_messages()
+    log(stage, "Workbench messages available: {0}".format(len(messages)))
+    for index, message in enumerate(messages):
+        severity = _safe_attr(message, "Severity") or _safe_attr(message, "MessageType")
+        summary = _safe_attr(message, "Summary") or str(message)
+        source = _safe_attr(message, "Source")
+        log(stage, "message #{0}: severity={1}; source={2}; summary={3}".format(index, severity, source, summary))
+
+
+def _get_systems():
+    systems = list(GetAllSystems())
+    log("SYSTEMS", "Workbench systems found: {0}".format(len(systems)))
+    for index, system in enumerate(systems):
+        log("SYSTEMS", _system_label(system, index))
+    return systems
+
+
+def _update_each_system(systems):
+    for index, system in enumerate(systems):
+        log("UPDATE", "Updating system {0}: {1}".format(index, _system_label(system, index)))
+        system.Update()
+        log("UPDATE", "Finished system {0}".format(index))
+
+
+def _update_project(systems):
+    log("UPDATE", "Starting project update")
+    try:
+        update_systems = UpdateSystems
+    except NameError:
+        update_systems = None
+
+    if update_systems:
+        try:
+            log("UPDATE", "Calling UpdateSystems(Systems=GetAllSystems())")
+            update_systems(Systems=systems)
+            log("UPDATE", "UpdateSystems completed")
+            return
+        except TypeError as exc:
+            log("UPDATE", "UpdateSystems call was not accepted; falling back to per-system Update(): {0}".format(exc))
+
+    _update_each_system(systems)
+    log("UPDATE", "Per-system update completed")
+
+
+def main():
+    search_dir = _search_directory()
+    if LOG_PATH is None:
+        set_log_path(os.path.join(search_dir, "solve_workbench_archive_error.log"))
+
+    log("START", "Journal started")
+    archive_path = _find_archive(search_dir)
+    base_name = os.path.splitext(os.path.basename(archive_path))[0]
+    set_log_path(os.path.join(search_dir, base_name + "_solve_workbench_archive.log"))
+
+    project_path = os.path.join(search_dir, base_name + ".wbpj")
+    solved_path = _solved_archive_path(search_dir, base_name)
+
+    log("SELECT", "Selected archive: {0}".format(archive_path))
+    log("SELECT", "Project path: {0}".format(project_path))
+    log("SELECT", "Solved archive path: {0}".format(solved_path))
+
+    log("UNARCHIVE", "Calling Unarchive")
+    Unarchive(ArchivePath=archive_path, ProjectPath=project_path, Overwrite=True)
+    log("UNARCHIVE", "Unarchive completed")
+    _log_workbench_messages("UNARCHIVE")
+
+    log("SAVE", "Saving restored project as: {0}".format(project_path))
+    Save(FilePath=project_path, Overwrite=True)
+    log("SAVE", "Initial project save completed")
+
+    systems = _get_systems()
+    _update_project(systems)
+    log("UPDATE", "Project update completed")
+    _log_workbench_messages("UPDATE")
+
+    log("SAVE", "Saving updated project")
+    Save(Overwrite=True)
+    log("SAVE", "Updated project save completed: {0}".format(project_path))
+
+    log("ARCHIVE", "Creating solved archive")
+    Archive(
+        FilePath=solved_path,
+        IncludeUserFiles=True,
+        IncludeExternalImportedFiles=True,
+        IncludeSkippedFiles=True)
+    log("ARCHIVE", "Solved archive created: {0}".format(solved_path))
+    _log_workbench_messages("ARCHIVE")
+
+    log("SUCCESS", "Workbench archive solve journal finished successfully")
+
+
+try:
+    main()
+except Exception as exc:
+    if LOG_PATH is None:
+        try:
+            set_log_path(os.path.join(os.getcwd(), "solve_workbench_archive_error.log"))
+        except Exception:
+            pass
+    log("ERROR", "Journal failed: {0}".format(exc))
+    try:
+        log("ERROR", traceback.format_exc())
+    except Exception:
+        pass
+    try:
+        _log_workbench_messages("ERROR")
+    except Exception:
+        pass
+    raise

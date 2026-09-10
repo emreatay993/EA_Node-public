@@ -1,0 +1,92 @@
+sequenceDiagram
+    participant User
+    participant QML as MainShell + GraphCanvas
+    participant SW as ShellWindow
+    participant RC as RunController
+    participant CR as CorexRuntime
+    participant BC as ExecutionBackendClient
+    participant T as Selected process / external / trusted transport
+    participant W as Worker (run_workflow)
+    participant PR as WorkerPluginRuntime
+    participant R as Worker NodeRegistry
+    participant I as Function adapter / trusted factory
+    participant REC as RunEventController
+    participant RPC as RunProjectionController
+    participant VS as ViewerSessionBridge
+
+    User->>QML: Click Run
+    QML->>SW: request_run_workflow()
+    SW->>RC: run_workflow()
+    RC->>RC: build ExecutionRequest + runtime snapshot
+    RC->>CR: prepare_execution() + dispatch_prepared()
+    CR->>BC: reserve and start the pinned backend route
+    BC->>T: selected process / external / trusted client
+    T->>W: StartRunCommand (queue, stdio, or direct)
+    W->>W: load_runtime_snapshot()
+    W->>PR: prepare_registry(command, trusted registry)
+    PR->>PR: validate generation roots, digests, refs, and registry fingerprint
+    PR-->>W: attested worker registry
+    W-->>T: run_started + run_state(running)
+    T-->>BC: typed event callback
+    BC-->>CR: generation-aware event
+    CR->>CR: validate event and update SolutionStore
+    CR-->>SW: enriched execution_event.emit
+    SW-->>REC: one Qt queued handle_execution_event
+    REC->>RPC: project run state first
+    REC->>VS: direct viewer delivery second
+
+    loop per ready node
+        W->>R: implementation_entry(node.type_id)
+        alt PythonFunctionEntry
+            R-->>W: immutable PythonFunctionRef
+            W->>PR: resolve and lazily import attested function
+            PR-->>W: PythonFunctionAdapter
+        else TrustedFactoryEntry
+            R-->>W: private trusted factory
+        end
+        W->>I: execute(ctx, inputs, settings)
+        I-->>W: validated NodeResult
+        W-->>T: node_started / node_settled / log
+        T-->>BC: typed event callback
+        BC-->>CR: generation-aware event
+        CR->>CR: validate, accept, and enrich node_settled
+        CR-->>SW: enriched execution_event.emit
+        SW-->>REC: one Qt queued handle_execution_event
+        REC->>RPC: project node state and accepted outputs
+        REC->>VS: direct viewer delivery after projection
+    end
+
+    alt run failed
+        W-->>T: run_failed + run_state(error)
+        T-->>BC: typed event callback
+        BC-->>CR: generation-aware event
+        CR-->>SW: validated execution_event.emit
+        SW-->>REC: one Qt queued handle_execution_event
+        REC->>RPC: project failure, focus, and terminal state
+        REC->>VS: direct viewer delivery after projection
+    else run stopped
+        W-->>T: run_stopped + run_state(ready)
+        T-->>BC: typed event callback
+        BC-->>CR: generation-aware event
+        CR-->>SW: validated execution_event.emit
+        SW-->>REC: one Qt queued handle_execution_event
+        REC->>RPC: clear active state and update actions
+        REC->>VS: direct viewer delivery after projection
+    else run completed
+        W-->>T: run_completed + run_state(ready)
+        T-->>BC: typed event callback
+        BC-->>CR: generation-aware event
+        CR-->>SW: validated execution_event.emit
+        SW-->>REC: one Qt queued handle_execution_event
+        REC->>RPC: completed counters and clear active state
+        REC->>VS: direct viewer delivery after projection
+    end
+
+    opt protocol problem
+        T-->>BC: protocol_error
+        BC-->>CR: generation-aware event
+        CR-->>SW: validated execution_event.emit
+        SW-->>REC: one Qt queued handle_execution_event
+        REC->>SW: append error log and update console/notification host
+        REC->>VS: direct viewer delivery after event handling
+    end

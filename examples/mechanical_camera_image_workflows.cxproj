@@ -1,0 +1,342 @@
+{
+  "active_workspace_id": "ws_mechanical_image",
+  "metadata": {
+    "artifact_store": {
+      "artifacts": {},
+      "staged": {}
+    },
+    "custom_workflows": [],
+    "ui": {
+      "passive_style_presets": {
+        "edge_presets": [],
+        "node_presets": []
+      },
+      "script_editor": {
+        "floating": false,
+        "visible": false,
+        "width": 0.0
+      }
+    },
+    "workflow_settings": {
+      "environment": {
+        "python_path": "",
+        "working_directory": ""
+      },
+      "general": {
+        "author": "COREX",
+        "description": "Runnable Mechanical catalogue example",
+        "project_name": "Mechanical Camera and Image Workflows"
+      },
+      "logging": {
+        "capture_console": true,
+        "level": "info"
+      },
+      "plugins": {
+        "enabled": []
+      },
+      "solver_config": {
+        "enable_parallel": true,
+        "memory_limit_gb": 12,
+        "thread_count": 8
+      }
+    },
+    "workspace_order": [
+      "ws_mechanical_image"
+    ]
+  },
+  "name": "Mechanical Camera and Image Workflows",
+  "project_id": "proj_mechanical_image",
+  "schema_version": 5,
+  "workspace_order": [
+    "ws_mechanical_image"
+  ],
+  "workspaces": [
+    {
+      "active_view_id": "view_mechanical_image",
+      "dirty": false,
+      "edges": [
+        {
+          "edge_id": "edge_02_image_open_image_batch",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "image_open",
+          "source_port_key": "model",
+          "target_node_id": "image_batch",
+          "target_port_key": "model",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_03_image_camera_image_batch",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "image_camera",
+          "source_port_key": "views",
+          "target_node_id": "image_batch",
+          "target_port_key": "views",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_01_image_open_image_camera",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "image_open",
+          "source_port_key": "model",
+          "target_node_id": "image_camera",
+          "target_port_key": "model",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_05_image_preview_image_panel",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "image_preview",
+          "source_port_key": "images",
+          "target_node_id": "image_panel",
+          "target_port_key": "source",
+          "visual_style": {}
+        },
+        {
+          "edge_id": "edge_04_image_open_image_preview",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "image_open",
+          "source_port_key": "model",
+          "target_node_id": "image_preview",
+          "target_port_key": "model",
+          "visual_style": {}
+        }
+      ],
+      "name": "Mechanical Camera and Image Workflows",
+      "nodes": [
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "expanded_settings_group_ids": [
+            "selection"
+          ],
+          "exposed_ports": {
+            "background": true,
+            "details": true,
+            "file_name": true,
+            "files": true,
+            "fit_view": true,
+            "folder": true,
+            "height": true,
+            "images": true,
+            "model": true,
+            "objects": true,
+            "overwrite": true,
+            "views": true,
+            "width": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "image_batch",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "background": "white",
+            "file_name": "{object}_{view}.png",
+            "fit_view": false,
+            "folder": "",
+            "height": 400,
+            "objects": [
+              "COREX cylinder",
+              "COREX witness"
+            ],
+            "overwrite": false,
+            "views": [],
+            "width": 640
+          },
+          "title": "Two objects by saved views",
+          "type_id": "mechanical.export_image",
+          "x": 720.0,
+          "y": 20.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "expanded_settings_group_ids": [
+            "view_selection"
+          ],
+          "exposed_ports": {
+            "details": true,
+            "include": true,
+            "model": true,
+            "names": true,
+            "views": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "image_camera",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "include": "saved"
+          },
+          "title": "Mechanical Camera Views",
+          "type_id": "mechanical.camera_views",
+          "x": 360.0,
+          "y": 20.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "expanded_settings_group_ids": [
+            "open_options"
+          ],
+          "exposed_ports": {
+            "file": true,
+            "info": true,
+            "mode": true,
+            "model": true,
+            "system": true,
+            "timeout_s": true,
+            "version": true,
+            "working_folder": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "image_open",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "file": "",
+            "mode": "background",
+            "system": "",
+            "timeout_s": 600.0,
+            "version": 0,
+            "working_folder": ""
+          },
+          "title": "Open Mechanical Model",
+          "type_id": "mechanical.open_model",
+          "x": 0.0,
+          "y": 180.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 300.0,
+          "custom_width": 480.0,
+          "expanded_settings_group_ids": [],
+          "exposed_ports": {
+            "_surface_source": false,
+            "source": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "image_panel",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "animation_playback_mode": "auto",
+            "auto_play": false,
+            "clip_enabled": false,
+            "clip_end_ms": 0,
+            "clip_start_ms": 0,
+            "crop_h": 1.0,
+            "crop_w": 1.0,
+            "crop_x": 0.0,
+            "crop_y": 0.0,
+            "fit_mode": "contain",
+            "lock_aspect_ratio": false,
+            "loop": false,
+            "mirror_horizontal": false,
+            "mirror_vertical": false,
+            "muted": false,
+            "page_number": 1,
+            "playback_rate": 1.0,
+            "position_ms": 0,
+            "rotation_degrees": 0,
+            "show_frame": true,
+            "show_title": true,
+            "source": "",
+            "timeline_bookmarks": [],
+            "volume": 1.0
+          },
+          "title": "Current display preview",
+          "type_id": "media.panel",
+          "x": 720.0,
+          "y": 420.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "expanded_settings_group_ids": [
+            "selection"
+          ],
+          "exposed_ports": {
+            "background": true,
+            "details": true,
+            "file_name": true,
+            "files": true,
+            "fit_view": true,
+            "folder": true,
+            "height": true,
+            "images": true,
+            "model": true,
+            "objects": true,
+            "overwrite": true,
+            "views": true,
+            "width": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "image_preview",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "background": "model",
+            "file_name": "{object}_{view}.png",
+            "fit_view": false,
+            "folder": "",
+            "height": 200,
+            "objects": [],
+            "overwrite": false,
+            "views": [],
+            "width": 320
+          },
+          "title": "Current display preview",
+          "type_id": "mechanical.export_image",
+          "x": 360.0,
+          "y": 380.0
+        }
+      ],
+      "views": [
+        {
+          "hide_optional_ports": false,
+          "name": "Workflow",
+          "pan_x": 80.0,
+          "pan_y": 100.0,
+          "scope_path": [],
+          "view_id": "view_mechanical_image",
+          "zoom": 0.85
+        }
+      ],
+      "workspace_id": "ws_mechanical_image"
+    }
+  ]
+}

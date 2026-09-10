@@ -1,0 +1,101 @@
+! ======================================================================
+! Source-step solve/extract block for reaction-to-force handoff
+!
+! Usage:
+!   Place this command snippet in load step N and set the Mechanical command
+!   object property "Issue Solve Command" to No. This block solves the source
+!   step, extracts the final source-step nodal reactions, and leaves them in
+!   APDL memory for the target-step apply block.
+! ======================================================================
+
+! ----------------------- USER SETTINGS -------------------------------
+RTF_NS_NAME='MY_NAMED_SELECTION'
+! --------------------- END USER SETTINGS -----------------------------
+
+/COM,BEGIN reaction_to_force_two_block_source_prep
+
+! This command object is inserted by Mechanical inside /SOLU. Keep it there:
+! no FINISH, no /PREP7, no /POST1, and no PARSAV/PARRES are used.
+
+! Remove stale handoff arrays from any previous solve attempt in this session.
+RTF_HANDOFF_READY=0
+*DEL,RTF_NODE_IDS,,NOPR
+*DEL,RTF_FORCE_X,,NOPR
+*DEL,RTF_FORCE_Y,,NOPR
+*DEL,RTF_FORCE_Z,,NOPR
+ALLSEL,ALL
+
+! Resolve the Mechanical named selection to active nodes.
+! Node components are used directly. MESH200 element-face components are
+! reduced to their attached active nodes. Other component types are rejected.
+*GET,RTF_COMP_TYPE,COMP,RTF_NS_NAME,TYPE
+
+*IF,RTF_COMP_TYPE,EQ,1,THEN
+  ! Nodal, face, edge, and vertex named selections normally arrive as nodes.
+  CMSEL,S,RTF_NS_NAME
+*ELSEIF,RTF_COMP_TYPE,EQ,2,THEN
+  ! Element-face named selections can arrive as MESH200 elements.
+  ESEL,NONE
+  CMSEL,S,RTF_NS_NAME
+  *GET,RTF_ELEM_COUNT,ELEM,0,COUNT
+  *IF,RTF_ELEM_COUNT,LE,0,THEN
+    *MSG,ERROR,RTF_ELEM_COUNT
+Named selection selected %G elements; expected at least one.
+  *ENDIF
+  *GET,RTF_FIRST_ELEM,ELEM,0,NUM,MIN
+  *GET,RTF_ELEM_TYPE,ELEM,RTF_FIRST_ELEM,ATTR,TYPE
+  *GET,RTF_ELEM_NAME,ETYP,RTF_ELEM_TYPE,ATTR,ENAM
+  *IF,RTF_ELEM_NAME,NE,200,THEN
+    *MSG,ERROR,RTF_ELEM_NAME
+Named selection type is incorrect (%G): use face, edge, element face, or nodal.
+  *ENDIF
+  NSLE,S,ACTIVE
+*ELSE
+  *MSG,ERROR,RTF_COMP_TYPE
+Named selection type is incorrect (%G): use face, edge, element face, or nodal.
+*ENDIF
+
+! Save the selected nodes under a stable component name before solving.
+*GET,RTF_NODE_COUNT,NODE,0,COUNT
+*IF,RTF_NODE_COUNT,LE,0,THEN
+  *MSG,ERROR,RTF_NODE_COUNT
+Named selection selected %G nodes; expected at least one.
+*ENDIF
+CM,RTF_SOURCE_NODES,NODE
+
+! Ensure reaction forces are written, then solve the source load step.
+! The Mechanical source command object must have IssueSolveCommand = False
+! because this APDL block performs the source-step SOLVE itself.
+OUTRES,RSOL,ALL
+ALLSEL,ALL
+SOLVE
+
+! Immediately after SOLVE, RF values belong to the just-completed source step.
+! Avoid /POST1 SET here; SET between Mechanical load-step solves can corrupt
+! the ramped result timeline in the final RST.
+CMSEL,S,RTF_SOURCE_NODES
+*GET,RTF_NODE_COUNT,NODE,0,COUNT
+
+*DIM,RTF_NODE_IDS,ARRAY,RTF_NODE_COUNT
+*DIM,RTF_FORCE_X,ARRAY,RTF_NODE_COUNT
+*DIM,RTF_FORCE_Y,ARRAY,RTF_NODE_COUNT
+*DIM,RTF_FORCE_Z,ARRAY,RTF_NODE_COUNT
+*VGET,RTF_NODE_IDS(1),NODE,,NLIST
+
+*DO,RTF_INDEX,1,RTF_NODE_COUNT
+  RTF_NODE_ID=RTF_NODE_IDS(RTF_INDEX)
+  RTF_CURRENT_FX=0
+  RTF_CURRENT_FY=0
+  RTF_CURRENT_FZ=0
+  *GET,RTF_CURRENT_FX,NODE,RTF_NODE_ID,RF,FX
+  *GET,RTF_CURRENT_FY,NODE,RTF_NODE_ID,RF,FY
+  *GET,RTF_CURRENT_FZ,NODE,RTF_NODE_ID,RF,FZ
+  RTF_FORCE_X(RTF_INDEX)=RTF_CURRENT_FX
+  RTF_FORCE_Y(RTF_INDEX)=RTF_CURRENT_FY
+  RTF_FORCE_Z(RTF_INDEX)=RTF_CURRENT_FZ
+*ENDDO
+
+! Mark the in-memory arrays as ready for the target-step command object.
+RTF_HANDOFF_READY=1
+ALLSEL,ALL
+/COM,END reaction_to_force_two_block_source_prep

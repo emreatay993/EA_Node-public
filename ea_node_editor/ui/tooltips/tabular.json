@@ -1,0 +1,34 @@
+{
+  "tabular.copy_selection": {
+    "text": "Copy selected cell or visible window",
+    "category": "general"
+  },
+  "tabular.export_visible_window": {
+    "text": "Export the visible window to a file",
+    "category": "general"
+  },
+  "tabular.previous_row_window": {
+    "text": "Previous row window",
+    "category": "general"
+  },
+  "tabular.next_row_window": {
+    "text": "Next row window",
+    "category": "general"
+  },
+  "tabular.previous_column_window": {
+    "text": "Previous column window",
+    "category": "general"
+  },
+  "tabular.next_column_window": {
+    "text": "Next column window",
+    "category": "general"
+  },
+  "tabular.sort_direction": {
+    "text": "Toggle sort direction",
+    "category": "general"
+  },
+  "tabular.apply_query": {
+    "text": "Apply search, filter, and sort",
+    "category": "general"
+  }
+}

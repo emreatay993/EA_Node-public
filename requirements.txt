@@ -1,0 +1,4 @@
+# Local development and packaging environment.
+# Installs the app, runtime WebEngine and SSH/SFTP support, optional Excel dependencies,
+# pytest, and PyInstaller.
+.[dev]

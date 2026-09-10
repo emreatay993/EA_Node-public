@@ -1,0 +1,28 @@
+# MCF-only transient controls.
+# Target Callback must be "Get Solve Commands".
+# The MSUP transient still writes Jobname.mcf modal coordinates in unwrapped
+# ASCII form, while re-expanded transient result fields are suppressed to
+# minimize peak/final solver-folder size.
+
+apdl_lines = [
+    "/COM, MCF_ONLY_TRANSIENT_BEGIN",
+    "mcfopt,1",
+    "*get,_mcf_call_type,parm,_mcf_call,type",
+    "*if,_mcf_call_type,lt,0,then",
+    "  _mcf_call=0",
+    "*endif",
+    "_mcf_call=_mcf_call+1",
+    "*if,_mcf_call,ge,4,then",
+    "  /COM,MCF final Workbench expansion pass intentionally skipped; Jobname.mcf from MSUP use pass is preserved.",
+    "  finish",
+    "  /eof",
+    "*else",
+    "  outres,erase",
+    "  outres,all,none",
+    "  /COM,MCF transient RST output suppressed while preserving MSUP modal-coordinate solve.",
+    "*endif",
+    "/COM, MCF_ONLY_TRANSIENT_END",
+]
+
+for apdl_line in apdl_lines:
+    solver_input_file.WriteLine(apdl_line)

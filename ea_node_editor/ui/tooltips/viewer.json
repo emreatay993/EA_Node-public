@@ -1,0 +1,234 @@
+{
+  "viewer.quick.previous_step": {
+    "text": "Previous step (Left)",
+    "category": "general"
+  },
+  "viewer.quick.play_pause": {
+    "text": "Play/pause step animation (Space)",
+    "category": "general"
+  },
+  "viewer.quick.next_step": {
+    "text": "Next step (Right)",
+    "category": "general"
+  },
+  "viewer.quick.camera_fit": {
+    "text": "Fit view to model (Home)",
+    "category": "general"
+  },
+  "viewer.quick.camera_iso": {
+    "text": "Isometric view (R)",
+    "category": "general"
+  },
+  "viewer.quick.camera_top": {
+    "text": "Top view",
+    "category": "general"
+  },
+  "viewer.quick.camera_front": {
+    "text": "Front view",
+    "category": "general"
+  },
+  "viewer.quick.camera_right": {
+    "text": "Right view",
+    "category": "general"
+  },
+  "viewer.quick.show_mesh_edges": {
+    "text": "Show mesh edges",
+    "category": "general"
+  },
+  "viewer.quick.show_scalar_bar": {
+    "text": "Show scalar bar",
+    "category": "general"
+  },
+  "viewer.render.wireframe": {
+    "text": "Show all source and hidden wireframe edges",
+    "category": "general"
+  },
+  "viewer.render.wireframe_unavailable": {
+    "text": "Wireframe rendering is unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.render.visible_edges": {
+    "text": "Show only visible wireframe edges",
+    "category": "general"
+  },
+  "viewer.render.visible_edges_unavailable": {
+    "text": "Visible-edge wireframe is unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.render.shaded": {
+    "text": "Show shaded surfaces",
+    "category": "general"
+  },
+  "viewer.render.shaded_unavailable": {
+    "text": "Shaded rendering is unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.render.body_edges": {
+    "text": "Show shaded surfaces with exact CAD body edges",
+    "category": "general"
+  },
+  "viewer.render.body_edges_unavailable": {
+    "text": "Exact CAD body edges are unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.render.mesh_edges_unavailable": {
+    "text": "Mesh or facet edges are unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.render.attribute_colors": {
+    "text": "Use source-authored part, face, or mesh colors",
+    "category": "general"
+  },
+  "viewer.render.attribute_colors_unavailable": {
+    "text": "Source-authored colors are unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.render.points_unavailable": {
+    "text": "Point rendering is unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.view.fit_selection": {
+    "text": "Fit the camera to the selected source entities",
+    "category": "general"
+  },
+  "viewer.view.fit_selection_unavailable": {
+    "text": "Select one or more source entities to fit the view.",
+    "category": "general"
+  },
+  "viewer.view.fit_selection_capability_unavailable": {
+    "text": "Fit to selection is unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.view.isolate": {
+    "text": "Show only the selected source entities; Shift updates the isolated set",
+    "category": "general"
+  },
+  "viewer.view.isolate_unavailable": {
+    "text": "Select one or more source entities to isolate them.",
+    "category": "general"
+  },
+  "viewer.view.isolate_capability_unavailable": {
+    "text": "Selection isolation is unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.view.isolate_restore": {
+    "text": "Restore visibility from before selection isolation",
+    "category": "general"
+  },
+  "viewer.view.ui_controls": {
+    "text": "Show or hide the orientation triad, view cube, and world axes",
+    "category": "general"
+  },
+  "viewer.view.saved_views": {
+    "text": "Save, restore, rename, reorder, or delete camera views",
+    "category": "general"
+  },
+  "viewer.view.saved_views_unavailable": {
+    "text": "Saved camera views are unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.view.saved_views_apply": {
+    "text": "Apply this saved camera view",
+    "category": "general"
+  },
+  "viewer.view.saved_views_move_up": {
+    "text": "Move this saved view earlier",
+    "category": "general"
+  },
+  "viewer.view.saved_views_move_down": {
+    "text": "Move this saved view later",
+    "category": "general"
+  },
+  "viewer.view.saved_views_delete": {
+    "text": "Delete this saved camera view",
+    "category": "general"
+  },
+  "viewer.view.orientation_triad_unavailable": {
+    "text": "The orientation triad is unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.view.view_cube_unavailable": {
+    "text": "The view cube is unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.view.world_axes_unavailable": {
+    "text": "World axes are unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.selection.cad_vertex": {
+    "text": "Select CAD vertices",
+    "category": "general"
+  },
+  "viewer.selection.cad_edge": {
+    "text": "Select CAD edges",
+    "category": "general"
+  },
+  "viewer.selection.cad_face": {
+    "text": "Select CAD faces",
+    "category": "general"
+  },
+  "viewer.selection.cad_body": {
+    "text": "Select complete CAD bodies",
+    "category": "general"
+  },
+  "viewer.selection.fe_node": {
+    "text": "Select finite-element nodes",
+    "category": "general"
+  },
+  "viewer.selection.fe_element_face": {
+    "text": "Select finite-element faces",
+    "category": "general"
+  },
+  "viewer.selection.fe_element": {
+    "text": "Select complete finite elements",
+    "category": "general"
+  },
+  "viewer.selection.unsupported": {
+    "text": "This selection filter is unavailable for the active source.",
+    "category": "general"
+  },
+  "viewer.selection.tangent": {
+    "text": "Expand CAD edge or face selection across tangencies up to this angle",
+    "category": "general"
+  },
+  "viewer.selection.tangent_unavailable": {
+    "text": "Tangent angle applies only to CAD edge and face selection.",
+    "category": "general"
+  },
+  "viewer.camera.perspective": {
+    "text": "Use perspective projection",
+    "category": "general"
+  },
+  "viewer.camera.orthographic": {
+    "text": "Use orthographic projection",
+    "category": "general"
+  },
+  "viewer.camera.projection_unavailable": {
+    "text": "Camera projection controls are unavailable for this source.",
+    "category": "general"
+  },
+  "viewer.docking.detach": {
+    "text": "Move this live viewer into a separate window",
+    "category": "general"
+  },
+  "viewer.docking.dock": {
+    "text": "Return this live viewer to its graph node",
+    "category": "general"
+  },
+  "viewer.docking.fullscreen": {
+    "text": "Show this live viewer fullscreen",
+    "category": "general"
+  },
+  "viewer.side_panel.export_screenshot": {
+    "text": "Save the current viewport as a PNG",
+    "category": "general"
+  },
+  "viewer.side_panel.bookmark_restore": {
+    "text": "Restore this camera view",
+    "category": "general"
+  },
+  "viewer.side_panel.bookmark_delete": {
+    "text": "Delete this bookmark",
+    "category": "general"
+  }
+}

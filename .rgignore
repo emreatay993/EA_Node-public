@@ -1,0 +1,51 @@
+# ripgrep search defaults for this repo.
+# Use `rg -u ...` or `rg --no-ignore ...` when you intentionally need these areas.
+
+# Bundled/generated web assets dominate broad text searches.
+web/
+
+# Large reference and planning document trees; keep compact spec entry points searchable.
+docs/specs/work_packets/
+docs/specs/perf/
+docs/Benchmark_Programs/
+docs/concepts/
+docs/architecture_diagrams/
+PLANS_TO_IMPLEMENT/
+
+# Search-only overrides for compact docs that `.gitignore` hides from `rg`.
+!docs/specs/
+!docs/specs/INDEX.md
+!docs/specs/adrs/
+!docs/specs/adrs/**
+!docs/specs/requirements/
+!docs/specs/requirements/**
+
+# Local/generated artifacts and mockups.
+.git/
+.idea/
+.codex/
+.claude/
+.agents/
+.design_bundle_opening_screen/
+artifacts/
+build/
+dist/
+mockups/
+scratch/
+stitch_exports/
+dene.data/
+dene3.data/
+node_modules/
+htmlcov/
+coverage/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+__pycache__/
+venv/
+.venv/
+
+# Project/export payloads that are usually too repetitive for broad code search.
+*.cxproj
+*.html

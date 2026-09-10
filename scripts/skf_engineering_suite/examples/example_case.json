@@ -1,0 +1,117 @@
+{
+  "case_name": "SKF engineering example",
+  "bearing": {
+    "family": "Deep-groove ball",
+    "series": "62",
+    "designation": "6208",
+    "d_mm": 40.0,
+    "D_mm": 80.0,
+    "B_mm": 18.0,
+    "C_N": 32500.0,
+    "C0_N": 19000.0,
+    "Cu_N": 780.0,
+    "Y": 1.5,
+    "d1_mm": 47.0,
+    "d2_mm": 72.0,
+    "E_mm": 70.0,
+    "rolling_element_diameter_mm": 10.0,
+    "rolling_element_count": 10,
+    "row_count": 1,
+    "quality": "Standard"
+  },
+  "lubricant": {
+    "name": "ISO VG 46 example",
+    "nu40_cst": 46.0,
+    "nu100_cst": 7.1,
+    "density_kg_m3": 850.0,
+    "cp_j_kgk": 2000.0,
+    "kind": "Mineral oil",
+    "proven_ep_additives": false
+  },
+  "operating": {
+    "speed_rpm": 12000.0,
+    "radial_load_n": 5000.0,
+    "axial_load_n": 1000.0,
+    "equivalent_dynamic_load_n": 0.0
+  },
+  "lubrication": {
+    "mode": "Oil jet",
+    "oil_level_h_mm": 8.0,
+    "shaft_orientation": "Horizontal",
+    "vertical_submerged_width_fraction": 1.0,
+    "drag_enabled": true,
+    "fixed_drag_torque_nmm": 0.0,
+    "volume_factor_override": 0.0
+  },
+  "seal": {
+    "seal_type": "None",
+    "count": 0,
+    "manual_diameter_mm": 0.0,
+    "manual_Ks1": 0.0,
+    "manual_Ks2": 0.0,
+    "manual_beta": 0.0
+  },
+  "installation": {
+    "enabled": false,
+    "operating_clearance_um": 12.0,
+    "reference_clearance_um": 12.0,
+    "radial_preload_n": 0.0,
+    "axial_preload_n": 0.0,
+    "clearance_stiffness_n_per_um": 0.0,
+    "misalignment_mrad": 0.0,
+    "permissible_misalignment_mrad": 1.0,
+    "clearance_torque_coefficient": 0.25,
+    "misalignment_torque_coefficient": 0.2,
+    "contact_stiffness_n_per_mm_p": 100000.0,
+    "load_deflection_exponent": 1.5
+  },
+  "thermal": {
+    "model": "Four-node inner/element/outer/oil network",
+    "inlet_temp_c": 85.0,
+    "ambient_temp_c": 60.0,
+    "shaft_boundary_temp_c": 80.0,
+    "housing_boundary_temp_c": 65.0,
+    "oil_flow_l_min": 0.12,
+    "one_node_housing_conductance_w_k": 2.0,
+    "heat_fraction_to_model": 1.0,
+    "G_inner_shaft_w_k": 2.5,
+    "G_outer_housing_w_k": 4.0,
+    "G_inner_element_w_k": 8.0,
+    "G_outer_element_w_k": 10.0,
+    "G_inner_oil_w_k": 1.5,
+    "G_outer_oil_w_k": 2.0,
+    "G_element_oil_w_k": 2.5,
+    "oil_bypass_fraction": 0.15,
+    "element_heat_fraction": 0.35,
+    "inner_race_heat_fraction": 0.3,
+    "outer_race_heat_fraction": 0.35,
+    "seal_heat_to_outer_fraction": 0.8,
+    "drag_heat_to_oil_fraction": 0.9,
+    "inner_contact_rth_k_w": 0.01,
+    "outer_contact_rth_k_w": 0.01,
+    "relaxation": 0.65,
+    "tolerance_c": 0.0001,
+    "max_iterations": 100
+  },
+  "life": {
+    "enabled": true,
+    "reliability_percent": 90.0,
+    "contamination_factor_ec": 0.55,
+    "contamination_preset": "Normal cleanliness",
+    "explorer_axis_scale": 0.0
+  },
+  "calibration": {
+    "name": "Uncalibrated",
+    "rolling_scale": 1.0,
+    "sliding_scale": 1.0,
+    "seal_scale": 1.0,
+    "drag_scale": 1.0,
+    "heat_transfer_scale": 1.0,
+    "installation_scale": 1.0,
+    "notes": ""
+  },
+  "settings": {
+    "enforce_validity_warnings": false,
+    "max_temperature_c": 500.0
+  }
+}

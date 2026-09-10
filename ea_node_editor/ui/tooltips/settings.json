@@ -1,0 +1,70 @@
+{
+  "settings.graphics.expand_collision.enabled": {
+    "text": "Pushes newly expanded items away from nearby content to reduce overlap.",
+    "category": "general"
+  },
+  "settings.graphics.expand_collision.strategy": {
+    "text": "Chooses how the first items are picked when overlap resolution begins.",
+    "category": "general"
+  },
+  "settings.graphics.expand_collision.animate": {
+    "text": "Animates the repositioning pass so the settled layout stays readable.",
+    "category": "general"
+  },
+  "settings.graphics.expand_collision.scope": {
+    "text": "Limits which nearby items can move when the expanded area needs room.",
+    "category": "general"
+  },
+  "settings.graphics.expand_collision.gap_preset": {
+    "text": "Sets the target spacing kept between the expanded area and moved items.",
+    "category": "general"
+  },
+  "settings.graphics.expand_collision.radius_mode": {
+    "text": "Controls whether overlap checks stay local or search across the full canvas.",
+    "category": "general"
+  },
+  "settings.graphics.expand_collision.local_radius_preset": {
+    "text": "Sets how far the local search reaches when reach mode stays nearby.",
+    "category": "general"
+  },
+  "settings.graph_theme.use_selected": {
+    "text": "Set this theme as the active graph theme",
+    "category": "general"
+  },
+  "settings.workflow.environment.application_default_python_executable": {
+    "text": "Sets the app-wide Python executable used when the current workflow has no override.",
+    "category": "tutorial"
+  },
+  "settings.workflow.environment.browse_application_python": {
+    "text": "Choose the app-wide default Python executable from this PC.",
+    "category": "tutorial"
+  },
+  "settings.workflow.environment.prepare_managed_runtime": {
+    "text": "Creates or repairs COREX's app-managed venv, installs the packaged COREX runtime with [all] dependencies through pip, verifies it, and fills the application default executable.",
+    "category": "tutorial"
+  },
+  "settings.workflow.environment.clear_application_default": {
+    "text": "Clears only the app-wide default. A workflow override remains active when set.",
+    "category": "tutorial"
+  },
+  "settings.workflow.environment.workflow_python_override": {
+    "text": "Sets the project-owned Python executable that overrides the application default for the whole workflow.",
+    "category": "tutorial"
+  },
+  "settings.workflow.environment.browse_workflow_python": {
+    "text": "Choose this workflow's overriding Python executable from this PC.",
+    "category": "tutorial"
+  },
+  "settings.workflow.environment.inherit_application_default": {
+    "text": "Clears only the workflow override so the next run inherits the application default, or uses built-in execution when both are blank.",
+    "category": "tutorial"
+  },
+  "settings.workflow.environment.managed_runtime_status": {
+    "text": "Shows whether COREX's app-managed workflow runtime exists and where its python.exe will be created.",
+    "category": "inactive"
+  },
+  "settings.workflow.environment.working_directory": {
+    "text": "Saved with the workflow settings, but workflow execution does not enforce this directory yet.",
+    "category": "warning"
+  }
+}

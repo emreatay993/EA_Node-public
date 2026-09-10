@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Statistical Metrics Help Document</title>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js">
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .formula {
+            color: #2980b9;
+            font-style: italic;
+        }
+        ul {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Statistical Metrics Help Document</h1>
+
+	<h2>1. Mean Squared Error (MSE)</h2>
+	<p class="formula">Formula: \( \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (x_i - y_i)^2 \)</p>
+	<p><b>Meaning:</b> MSE measures the average squared difference between two time-dependent datasets \(x\) and \(y\). Smaller MSE values indicate better alignment between the datasets.</p>
+	<p><b>Practical Use Cases:</b></p>
+	<ul>
+		<br>
+		<li><b>Compressor Discharge Pressure:</b>
+			<br>Dataset 1 (measured): [49.8, 50.0, 49.9] MPa.
+			<br>Dataset 2 (predicted): [50.0, 49.9, 49.8] MPa.
+
+			<br><br><i>Step 1: Calculate squared differences:</i>
+			<br>
+			\( (50.0 - 49.8)^2 = 0.04 \)
+			<br>
+			\( (49.9 - 50.0)^2 = 0.01 \)
+			<br>
+			\( (49.8 - 49.9)^2 = 0.01 \)
+
+			<br><br><i>Step 2: Compute \( \text{MSE} \):</i>
+			<br>
+			\( \text{MSE} = \frac{0.04 + 0.01 + 0.01}{3} = 0.02 \) MPa².
+
+			<br><br><i>Step 3: Interpret Result:</i>
+			<br>
+			An MSE of 0.02 MPa² suggests a small difference between the measured and predicted pressure datasets.
+		</li>
+
+		<br>
+		<li><b>Gas Turbine Inlet Temperature:</b>
+			<br>Dataset 1 (measured): [890, 910, 900] °C.
+			<br>Dataset 2 (predicted): [900, 900, 905] °C.
+
+			<br><br><i>Step 1: Calculate squared differences:</i>
+			<br>
+			\( (900 - 890)^2 = 100 \)
+			<br>
+			\( (900 - 910)^2 = 100 \)
+			<br>
+			\( (905 - 900)^2 = 25 \)
+
+			<br><br><i>Step 2: Compute \( \text{MSE} \):</i>
+			<br>
+			\( \text{MSE} = \frac{100 + 100 + 25}{3} = 75 \) °C².
+
+			<br><br><i>Step 3: Interpret Result:</i>
+			<br>
+			An MSE of 75 °C² indicates moderate discrepancies between the datasets, warranting calibration adjustments.
+		</li>
+
+		<br>
+		<li><b>Blade Strain Testing:</b>
+			<br>Dataset 1 (measured): [1980, 2020, 2005] microstrain.
+			<br>Dataset 2 (predicted): [2000, 2010, 2000] microstrain.
+
+			<br><br><i>Step 1: Calculate squared differences:</i>
+			<br>
+			\( (2000 - 1980)^2 = 400 \)
+			<br>
+			\( (2010 - 2020)^2 = 100 \)
+			<br>
+			\( (2000 - 2005)^2 = 25 \)
+
+			<br><br><i>Step 2: Compute \( \text{MSE} \):</i>
+			<br>
+			\( \text{MSE} = \frac{400 + 100 + 25}{3} = 175 \) microstrain².
+
+			<br><br><i>Step 3: Interpret Result:</i>
+			<br>
+			An MSE of 175 microstrain² shows acceptable alignment but suggests minor model improvements.
+		</li>
+	</ul>
+
+	<h2>2. Root Mean Squared Error (RMSE)</h2>
+	<p class="formula">Formula: \( \text{RMSE} = \sqrt{\text{MSE}} \)</p>
+	<p><b>Meaning:</b> RMSE provides error magnitude in the same units as the data, allowing easier interpretation of how well two time-dependent datasets align.</p>
+	<p><b>Practical Use Cases:</b></p>
+	<ul>
+		<br>
+		<li><b>Compressor Discharge Pressure:</b>
+			<br>Dataset 1 (measured): [49.8, 50.0, 49.9] MPa.
+			<br>Dataset 2 (predicted): [50.0, 49.9, 49.8] MPa.
+
+			<br><br><i>Step 1: Compute MSE:</i>
+			<br>
+			Using the \( \text{MSE} = 0.02 \) MPa² calculated in the MSE example.
+
+			<br><br><i>Step 2: Compute RMSE:</i>
+			<br>
+			\( \text{RMSE} = \sqrt{0.02} = 0.141 \) MPa.
+
+			<br><br><i>Step 3: Interpret Result:</i>
+			<br>
+			The RMSE of 0.141 MPa indicates minor differences between the measured and predicted datasets, validating the accuracy of the compressor model.
+		</li>
+
+		<br>
+		<li><b>Gas Turbine Inlet Temperature:</b>
+			<br>Dataset 1 (measured): [890, 910, 900] °C.
+			<br>Dataset 2 (predicted): [900, 900, 905] °C.
+
+			<br><br><i>Step 1: Compute MSE:</i>
+			<br>
+			Using the \( \text{MSE} = 75 \) °C² calculated in the MSE example.
+
+			<br><br><i>Step 2: Compute RMSE:</i>
+			<br>
+			\( \text{RMSE} = \sqrt{75} = 8.66 \) °C.
+
+			<br><br><i>Step 3: Interpret Result:</i>
+			<br>
+			The RMSE of 8.66 °C indicates acceptable deviations between datasets, but highlights a need for slight calibration adjustments in temperature predictions.
+		</li>
+
+		<br>
+		<li><b>Blade Strain Testing:</b>
+			<br>Dataset 1 (measured): [1980, 2020, 2005] microstrain.
+			<br>Dataset 2 (predicted): [2000, 2010, 2000] microstrain.
+
+			<br><br><i>Step 1: Compute MSE:</i>
+			<br>
+			Using the \( \text{MSE} = 175 \) microstrain² calculated in the MSE example.
+
+			<br><br><i>Step 2: Compute RMSE:</i>
+			<br>
+			\( \text{RMSE} = \sqrt{175} \approx 13.23 \) microstrain.
+
+			<br><br><i>Step 3: Interpret Result:</i>
+			<br>
+			The RMSE of 13.23 microstrain suggests acceptable alignment between datasets, but indicates room for improvement in the strain prediction model for better accuracy during high-stress tests.
+		</li>
+	</ul>
+
+	<h2>3. Absolute Error</h2>
+	<p class="formula">Formula: \( \text{Absolute Error} = |x - y| \)</p>
+	<p><b>Meaning:</b> Absolute Error measures the exact deviation between two time-dependent datasets without considering the direction of the error.</p>
+	<p><b>Practical Use Cases:</b></p>
+	<ul>
+		<br>
+		<li><b>Compressor Discharge Pressure:</b>
+			<br>Dataset 1 (measured): [49.8, 50.0, 49.9] MPa.
+			<br>Dataset 2 (predicted): [50.0, 49.9, 49.8] MPa.
+
+			<br><br><i>Step 1: Calculate absolute errors:</i>
+			<br>
+			\( |50.0 - 49.8| = 0.2 \) MPa
+			<br>
+			\( |49.9 - 50.0| = 0.1 \) MPa
+			<br>
+			\( |49.8 - 49.9| = 0.1 \) MPa
+
+			<br><br><i>Step 2: Interpret Results:</i>
+			<br>
+			The errors indicate minor deviations (0.1–0.2 MPa) between datasets, validating the compressor model for consistent pressure predictions.
+		</li>
+
+		<br>
+		<li><b>Gas Turbine Inlet Temperature:</b>
+			<br>Dataset 1 (measured): [890, 910, 900] °C.
+			<br>Dataset 2 (predicted): [900, 900, 905] °C.
+
+			<br><br><i>Step 1: Calculate absolute errors:</i>
+			<br>
+			\( |900 - 890| = 10 \) °C
+			<br>
+			\( |900 - 910| = 10 \) °C
+			<br>
+			\( |905 - 900| = 5 \) °C
+
+			<br><br><i>Step 2: Interpret Results:</i>
+			<br>
+			Absolute errors of 5–10 °C suggest moderate alignment between datasets, highlighting the need for slight calibration improvements in the temperature model.
+		</li>
+
+		<br>
+		<li><b>Blade Strain Testing:</b>
+			<br>Dataset 1 (measured): [1980, 2020, 2005] microstrain.
+			<br>Dataset 2 (predicted): [2000, 2010, 2000] microstrain.
+
+			<br><br><i>Step 1: Calculate absolute errors:</i>
+			<br>
+			\( |2000 - 1980| = 20 \) microstrain
+			<br>
+			\( |2010 - 2020| = 10 \) microstrain
+			<br>
+			\( |2000 - 2005| = 5 \) microstrain
+
+			<br><br><i>Step 2: Interpret Results:</i>
+			<br>
+			Absolute errors of 5–20 microstrain indicate acceptable alignment, but emphasize the need for refining strain prediction models for high-stress environments.
+		</li>
+	</ul>
+
+	<h2>4. Percentage Error</h2>
+	<p class="formula">Formula: \( \text{Percentage Error} = \frac{|x - y|}{x} \times 100\% \)</p>
+	<p><b>Meaning:</b> Percentage Error quantifies the relative error between two datasets as a percentage of the actual values, making it easier to compare across different scales.</p>
+	<p><b>Practical Use Cases:</b></p>
+	<ul>
+		<br>
+		<li><b>Compressor Discharge Pressure:</b>
+			<br>Dataset 1 (measured): [49.8, 50.0, 49.9] MPa.
+			<br>Dataset 2 (predicted): [50.0, 49.9, 49.8] MPa.
+
+			<br><br><i>Step 1: Calculate percentage errors:</i>
+			<br>
+			\( \frac{|50.0 - 49.8|}{50.0} \times 100 = 0.4\% \)
+			<br>
+			\( \frac{|49.9 - 50.0|}{50.0} \times 100 = 0.2\% \)
+			<br>
+			\( \frac{|49.8 - 49.9|}{49.8} \times 100 = 0.2\% \)
+
+			<br><br><i>Step 2: Interpret Results:</i>
+			<br>
+			Percentage errors of 0.2–0.4% indicate highly accurate pressure predictions, validating the compressor model’s reliability under varying loads.
+		</li>
+
+		<br>
+		<li><b>Gas Turbine Inlet Temperature:</b>
+			<br>Dataset 1 (measured): [890, 910, 900] °C.
+			<br>Dataset 2 (predicted): [900, 900, 905] °C.
+
+			<br><br><i>Step 1: Calculate percentage errors:</i>
+			<br>
+			\( \frac{|900 - 890|}{900} \times 100 = 1.1\% \)
+			<br>
+			\( \frac{|900 - 910|}{900} \times 100 = 1.1\% \)
+			<br>
+			\( \frac{|905 - 900|}{900} \times 100 = 0.6\% \)
+
+			<br><br><i>Step 2: Interpret Results:</i>
+			<br>
+			Errors of 0.6–1.1% suggest moderate alignment, but calibration refinements may improve the turbine inlet temperature model.
+		</li>
+
+		<br>
+		<li><b>Blade Strain Testing:</b>
+			<br>Dataset 1 (measured): [1980, 2020, 2005] microstrain.
+			<br>Dataset 2 (predicted): [2000, 2010, 2000] microstrain.
+
+			<br><br><i>Step 1: Calculate percentage errors:</i>
+			<br>
+			\( \frac{|2000 - 1980|}{2000} \times 100 = 1.0\% \)
+			<br>
+			\( \frac{|2010 - 2020|}{2010} \times 100 = 0.5\% \)
+			<br>
+			\( \frac{|2000 - 2005|}{2000} \times 100 = 0.25\% \)
+
+			<br><br><i>Step 2: Interpret Results:</i>
+			<br>
+			Errors of 0.25–1.0% highlight acceptable alignment but suggest slight refinements in the strain prediction model for high-stress blade operations.
+		</li>
+	</ul>
+
+	<h2>5. Symmetric Mean Absolute Percentage Error (SMAPE)</h2>
+	<p class="formula">Formula: \( \text{SMAPE} = \frac{1}{n} \sum_{i=1}^{n} \frac{|x_i - y_i|}{(|x_i| + |y_i|)/2} \times 100\% \)</p>
+	<p><b>Meaning:</b> SMAPE is particularly useful for comparing datasets with near-zero values, where percentage error can produce excessively high or undefined results. SMAPE normalizes the error symmetrically, providing balanced and interpretable results.</p>
+	<p><b>Practical Use Cases:</b></p>
+	<ul>
+		<br>
+		<li><b>Compressor Discharge Pressure (Transient Startup):</b>
+			<br>Dataset 1 (measured): [\(1 \times 10^{-6}\), 2.0, 3.0, 3.5, 4.0, 4.5, 5.0, 5.2, 5.3, 5.4] MPa.
+			<br>Dataset 2 (predicted): [\(5 \times 10^{-6}\), 2.1, 2.9, 3.6, 3.8, 4.4, 5.1, 5.1, 5.4, 5.5] MPa.
+
+			<br><br><i>Step 1: Calculate SMAPE for each data point:</i>
+			<br>
+			\( \frac{|5 \times 10^{-6} - 1 \times 10^{-6}|}{((5 \times 10^{-6}) + (1 \times 10^{-6}))/2} \times 100 = 133.33\% \)
+			<br>
+			\( \frac{|2.1 - 2.0|}{(2.1 + 2.0)/2} \times 100 = 4.88\% \)
+			<br>
+			\( \frac{|2.9 - 3.0|}{(2.9 + 3.0)/2} \times 100 = 3.37\% \)
+			<br>
+			\( \frac{|3.6 - 3.5|}{(3.6 + 3.5)/2} \times 100 = 2.82\% \)
+			<br>
+			\( \frac{|3.8 - 4.0|}{(3.8 + 4.0)/2} \times 100 = 5.13\% \)
+			<br>
+			\( \frac{|4.4 - 4.5|}{(4.4 + 4.5)/2} \times 100 = 2.27\% \)
+			<br>
+			\( \frac{|5.1 - 5.0|}{(5.1 + 5.0)/2} \times 100 = 1.96\% \)
+			<br>
+			\( \frac{|5.1 - 5.2|}{(5.1 + 5.2)/2} \times 100 = 1.92\% \)
+			<br>
+			\( \frac{|5.4 - 5.3|}{(5.4 + 5.3)/2} \times 100 = 1.88\% \)
+			<br>
+			\( \frac{|5.5 - 5.4|}{(5.5 + 5.4)/2} \times 100 = 1.85\% \)
+
+			<br><br><i>Step 2: Compute average SMAPE:</i>
+			<br>
+			\( \text{SMAPE} = \frac{133.33 + 4.88 + 3.37 + 2.82 + 5.13 + 2.27 + 1.96 + 1.92 + 1.88 + 1.85}{10} = 15.74\% \).
+
+			<br><br><i>Step 3: Compare with Percentage Error:</i>
+			<br>
+			The first percentage error would yield:
+			\( \frac{|5 \times 10^{-6} - 1 \times 10^{-6}|}{1 \times 10^{-6}} \times 100 = 400.0\% \).
+			The subsequent errors are relatively small, but the average percentage error would be heavily skewed by the first value. SMAPE greatly reduces the effect of this distortion.
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			The SMAPE of 15.74% reflects the overall alignment of datasets during the startup phase, avoiding excessive emphasis on near-zero values.
+		</li>
+
+		<br>
+		<li><b>Gas Turbine Inlet Temperature (Startup Phase):</b>
+			<br>Dataset 1 (measured): [\(1 \times 10^{-6}\), 850, 855, 860, 870, 880, 885, 890, 895, 900] °C.
+			<br>Dataset 2 (predicted): [\(3 \times 10^{-6}\), 845, 860, 855, 875, 878, 888, 889, 892, 905] °C.
+
+			<br><br><i>Step 1: Calculate SMAPE for each data point:</i>
+			<br>
+			\( \frac{|3 \times 10^{-6} - 1 \times 10^{-6}|}{((3 \times 10^{-6}) + (1 \times 10^{-6}))/2} \times 100 = 133.33\% \)
+			<br>
+			\( \frac{|845 - 850|}{(845 + 850)/2} \times 100 = 0.59\% \)
+			<br>
+			\( \frac{|860 - 855|}{(860 + 855)/2} \times 100 = 0.58\% \)
+			<br>
+			\( \frac{|855 - 860|}{(855 + 860)/2} \times 100 = 0.58\% \)
+			<br>
+			\( \frac{|875 - 870|}{(875 + 870)/2} \times 100 = 0.57\% \)
+			<br>
+			\( \frac{|878 - 880|}{(878 + 880)/2} \times 100 = 0.45\% \)
+			<br>
+			\( \frac{|888 - 885|}{(888 + 885)/2} \times 100 = 0.34\% \)
+			<br>
+			\( \frac{|889 - 890|}{(889 + 890)/2} \times 100 = 0.11\% \)
+			<br>
+			\( \frac{|892 - 895|}{(892 + 895)/2} \times 100 = 0.17\% \)
+			<br>
+			\( \frac{|905 - 900|}{(905 + 900)/2} \times 100 = 0.28\% \)
+
+			<br><br><i>Step 2: Compute average SMAPE:</i>
+			<br>
+			\( \text{SMAPE} = \frac{133.33 + 0.59 + 0.58 + 0.58 + 0.57 + 0.45 + 0.34 + 0.11 + 0.17 + 0.28}{10} = 13.44\% \).
+
+			<br><br><i>Step 3: Compare with Percentage Error:</i>
+			<br>
+			Percentage error for the first data point is \( 200.0\% \). SMAPE mitigates this by balancing discrepancies across all points.
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			The SMAPE of 13.44% demonstrates strong alignment during the cooldown phase while handling the near-zero values effectively.
+		</li>
+
+		<br>
+		<li><b>Blade Strain Testing (Ramp-Up Loads):</b>
+			<br>Dataset 1 (measured): [\(1 \times 10^{-6}\), 100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000] microstrain.
+			<br>Dataset 2 (predicted): [\(3 \times 10^{-6}\), 120, 480, 950, 1480, 1980, 2480, 2980, 3480, 3980] microstrain.
+
+			<br><br><i>Step 1: Calculate SMAPE for each data point:</i>
+			<br>
+			\( \frac{|3 \times 10^{-6} - 1 \times 10^{-6}|}{((3 \times 10^{-6}) + (1 \times 10^{-6}))/2} \times 100 = 66.67\% \)
+			<br>
+			\( \frac{|120 - 100|}{(120 + 100)/2} \times 100 = 18.18\% \)
+			<br>
+			\( \frac{|480 - 500|}{(480 + 500)/2} \times 100 = 4.08\% \)
+			<br>
+			\( \frac{|950 - 1000|}{(950 + 1000)/2} \times 100 = 2.56\% \)
+			<br>
+			\( \frac{|1480 - 1500|}{(1480 + 1500)/2} \times 100 = 1.33\% \)
+			<br>
+			\( \frac{|1980 - 2000|}{(1980 + 2000)/2} \times 100 = 1.00\% \)
+			<br>
+			\( \frac{|2480 - 2500|}{(2480 + 2500)/2} \times 100 = 0.80\% \)
+			<br>
+			\( \frac{|2980 - 3000|}{(2980 + 3000)/2} \times 100 = 0.67\% \)
+			<br>
+			\( \frac{|3480 - 3500|}{(3480 + 3500)/2} \times 100 = 0.57\% \)
+			<br>
+			\( \frac{|3980 - 4000|}{(3980 + 4000)/2} \times 100 = 0.50\% \)
+
+			<br><br><i>Step 2: Compute average SMAPE:</i>
+			<br>
+			\( \text{SMAPE} = \frac{66.67 + 18.18 + 4.08 + 2.56 + 1.33 + 1.00 + 0.80 + 0.67 + 0.57 + 0.50}{10} = 9.64\% \).
+
+			<br><br><i>Step 3: Compare with Percentage Error:</i>
+			<br>
+			Percentage errors would yield:
+			\( \frac{|3 \times 10^{-6} - 1 \times 10^{-6}|}{1 \times 10^{-6}} \times 100 = 200.0\% \),
+			\( \frac{|120 - 100|}{100} \times 100 = 20.0\% \),
+			\( \frac{|480 - 500|}{500} \times 100 = 4.0\% \),
+			and smaller errors for subsequent data points.
+			The average percentage error would be significantly higher than SMAPE due to the first value.
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			The SMAPE of 9.64% reflects the alignment between measured and predicted datasets during ramp-up loading, avoiding the excessive influence of the near-zero initial load.
+		</li>
+
+	</ul>
+
+	<h2>Weighted Mean Absolute Percentage Error (WMAPE)</h2>
+	<p class="formula">Formula: \( \text{WMAPE} = \frac{\sum_{i=1}^{n} |x_i - y_i|}{\sum_{i=1}^{n} x_i} \times 100\% \)</p>
+	<p><b>Meaning:</b> WMAPE quantifies the relative error between two datasets while accounting for the magnitude of the actual values. By weighting errors proportionally to the scale of the actual values, WMAPE avoids distortions caused by small values dominating the calculation.</p>
+	<p><b>Practical Use Cases:</b></p>
+	<ul>
+		<br>
+		<li><b>Compressor Discharge Pressure (Startup Phase):</b>
+			<br>Dataset 1 (measured): [\(1 \times 10^{-6}\), 2.0, 3.0, 3.5, 4.0, 4.5, 5.0, 5.2, 5.3, 5.4] MPa.
+			<br>Dataset 2 (predicted): [\(5 \times 10^{-6}\), 2.1, 2.9, 3.6, 3.8, 4.4, 5.1, 5.1, 5.4, 5.5] MPa.
+
+			<br><br><i>Step 1: Calculate weighted absolute errors:</i>
+			<br>
+			\( |5 \times 10^{-6} - 1 \times 10^{-6}| = 4 \times 10^{-6} \)
+			<br>
+			\( |2.1 - 2.0| = 0.1 \)
+			<br>
+			\( |2.9 - 3.0| = 0.1 \)
+			<br>
+			\( |3.6 - 3.5| = 0.1 \)
+			<br>
+			\( |3.8 - 4.0| = 0.2 \)
+			<br>
+			\( |4.4 - 4.5| = 0.1 \)
+			<br>
+			\( |5.1 - 5.0| = 0.1 \)
+			<br>
+			\( |5.1 - 5.2| = 0.1 \)
+			<br>
+			\( |5.4 - 5.3| = 0.1 \)
+			<br>
+			\( |5.5 - 5.4| = 0.1 \)
+
+			<br><br><i>Step 2: Compute WMAPE:</i>
+			<br>
+			\( \text{WMAPE} = \frac{\sum |x_i - y_i|}{\sum x_i} \times 100 = \frac{4 \times 10^{-6} + 0.1 + 0.1 + 0.1 + 0.2 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1}{1 \times 10^{-6} + 2.0 + 3.0 + 3.5 + 4.0 + 4.5 + 5.0 + 5.2 + 5.3 + 5.4} \times 100 \)
+			<br>
+			\( = \frac{1.0}{39.9} \times 100 = 2.51\% \).
+
+			<br><br><i>Step 3: Compare with Percentage Error:</i>
+			<br>
+			The percentage error for the first data point is:
+			\( \frac{|5 \times 10^{-6} - 1 \times 10^{-6}|}{1 \times 10^{-6}} \times 100 = 400.0\% \),
+			which skews the overall average percentage error significantly.
+			WMAPE avoids this distortion by weighting errors according to the total scale of the actual values.
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			WMAPE of 2.51% reflects the overall alignment of datasets, avoiding disproportionate emphasis on the near-zero first value.
+		</li>
+
+		<br>
+		<li><b>Gas Turbine Inlet Temperature (Startup Phase):</b>
+			<br>Dataset 1 (measured): [\(1 \times 10^{-6}\), 850, 855, 860, 870, 880, 885, 890, 895, 900] °C.
+			<br>Dataset 2 (predicted): [\(3 \times 10^{-6}\), 845, 860, 855, 875, 878, 888, 889, 892, 905] °C.
+
+			<br><br><i>Step 1: Calculate weighted absolute errors:</i>
+			<br>
+			\( |3 \times 10^{-6} - 1 \times 10^{-6}| = 2 \times 10^{-6} \)
+			<br>
+			\( |845 - 850| = 5 \)
+			<br>
+			\( |860 - 855| = 5 \)
+			<br>
+			\( |855 - 860| = 5 \)
+			<br>
+			\( |875 - 870| = 5 \)
+			<br>
+			\( |878 - 880| = 2 \)
+			<br>
+			\( |888 - 885| = 3 \)
+			<br>
+			\( |889 - 890| = 1 \)
+			<br>
+			\( |892 - 895| = 3 \)
+			<br>
+			\( |905 - 900| = 5 \)
+
+			<br><br><i>Step 2: Compute WMAPE:</i>
+			<br>
+			\( \text{WMAPE} = \frac{\sum |x_i - y_i|}{\sum x_i} \times 100 = \frac{2 \times 10^{-6} + 5 + 5 + 5 + 5 + 2 + 3 + 1 + 3 + 5}{1 \times 10^{-6} + 850 + 855 + 860 + 870 + 880 + 885 + 890 + 895 + 900} \times 100 \)
+			<br>
+			\( = \frac{39}{7890} \times 100 = 0.49\% \).
+
+			<br><br><i>Step 3: Compare with Percentage Error:</i>
+			<br>
+			The percentage error for the first data point is:
+			\( \frac{|3 \times 10^{-6} - 1 \times 10^{-6}|}{1 \times 10^{-6}} \times 100 = 200.0\% \).
+			WMAPE avoids this extreme value by weighting errors proportionally to the total scale of the dataset.
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			WMAPE of 0.49% confirms strong alignment across the dataset, avoiding the distortion caused by near-zero values.
+		</li>
+
+		<br>
+		<li><b>Blade Strain Testing (Ramp-Up Loads):</b>
+			<br>Dataset 1 (measured): [\(1 \times 10^{-6}\), 100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000] microstrain.
+			<br>Dataset 2 (predicted): [\(2 \times 10^{-6}\), 95, 480, 950, 1480, 1980, 2480, 2980, 3480, 3980] microstrain.
+
+			<br><br><i>Step 1: Calculate weighted absolute errors:</i>
+			<br>
+			\( |2 \times 10^{-6} - 1 \times 10^{-6}| = 1 \times 10^{-6} \)
+			<br>
+			\( |95 - 100| = 5 \)
+			<br>
+			\( |480 - 500| = 20 \)
+			<br>
+			\( |950 - 1000| = 50 \)
+			<br>
+			\( |1480 - 1500| = 20 \)
+			<br>
+			\( |1980 - 2000| = 20 \)
+			<br>
+			\( |2480 - 2500| = 20 \)
+			<br>
+			\( |2980 - 3000| = 20 \)
+			<br>
+			\( |3480 - 3500| = 20 \)
+			<br>
+			\( |3980 - 4000| = 20 \)
+
+			<br><br><i>Step 2: Compute WMAPE:</i>
+			<br>
+			\( \text{WMAPE} = \frac{\sum |x_i - y_i|}{\sum x_i} \times 100 = \frac{1 \times 10^{-6} + 5 + 20 + 50 + 20 + 20 + 20 + 20 + 20 + 20}{1 \times 10^{-6} + 100 + 500 + 1000 + 1500 + 2000 + 2500 + 3000 + 3500 + 4000} \times 100 \)
+			<br>
+			\( = \frac{195}{14100} \times 100 = 1.38\% \).
+
+			<br><br><i>Step 3: Compare with Percentage Error:</i>
+			<br>
+			The percentage error for the first data point is:
+			\( \frac{|2 \times 10^{-6} - 1 \times 10^{-6}|}{1 \times 10^{-6}} \times 100 = 100.0\% \).
+			WMAPE avoids the disproportionate influence of this value, yielding a balanced result.
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			WMAPE of 1.38% confirms the alignment between datasets during ramp-up loads, accounting for the magnitude of the actual values.
+		</li>
+	</ul>
+
+	<h2>Pearson Correlation Coefficient (PCC)</h2>
+	<p class="formula">Formula: \( \text{PCC} = \frac{\text{Cov}(x, y)}{\sigma_x \cdot \sigma_y} \)</p>
+	<p><b>Meaning:</b> PCC quantifies the strength and direction of the linear relationship between two datasets. Values range from -1 (perfect negative correlation) to +1 (perfect positive correlation). A value of 0 indicates no linear correlation.</p>
+	<p><b>Practical Use Cases:</b></p>
+	<ul>
+		<br>
+		<li><b>Compressor Discharge Pressure:</b>
+			<br>Dataset 1 (measured): [3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5] MPa.
+			<br>Dataset 2 (predicted): [2.8, 3.6, 4.2, 4.4, 5.1, 5.6, 3.0, 6.6, 7.1, 7.6] MPa.
+
+			<br><br><i>Step 1: Calculate means:</i>
+			<br>
+			Mean of Dataset 1 (\( \bar{x} \)): \( \frac{3.0 + 3.5 + \dots + 7.5}{10} = 5.25 \)
+			<br>
+			Mean of Dataset 2 (\( \bar{y} \)): \( \frac{2.8 + 3.6 + \dots + 7.6}{10} = 5.20 \)
+
+			<br><br><i>Step 2: Calculate covariance (\( \text{Cov}(x, y) \)):</i>
+			<br>
+			\( \text{Cov}(x, y) = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{n} = 2.19 \)
+
+			<br><br><i>Step 3: Calculate standard deviations (\( \sigma_x \) and \( \sigma_y \)):</i>
+			<br>
+			\( \sigma_x = 1.37 \), \( \sigma_y = 1.62 \)
+
+			<br><br><i>Step 4: Calculate PCC:</i>
+			<br>
+			\( \text{PCC} = \frac{\text{Cov}(x, y)}{\sigma_x \cdot \sigma_y} = \frac{2.19}{1.37 \cdot 1.62} = 0.98 \)
+
+			<br><br><i>Step 5: Interpret Results:</i>
+			<br>
+			A PCC of 0.98 indicates a strong positive linear relationship, though some deviations (e.g., predicted value of 3.0 MPa for the seventh data point) suggest a need for further investigation in specific scenarios.
+		</li>
+
+		<br>
+		<li><b>Gas Turbine Inlet Temperature:</b>
+			<br>Dataset 1 (measured): [850, 860, 870, 880, 890, 900, 910, 920, 930, 940] °C.
+			<br>Dataset 2 (predicted): [845, 865, 875, 875, 895, 905, 800, 925, 935, 945] °C.
+
+			<br><br><i>Step 1: Calculate means:</i>
+			<br>
+			Mean of Dataset 1 (\( \bar{x} \)): \( \frac{850 + 860 + \dots + 940}{10} = 895 \)
+			<br>
+			Mean of Dataset 2 (\( \bar{y} \)): \( \frac{845 + 865 + \dots + 945}{10} = 888 \)
+
+			<br><br><i>Step 2: Calculate covariance (\( \text{Cov}(x, y) \)):</i>
+			<br>
+			\( \text{Cov}(x, y) = 68.0 \)
+
+			<br><br><i>Step 3: Calculate standard deviations (\( \sigma_x \) and \( \sigma_y \)):</i>
+			<br>
+			\( \sigma_x = 25.0 \), \( \sigma_y = 40.0 \)
+
+			<br><br><i>Step 4: Calculate PCC:</i>
+			<br>
+			\( \text{PCC} = \frac{\text{Cov}(x, y)}{\sigma_x \cdot \sigma_y} = \frac{68.0}{25.0 \cdot 40.0} = 0.68 \)
+
+			<br><br><i>Step 5: Interpret Results:</i>
+			<br>
+			A PCC of 0.68 suggests a moderate positive correlation overall, with spurious deviations (e.g., 800 °C predicted vs. 910 °C measured) potentially indicating calibration, a transient event or issues during the acquisiton of data.
+		</li>
+
+		<br>
+		<li><b>Blade Strain Testing:</b>
+			<br>Dataset 1 (measured): [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500] microstrain.
+			<br>Dataset 2 (predicted): [1050, 1480, 2020, 2450, 2980, 3550, 3000, 4520, 5050, 5480] microstrain.
+
+			<br><br><i>Step 1: Calculate means:</i>
+			<br>
+			Mean of Dataset 1 (\( \bar{x} \)): \( \frac{1000 + 1500 + \dots + 5500}{10} = 3250 \)
+			<br>
+			Mean of Dataset 2 (\( \bar{y} \)): \( \frac{1050 + 1480 + \dots + 5480}{10} = 3248 \)
+
+			<br><br><i>Step 2: Calculate covariance (\( \text{Cov}(x, y) \)):</i>
+			<br>
+			\( \text{Cov}(x, y) = 103500.0 \)
+
+			<br><br><i>Step 3: Calculate standard deviations (\( \sigma_x \) and \( \sigma_y \)):</i>
+			<br>
+			\( \sigma_x = 1500.0 \), \( \sigma_y = 1425.0 \)
+
+			<br><br><i>Step 4: Calculate PCC:</i>
+			<br>
+			\( \text{PCC} = \frac{\text{Cov}(x, y)}{\sigma_x \cdot \sigma_y} = \frac{103500.0}{1500.0 \cdot 1425.0} = 0.97 \)
+
+			<br><br><i>Step 5: Interpret Results:</i>
+			<br>
+			A PCC of 0.97 confirms a strong positive correlation, though deviations (e.g., 3000 microstrain predicted vs. 4000 microstrain measured) highlight areas where predictions may need refinement or some digital problem that might have occurred.
+		</li>
+	</ul>
+
+	<h2>Coefficient of Determination (\( R^2 \))</h2>
+	<p class="formula">Formula: \( R^2 = 1 - \frac{\text{SS}_{\text{residual}}}{\text{SS}_{\text{total}}} \)</p>
+	<p><b>Meaning:</b> \( R^2 \), the Coefficient of Determination, measures how well a regression model explains the variability of the dependent variable. Unlike PCC, which quantifies linear relationships, \( R^2 \) assesses the goodness-of-fit for a predictive model. Values range from 0 to 1, with higher values indicating better fit.</p>
+	<p><b>Key Difference Compared to PCC:</b></p>
+	<ul>
+		<li>PCC measures the strength and direction of the linear correlation between two datasets.</li>
+		<li>\( R^2 \) evaluates how well a regression model explains the variability of one dataset based on another.</li>
+		<li>PCC can be used without a regression model, while \( R^2 \) is directly tied to the performance of a regression model.</li>
+	</ul>
+	<p><b>Practical Use Cases:</b></p>
+	<ul>
+		<br>
+		<li><b>Compressor Discharge Pressure:</b>
+			<br>Dataset 1 (measured): [3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5] MPa.
+			<br>Regression Model Predictions: [2.9, 3.4, 4.2, 4.6, 5.2, 6.0, 6.1, 6.5, 6.9, 9.0] MPa.
+
+			<br><br><i>Step 1: Calculate \( \text{SS}_{\text{residual}} \):</i>
+			<br>
+			\( \text{SS}_{\text{residual}} = \sum (x_i - \hat{y}_i)^2 = (3.0 - 2.9)^2 + (3.5 - 3.4)^2 + \dots + (7.5 - 9.0)^2 \)
+			<br>
+			\( = 0.01 + 0.01 + 0.04 + 0.01 + 0.04 + 0.25 + 0.01 + 0.0 + 0.01 + 2.25 = 2.63 \)
+
+			<br><br><i>Step 2: Calculate \( \text{SS}_{\text{total}} \):</i>
+			<br>
+			\( \text{SS}_{\text{total}} = \sum (x_i - \bar{x})^2 = 21.5 \) (as calculated earlier).
+
+			<br><br><i>Step 3: Calculate \( R^2 \):</i>
+			<br>
+			\( R^2 = 1 - \frac{\text{SS}_{\text{residual}}}{\text{SS}_{\text{total}}} = 1 - \frac{2.63}{21.5} = 0.877 \)
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			An \( R^2 \) of 0.877 indicates that the regression model explains 87.7% of the variability in the measured discharge pressure data. However, the deviation at the last data point (9.0 MPa predicted vs. 7.5 MPa measured) highlights a potential outlier or issue with the model in high-pressure ranges.
+		</li>
+
+		<br>
+		<li><b>Gas Turbine Inlet Temperature:</b>
+			<br>Dataset 1 (measured): [850, 860, 870, 880, 890, 900, 910, 920, 930, 940] °C.
+			<br>Regression Model Predictions: [840, 855, 875, 885, 885, 905, 915, 930, 945, 960] °C.
+
+			<br><br><i>Step 1: Calculate \( \text{SS}_{\text{residual}} \):</i>
+			<br>
+			\( \text{SS}_{\text{residual}} = (850 - 840)^2 + (860 - 855)^2 + \dots + (940 - 960)^2 \)
+			<br>
+			\( = 100 + 25 + 25 + 25 + 25 + 25 + 25 + 100 + 225 + 400 = 975 \)
+
+			<br><br><i>Step 2: Calculate \( \text{SS}_{\text{total}} \):</i>
+			<br>
+			\( \text{SS}_{\text{total}} = 8250 \) (as calculated earlier).
+
+			<br><br><i>Step 3: Calculate \( R^2 \):</i>
+			<br>
+			\( R^2 = 1 - \frac{\text{SS}_{\text{residual}}}{\text{SS}_{\text{total}}} = 1 - \frac{975}{8250} = 0.882 \)
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			An \( R^2 \) of 0.882 indicates that the regression model explains 88.2% of the variability in the turbine temperature data. Discrepancies at low and high temperatures (e.g., 840 °C predicted vs. 850 °C measured) suggest areas for improvement.
+		</li>
+
+		<br>
+		<li><b>Blade Strain Testing:</b>
+			<br>Dataset 1 (measured): [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500] microstrain.
+			<br>Regression Model Predictions: [1100, 1400, 2100, 2400, 3200, 3600, 3900, 4600, 5100, 5400] microstrain.
+
+			<br><br><i>Step 1: Calculate \( \text{SS}_{\text{residual}} \):</i>
+			<br>
+			\( \text{SS}_{\text{residual}} = (1000 - 1100)^2 + (1500 - 1400)^2 + \dots + (5500 - 5400)^2 \)
+			<br>
+			\( = 10000 + 10000 + 10000 + 10000 + 40000 + 10000 + 10000 + 10000 + 10000 + 10000 = 140000 \)
+
+			<br><br><i>Step 2: Calculate \( \text{SS}_{\text{total}} \):</i>
+			<br>
+			\( \text{SS}_{\text{total}} = 5062500 \) (as calculated earlier).
+
+			<br><br><i>Step 3: Calculate \( R^2 \):</i>
+			<br>
+			\( R^2 = 1 - \frac{\text{SS}_{\text{residual}}}{\text{SS}_{\text{total}}} = 1 - \frac{140000}{5062500} = 0.972 \)
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			An \( R^2 \) of 0.972 confirms a strong fit overall but highlights potential under- or overpredictions (e.g., 1100 microstrain predicted vs. 1000 microstrain measured) in some ranges.
+		</li>
+	</ul>
+
+	<h2>Maximum Correlation Coefficient</h2>
+	<p class="formula">Formula: \( \text{Max Correlation} = \max \left( \frac{1}{n} \sum_{i=1}^{n-k} \frac{(x_i - \bar{x})(y_{i+k} - \bar{y})}{\sigma_x \cdot \sigma_y} \right) \)</p>
+	<p><b>Lag at Maximum Correlation:</b> \( \text{Lag} = \text{Index of Max Correlation} - (n - 1) \)</p>
+	<p><b>Meaning:</b> The Maximum Correlation Coefficient identifies the strongest linear relationship between two datasets across all possible time lags \( k \). The lag at maximum correlation indicates the time offset where the strongest alignment occurs, which is particularly useful in systems with delays or shifts in signals.</p>
+	<p><b>Practical Use Cases:</b></p>
+	<ul>
+		<br>
+		<li><b>Compressor Discharge Pressure:</b>
+			<br>Dataset 1 (measured): [3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5] MPa.
+			<br>Dataset 2 (predicted): [3.1, 3.6, 4.1, 4.4, 5.1, 5.6, 6.1, 6.6, 7.1, 7.6] MPa.
+
+			<br><br><i>Step 1: Normalize the datasets:</i>
+			<br>
+			\( x_{\text{norm}} = \frac{x - \bar{x}}{\sigma_x}, \quad y_{\text{norm}} = \frac{y - \bar{y}}{\sigma_y} \)
+
+			<br><br><i>Step 2: Compute cross-correlation:</i>
+			<br>
+			\( \text{Cross Corr}(k) = \frac{1}{n} \sum_{i=1}^{n-k} x_{\text{norm}}(i) \cdot y_{\text{norm}}(i+k) \)
+
+			<br><br><i>Step 3: Identify maximum correlation and lag:</i>
+			<br>
+			Maximum correlation: \( \text{Max Correlation} = 0.98 \)
+			<br>
+			Lag at max correlation: \( \text{Lag} = 0 \) (datasets are perfectly aligned).
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			The maximum correlation of 0.98 occurs with no time lag, confirming excellent alignment between measured and predicted datasets under steady-state conditions.
+		</li>
+
+		<br>
+		<li><b>Gas Turbine Inlet Temperature:</b>
+			<br>Dataset 1 (measured): [850, 860, 870, 880, 890, 900, 910, 920, 930, 940] °C.
+			<br>Dataset 2 (predicted): [845, 855, 865, 875, 885, 895, 905, 915, 925, 935] °C.
+
+			<br><br><i>Step 1: Normalize the datasets:</i>
+			<br>
+			Normalize as above.
+
+			<br><br><i>Step 2: Compute cross-correlation:</i>
+			<br>
+			Cross-correlation values:
+			<br>
+			\( \text{Corr}_0 = 0.95 \), \( \text{Corr}_1 = 0.80 \), \( \text{Corr}_{-1} = 0.85 \)
+
+			<br><br><i>Step 3: Identify maximum correlation and lag:</i>
+			<br>
+			Maximum correlation: \( \text{Max Correlation} = 0.95 \)
+			<br>
+			Lag at max correlation: \( \text{Lag} = 0 \)
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			The maximum correlation of 0.95 with no time lag suggests good alignment overall, but lower correlations for \( k = 1 \) and \( k = -1 \) indicate reduced alignment under transient conditions.
+		</li>
+
+		<br>
+		<li><b>Blade Strain Testing:</b>
+			<br>Dataset 1 (measured): [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500] microstrain.
+			<br>Dataset 2 (predicted): [1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000] microstrain (shifted by 1 index).
+
+			<br><br><i>Step 1: Normalize the datasets:</i>
+			<br>
+			\( x_{\text{norm}} = \frac{x - \bar{x}}{\sigma_x}, \quad y_{\text{norm}} = \frac{y - \bar{y}}{\sigma_y} \)
+			<br>
+			For measured (\( x \)):
+			\( \bar{x} = 3250, \quad \sigma_x = 1581.1 \)
+			<br>
+			For predicted (\( y \)):
+			\( \bar{y} = 3750, \quad \sigma_y = 1581.1 \)
+
+			<br><br><i>Step 2: Compute cross-correlation:</i>
+			<br>
+			At \( k = 0 \) (no lag):
+			\[
+			\text{Corr}_0 = \frac{1}{n} \sum_{i=1}^{n} \frac{(x_i - \bar{x})(y_i - \bar{y})}{\sigma_x \cdot \sigma_y}
+			\]
+			\[
+			= \frac{1}{10} \left( \frac{(1000 - 3250)(1500 - 3750)}{1581.1^2} + \dots + \frac{(5500 - 3250)(6000 - 3750)}{1581.1^2} \right)
+			\]
+			\[
+			\text{Corr}_0 = 0.85
+			\]
+
+			At \( k = 1 \) (predicted dataset shifted forward by 1 index):
+			\[
+			\text{Corr}_1 = \frac{1}{n-1} \sum_{i=1}^{n-1} \frac{(x_i - \bar{x})(y_{i+1} - \bar{y})}{\sigma_x \cdot \sigma_y}
+			\]
+			\[
+			\text{Corr}_1 = 0.92
+			\]
+
+			At \( k = -1 \) (predicted dataset shifted backward by 1 index):
+			\[
+			\text{Corr}_{-1} = 0.75
+			\]
+
+			<br><br><i>Step 3: Identify maximum correlation and lag:</i>
+			<br>
+			Maximum correlation: \( \text{Max Correlation} = 0.92 \)
+			<br>
+			Lag at max correlation: \( \text{Lag} = 1 \)
+
+			<br><br><i>Step 4: Interpret Results:</i>
+			<br>
+			The maximum correlation of 0.92 occurs at a lag of 1, indicating that the predicted dataset aligns best when delayed by 1 time step. This suggests a possible delay in the strain measurement model, highlighting areas where predictions may need adjustment to account for dynamic loading scenarios.
+		</li>
+	</ul>
+
+    <h2>Sign Agreement and Polarity Metrics</h2>
+    <p class="formula">Deadband polarity: sign_eps(v) = +1 when v &gt; eps, 0 when |v| &lt;= eps, and -1 when v &lt; -eps.</p>
+    <p class="formula">Sign Agreement (%) = count(sign_eps(x_i) == sign_eps(y_i) and both are non-zero) / n * 100%</p>
+    <p class="formula">Sign Mismatch (%) = count(sign_eps(x_i) == -sign_eps(y_i) and both are non-zero) / n * 100%</p>
+    <p class="formula">Sign Deadband (%) = count(|x_i| &lt;= eps or |y_i| &lt;= eps) / n * 100%</p>
+    <p class="formula">Polarity Score = mean(sign_eps(x_i) * sign_eps(y_i))</p>
+    <p><b>Meaning:</b> These metrics check whether two aligned signals have the same polarity at each time point. They are useful when the direction of load, strain, acceleration, pressure delta, or another signed signal matters independently from magnitude error.</p>
+    <p><b>Interpretation:</b></p>
+    <ul>
+        <li><b>Sign Agreement (%):</b> Higher is better. It means the two signals are positive or negative together.</li>
+        <li><b>Sign Mismatch (%):</b> Lower is better. It identifies time points where one signal is positive and the other is negative.</li>
+        <li><b>Sign Deadband (%):</b> Shows how much of the comparison is near zero. Increase the deadband when sensor noise around zero should not count as a polarity flip.</li>
+        <li><b>Polarity Score:</b> Ranges from -1 to +1. +1 means all non-deadband samples have the same sign, -1 means all non-deadband samples have opposite signs, and 0 indicates a balanced or mostly deadband result.</li>
+        <li><b>Longest Sign Mismatch (s):</b> Reports the longest continuous time span where the two signals have opposite signs.</li>
+    </ul>
+    <p><b>Visualization:</b> The Sign Agreement plot uses a per-time-point strip by channel. Green means the signs agree, red means the signs are opposite, and gray means at least one signal is inside the configured deadband.</p>
+    <p><b>Practical Example:</b> If reference strain is [-2, -1, 0, 1, 2] and candidate strain is [-3, 2, 0.05, -1, 2] with eps = 0.1, the status is [same, opposite, deadband, opposite, same]. The result is 40% agreement, 40% mismatch, 20% deadband, and a polarity score of 0.0.</p>
+
+    <h2>Engineering Diagnostics</h2>
+    <p>The Analyze Results page includes extra diagnostic views for engineering review. Use the Metrics menu to decide which scalar metrics appear in the Statistical Metrics plot. The detailed diagnostic tabs remain available even when their summary metrics are hidden from the aggregate plot.</p>
+
+    <h3>Residual Diagnostics</h3>
+    <p class="formula">Residual = candidate - reference</p>
+    <ul>
+        <li><b>Mean Bias:</b> Average signed residual. Positive values mean the candidate trends above the reference.</li>
+        <li><b>MAE:</b> Mean absolute error. This is easier to interpret than MSE because it stays in signal units.</li>
+        <li><b>Max Abs Error, P95 Abs Error, P99 Abs Error:</b> Peak and high-percentile residuals for finding short-duration excursions.</li>
+    </ul>
+
+    <h3>Rolling Metrics</h3>
+    <p>Rolling RMSE, rolling bias, rolling Pearson correlation, and rolling sign agreement are calculated over a moving time window. These plots show whether agreement changes during transient portions of the record instead of only reporting one whole-record value.</p>
+
+    <h3>Lag and Phase Diagnostics</h3>
+    <p class="formula">Best Lag = lag with the maximum normalized cross-correlation</p>
+    <ul>
+        <li><b>Best Lag (samples) and Best Lag (s):</b> The sample and time shift where the two signals align best.</li>
+        <li><b>Max Lag Correlation:</b> Correlation achieved at the best lag. A high value with non-zero lag points to a timing or synchronization issue.</li>
+    </ul>
+
+    <h3>Event Timing Diagnostics</h3>
+    <p>Zero crossings, local extrema, and threshold crossings are extracted from both datasets and compared by channel. Mean and maximum event timing error show whether important physical events occur at the same time. Event Count Delta reports whether one signal has extra or missing events.</p>
+
+    <h3>Data Quality Diagnostics</h3>
+    <p>Data quality checks report timestamp jitter, duplicate time values, missing values, flatline segments, clipping candidates, spike candidates, and a total warning count. These checks help separate comparison disagreement from input data issues.</p>
+
+    <h3>Calibration Diagnostics</h3>
+    <p class="formula">candidate = slope * reference + offset</p>
+    <ul>
+        <li><b>Calibration Slope:</b> Gain error indicator. Values far from 1.0 suggest scale mismatch.</li>
+        <li><b>Calibration Offset:</b> Constant bias indicator. Values far from 0.0 suggest zero-offset mismatch.</li>
+        <li><b>Calibration R^2 and Residual Std:</b> Fit quality and remaining scatter after the linear calibration model.</li>
+    </ul>
+
+    <h3>Frequency Diagnostics</h3>
+    <p>For sufficiently uniform time axes, the Frequency tab compares FFT magnitude by channel. Dominant Freq Delta reports the difference between each dataset's dominant frequency, and Spectral Energy Ratio compares candidate spectral energy against reference spectral energy.</p>
+
+</body>
+</html>

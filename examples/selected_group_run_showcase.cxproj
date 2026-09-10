@@ -1,0 +1,273 @@
+{
+  "active_workspace_id": "ws_14e3ed8673",
+  "metadata": {
+    "artifact_store": {
+      "artifacts": {},
+      "staged": {}
+    },
+    "custom_workflows": [],
+    "ui": {
+      "passive_style_presets": {
+        "edge_presets": [],
+        "node_presets": []
+      },
+      "script_editor": {
+        "floating": false,
+        "visible": false,
+        "width": 0.0
+      }
+    },
+    "workflow_settings": {
+      "environment": {
+        "python_path": "",
+        "working_directory": ""
+      },
+      "general": {
+        "author": "",
+        "description": "",
+        "project_name": ""
+      },
+      "logging": {
+        "capture_console": true,
+        "level": "info"
+      },
+      "plugins": {
+        "enabled": []
+      },
+      "solver_config": {
+        "enable_parallel": true,
+        "memory_limit_gb": 12,
+        "thread_count": 8
+      }
+    },
+    "workspace_order": [
+      "ws_14e3ed8673"
+    ]
+  },
+  "name": "Selected Group Run Showcase",
+  "project_id": "proj_46d3719ab4",
+  "schema_version": 5,
+  "workspace_order": [
+    "ws_14e3ed8673"
+  ],
+  "workspaces": [
+    {
+      "active_view_id": "view_269d9cb826",
+      "dirty": true,
+      "edges": [
+        {
+          "edge_id": "edge_0b0e83f2ee",
+          "enabled": true,
+          "input_order": 0,
+          "label": "",
+          "source_node_id": "node_37375c5441",
+          "source_port_key": "result",
+          "target_node_id": "node_d5b43e4675",
+          "target_port_key": "payload",
+          "visual_style": {}
+        }
+      ],
+      "name": "Group run",
+      "nodes": [
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "exposed_ports": {
+            "message": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_143c96ca23",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "level": "info",
+            "message": "Outside node should not run when only the group is selected."
+          },
+          "title": "Outside reviewer notify",
+          "type_id": "core.logger",
+          "visual_style": {},
+          "x": 850.0,
+          "y": 80.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "exposed_ports": {
+            "payload": true,
+            "result": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_37375c5441",
+          "parent_node_id": "node_b2b771c5d6",
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "script": "output_data = {'rows': 12, 'status': 'ready'}"
+          },
+          "title": "Prepare report data",
+          "type_id": "core.python_script",
+          "visual_style": {},
+          "x": 120.0,
+          "y": 80.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 340.0,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_4548e8ad5f",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "body": "Use Preview Run from the Run menu to see which group contents will run before confirming.",
+            "title": "Preview first"
+          },
+          "title": "Preview first",
+          "type_id": "passive.annotation.sticky_note",
+          "visual_style": {},
+          "x": 820.0,
+          "y": 220.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 310.0,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_a45dd4269d",
+          "parent_node_id": "node_b2b771c5d6",
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "body": "This node is inside the group but should be ignored by group run planning.",
+            "title": "Passive design note"
+          },
+          "title": "Passive design note",
+          "type_id": "passive.annotation.sticky_note",
+          "visual_style": {},
+          "x": 165.0,
+          "y": 220.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": 330.0,
+          "custom_width": 730.0,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_b2b771c5d6",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "title": "Report build group"
+          },
+          "title": "Report build group",
+          "type_id": "passive.annotation.group_backdrop",
+          "visual_style": {},
+          "x": 40.0,
+          "y": -20.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": 430.0,
+          "exposed_ports": {
+            "bottom": true,
+            "left": true,
+            "right": true,
+            "top": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_c7718dc2d6",
+          "parent_node_id": null,
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "body": "Select the Group, then use Run Selected. The selected-run target expands to active contents and pulls their enabled upstream data dependencies; the passive note inside the group remains ignored.",
+            "title": "Group Run"
+          },
+          "title": "Group Run",
+          "type_id": "passive.annotation.callout",
+          "visual_style": {},
+          "x": -170.0,
+          "y": -170.0
+        },
+        {
+          "collapsed": false,
+          "comments": [],
+          "custom_height": null,
+          "custom_width": null,
+          "exposed_ports": {
+            "payload": true,
+            "result": true
+          },
+          "links": [],
+          "locked": false,
+          "node_id": "node_d5b43e4675",
+          "parent_node_id": "node_b2b771c5d6",
+          "port_labels": {},
+          "port_modifiers": {},
+          "principal_input_port_id": null,
+          "properties": {
+            "script": "data = input_data or {}\noutput_data = f\"Rendered {data.get('rows', 0)} rows\""
+          },
+          "title": "Render report pages",
+          "type_id": "core.python_script",
+          "visual_style": {},
+          "x": 390.0,
+          "y": 80.0
+        }
+      ],
+      "views": [
+        {
+          "hide_optional_ports": false,
+          "name": "V1",
+          "pan_x": 360.0,
+          "pan_y": 160.0,
+          "scope_path": [],
+          "view_id": "view_269d9cb826",
+          "zoom": 0.78
+        }
+      ],
+      "workspace_id": "ws_14e3ed8673"
+    }
+  ]
+}

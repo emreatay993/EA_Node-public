@@ -1,0 +1,24 @@
+"""Real-window lifecycle scenarios; executed only by shell isolation."""
+
+from tests.shell_window_lifecycle_support import (
+    test_application_inactive_clears_immediately_and_cancels_queued_deactivation,
+    test_close_releases_viewer_host_service_overlay_manager,
+    test_close_skips_deferred_autosave_recovery_after_teardown_starts,
+    test_content_fullscreen_bridge_closes_during_project_reset_lifecycle,
+    test_content_fullscreen_overlay_closes_open_state_with_escape_and_f11,
+    test_content_fullscreen_overlay_exposes_viewer_viewport_placeholder_contract,
+    test_content_fullscreen_overlay_owns_animated_image_playback,
+    test_content_fullscreen_overlay_preserves_cropped_image_source_aspect,
+    test_content_fullscreen_overlay_renders_image_media_and_keeps_node_state_read_only,
+    test_content_fullscreen_overlay_renders_pdf_media_blocks_background_and_close_button,
+    test_content_fullscreen_overlay_renders_video_media_and_persists_close_state,
+    test_create_shell_window_factory_tracks_application_state_signal_for_teardown,
+    test_empty_shell_configures_tabular_policy_without_allocating_shared_service,
+    test_shared_shell_reset_reapplies_tabular_policy_after_service_reset,
+    test_shell_window_can_use_opt_in_qquickview_container_host,
+    test_shell_window_close_allows_repeated_in_process_cycles,
+    test_shell_window_exposes_qtquick_backend_debug_payload,
+    test_window_deactivate_coalesces_duplicate_events_and_clears_unowned_focus,
+)
+
+__all__ = [name for name in globals() if name.startswith("test_")]

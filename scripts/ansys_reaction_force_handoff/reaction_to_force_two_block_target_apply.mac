@@ -1,0 +1,91 @@
+! ======================================================================
+! Target-step apply block for reaction-to-force handoff
+!
+! Usage:
+!   Place this command snippet in load step N+1 before that step solves.
+!   Use reaction_to_force_two_block_source_prep.mac in load step N with
+!   the Mechanical command object property "Issue Solve Command" set to No.
+!   This block reads the source-step reaction arrays that are still in APDL
+!   memory and applies them as nodal forces.
+! ======================================================================
+
+! ----------------------- USER SETTINGS -------------------------------
+! Kept as a paired source/target setting. The target block uses the node
+! IDs saved by the source block rather than re-reading the named selection.
+RTF_NS_NAME='MY_NAMED_SELECTION'
+RTF_FORCE_SCALE=1.0
+
+RTF_APPLY_FX=1
+RTF_APPLY_FY=1
+RTF_APPLY_FZ=1
+
+RTF_DELETE_UX=1
+RTF_DELETE_UY=1
+RTF_DELETE_UZ=1
+! --------------------- END USER SETTINGS -----------------------------
+
+/COM,BEGIN reaction_to_force_two_block_target_apply
+
+! This command object is inserted by Mechanical inside /SOLU. Keep it there:
+! no FINISH, no /PREP7, no /POST1, and no PARSAV/PARRES are used.
+ALLSEL,ALL
+
+! Confirm the source block ran earlier in this same Mechanical solve.
+*IF,RTF_HANDOFF_READY,NE,1,THEN
+  *MSG,ERROR,RTF_HANDOFF_READY
+Saved handoff arrays are not ready (%G). Run the source block in the previous load step.
+*ENDIF
+*IF,RTF_NODE_COUNT,LE,0,THEN
+  *MSG,ERROR,RTF_NODE_COUNT
+Saved handoff node count is invalid (%G). Run the source block in the previous load step.
+*ENDIF
+
+! Recreate the source-node component from the saved node IDs.
+NSEL,NONE
+*DO,RTF_INDEX,1,RTF_NODE_COUNT
+  RTF_NODE_ID=RTF_NODE_IDS(RTF_INDEX)
+  NSEL,A,NODE,,RTF_NODE_ID
+*ENDDO
+CM,RTF_SOURCE_NODES,NODE
+CMSEL,S,RTF_SOURCE_NODES
+
+! Mechanical may emit DDELE,...,FORCE when the original displacement BC is
+! deactivated in the target step. That can leave ramped release-force loads
+! on these nodes before this snippet applies the explicit replacement forces.
+! Displacement constraints and force components are deleted by explicit saved
+! node ID immediately before this snippet applies the replacement force value.
+
+! Apply the saved source-step reactions as nodal forces in the target step.
+*DO,RTF_INDEX,1,RTF_NODE_COUNT
+  RTF_NODE_ID=RTF_NODE_IDS(RTF_INDEX)
+  *IF,RTF_DELETE_UX,NE,0,THEN
+    DDELE,RTF_NODE_ID,UX
+  *ENDIF
+  *IF,RTF_DELETE_UY,NE,0,THEN
+    DDELE,RTF_NODE_ID,UY
+  *ENDIF
+  *IF,RTF_DELETE_UZ,NE,0,THEN
+    DDELE,RTF_NODE_ID,UZ
+  *ENDIF
+  *IF,RTF_APPLY_FX,NE,0,THEN
+    FDELE,RTF_NODE_ID,FX
+    RTF_APPLIED_FX=RTF_FORCE_X(RTF_INDEX)*RTF_FORCE_SCALE
+    F,RTF_NODE_ID,FX,RTF_APPLIED_FX
+  *ENDIF
+  *IF,RTF_APPLY_FY,NE,0,THEN
+    FDELE,RTF_NODE_ID,FY
+    RTF_APPLIED_FY=RTF_FORCE_Y(RTF_INDEX)*RTF_FORCE_SCALE
+    F,RTF_NODE_ID,FY,RTF_APPLIED_FY
+  *ENDIF
+  *IF,RTF_APPLY_FZ,NE,0,THEN
+    FDELE,RTF_NODE_ID,FZ
+    RTF_APPLIED_FZ=RTF_FORCE_Z(RTF_INDEX)*RTF_FORCE_SCALE
+    F,RTF_NODE_ID,FZ,RTF_APPLIED_FZ
+  *ENDIF
+*ENDDO
+
+! Step the replacement force at the start of the target load step so the
+! source-end state is held rather than ramping the force from zero.
+KBC,1
+ALLSEL,ALL
+/COM,END reaction_to_force_two_block_target_apply

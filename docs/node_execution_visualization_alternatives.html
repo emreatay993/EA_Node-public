@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Node Execution Visualization — Alternatives</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; padding: 40px; }
+  h1 { text-align: center; margin-bottom: 10px; font-size: 28px; color: #fff; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 50px; font-size: 14px; }
+
+  .alternative { margin-bottom: 60px; border: 1px solid #2a2a4a; border-radius: 16px; padding: 32px; background: #16162a; }
+  .alt-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+  .alt-header h2 { font-size: 20px; color: #a0c4ff; }
+  .alt-header .tag { background: #2a3a5a; color: #7ab8ff; padding: 2px 10px; border-radius: 8px; font-size: 12px; }
+  .alt-desc { color: #999; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+  .pros-cons { display: flex; gap: 32px; margin-bottom: 24px; }
+  .pros, .cons { flex: 1; }
+  .pros h4 { color: #6ecf6e; margin-bottom: 6px; font-size: 13px; }
+  .cons h4 { color: #e07070; margin-bottom: 6px; font-size: 13px; }
+  .pros li, .cons li { font-size: 13px; color: #bbb; margin-left: 16px; margin-bottom: 3px; }
+
+  .canvas { display: flex; gap: 32px; align-items: center; justify-content: center; padding: 40px 20px; background: #0d0d1a; border-radius: 12px; position: relative; overflow: hidden; }
+  .canvas::before { content: ''; position: absolute; inset: 0; background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 20px 20px; }
+
+  /* Base node */
+  .node { position: relative; width: 180px; border-radius: 10px; background: #1e1e36; border: 1.5px solid #3a3a5e; z-index: 1; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+  .node-header { padding: 8px 12px; font-size: 13px; font-weight: 600; border-bottom: 1px solid #2a2a4a; display: flex; align-items: center; gap: 8px; }
+  .node-body { padding: 10px 12px; }
+  .node-port { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #888; margin-bottom: 4px; }
+  .port-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; border: 1px solid #777; }
+  .port-dot.exec { background: #4488cc; border-color: #66aaee; }
+  .port-dot.data { background: #44aa66; border-color: #66cc88; }
+
+  .state-label { text-align: center; font-size: 11px; color: #666; margin-top: 8px; }
+
+  /* Edge lines */
+  .edge-line { position: absolute; z-index: 0; }
+
+  /* ============== ALTERNATIVE A: Glowing Border Pulse ============== */
+  .alt-a .node.idle { border-color: #3a3a5e; }
+  .alt-a .node.running {
+    border-color: #4a9eff;
+    border-width: 2px;
+    animation: borderPulseA 1.6s ease-in-out infinite;
+  }
+  .alt-a .node.completed {
+    border-color: #4ade80;
+    border-width: 2px;
+  }
+  .alt-a .node.completed .node-header { color: #4ade80; }
+
+  @keyframes borderPulseA {
+    0%, 100% { box-shadow: 0 0 8px rgba(74, 158, 255, 0.3), 0 4px 16px rgba(0,0,0,0.4); border-color: #4a9eff; }
+    50% { box-shadow: 0 0 20px rgba(74, 158, 255, 0.6), 0 0 40px rgba(74, 158, 255, 0.15), 0 4px 16px rgba(0,0,0,0.4); border-color: #6eb4ff; }
+  }
+
+  /* ============== ALTERNATIVE B: Progress Bar + Status Badge ============== */
+  .alt-b .node.running { border-color: #4a9eff; border-width: 2px; }
+  .alt-b .node.completed { border-color: #4ade80; border-width: 2px; }
+
+  .progress-bar { height: 3px; background: #2a2a4a; border-radius: 0 0 8px 8px; overflow: hidden; position: relative; }
+  .progress-bar .fill { height: 100%; background: linear-gradient(90deg, #4a9eff, #6ec6ff); animation: progressSweep 2s ease-in-out infinite; width: 40%; position: absolute; border-radius: 2px; }
+  .progress-bar.done .fill { width: 100%; background: #4ade80; animation: none; }
+
+  @keyframes progressSweep {
+    0% { left: -40%; }
+    100% { left: 100%; }
+  }
+
+  .status-badge { position: absolute; top: -8px; right: -8px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; z-index: 2; }
+  .status-badge.running { background: #4a9eff; animation: badgePulse 1.4s ease-in-out infinite; }
+  .status-badge.done { background: #4ade80; }
+  .status-badge.idle { display: none; }
+
+  @keyframes badgePulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.85; }
+  }
+
+  /* ============== ALTERNATIVE C: Animated Edge Flow ============== */
+  .alt-c .node.running { border-color: #4a9eff; border-width: 2px; box-shadow: 0 0 12px rgba(74,158,255,0.25), 0 4px 16px rgba(0,0,0,0.4); }
+  .alt-c .node.completed { border-color: #4ade80; border-width: 2px; }
+
+  .alt-c .edge-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  .edge-active { stroke-dasharray: 8 6; animation: dashFlow 0.8s linear infinite; }
+  .edge-completed { stroke: #4ade80 !important; stroke-dasharray: none; }
+  @keyframes dashFlow {
+    to { stroke-dashoffset: -14; }
+  }
+
+  /* ============== ALTERNATIVE D: Overlay Spinner + Dimming ============== */
+  .alt-d .node.idle-pending { opacity: 0.45; }
+  .alt-d .node.running { border-color: #4a9eff; border-width: 2px; }
+  .alt-d .node.completed { border-color: #4ade80; border-width: 1.5px; opacity: 1; }
+
+  .spinner-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); border-radius: 10px; z-index: 3; }
+  .spinner { width: 28px; height: 28px; border: 3px solid rgba(74,158,255,0.2); border-top-color: #4a9eff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ============== ALTERNATIVE E: Header Color Wave ============== */
+  .alt-e .node.running .node-header {
+    background: linear-gradient(90deg, #1e1e36, #1a3058, #1e1e36);
+    background-size: 200% 100%;
+    animation: headerWave 2s ease-in-out infinite;
+    color: #6eb4ff;
+  }
+  .alt-e .node.running { border-color: #4a7aaa; }
+  .alt-e .node.completed .node-header {
+    background: linear-gradient(90deg, #1a3028, #1e1e36);
+    color: #4ade80;
+  }
+  .alt-e .node.completed { border-color: #3a7a5a; }
+
+  .execution-counter {
+    font-size: 10px; color: #666; position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .execution-counter.active { color: #4a9eff; }
+  .execution-counter.done { color: #4ade80; }
+
+  @keyframes headerWave {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Arrow connector */
+  .arrow { display: flex; align-items: center; color: #3a3a5e; font-size: 28px; z-index: 1; }
+  .arrow.active { color: #4a9eff; }
+  .arrow.done { color: #4ade80; }
+
+  .impl-note { background: #1a1a30; border-left: 3px solid #4a6a9a; padding: 12px 16px; margin-top: 16px; border-radius: 0 8px 8px 0; font-size: 13px; color: #99aabb; line-height: 1.6; }
+  .impl-note code { background: #2a2a4a; padding: 1px 5px; border-radius: 4px; font-size: 12px; color: #a0c4ff; }
+
+  .recommendation { margin-top: 40px; background: linear-gradient(135deg, #1a2a3e, #1e1e36); border: 1px solid #3a5a7a; border-radius: 16px; padding: 32px; }
+  .recommendation h2 { color: #6ecf6e; margin-bottom: 16px; }
+  .recommendation p { color: #bbb; line-height: 1.7; font-size: 14px; }
+  .recommendation strong { color: #a0c4ff; }
+</style>
+</head>
+<body>
+
+<h1>Node Execution Visualization</h1>
+<p class="subtitle">5 alternatives — each shows 3 nodes: idle (pending), running (active), completed (done)</p>
+
+<!-- ========== ALTERNATIVE A ========== -->
+<div class="alternative alt-a">
+  <div class="alt-header">
+    <h2>A — Glowing Border Pulse</h2>
+    <span class="tag">Mirrors existing failure pulse pattern</span>
+  </div>
+  <p class="alt-desc">
+    The running node gets a blue pulsing glow (same pattern as the red failure pulse in <code>GraphNodeChromeBackground.qml</code>).
+    Completed nodes show a static green border. Idle/pending nodes stay unchanged.
+  </p>
+  <div class="canvas">
+    <div class="node idle">
+      <div class="node-header">Write CSV</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_in</div>
+        <div class="node-port"><span class="port-dot data"></span> file_path</div>
+      </div>
+      <div class="state-label">Pending</div>
+    </div>
+    <div class="arrow">&#10230;</div>
+    <div class="node running">
+      <div class="node-header">Transform Data</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_in</div>
+        <div class="node-port"><span class="port-dot data"></span> input</div>
+        <div class="node-port"><span class="port-dot data"></span> output</div>
+      </div>
+      <div class="state-label" style="color:#4a9eff;">Running</div>
+    </div>
+    <div class="arrow done">&#10230;</div>
+    <div class="node completed">
+      <div class="node-header" style="color:#4ade80;">Read File</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_out</div>
+        <div class="node-port"><span class="port-dot data"></span> data</div>
+      </div>
+      <div class="state-label" style="color:#4ade80;">Completed</div>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <ul class="pros"><h4>PROS</h4>
+      <li>Directly reuses the existing failure pulse architecture</li>
+      <li>Minimal new QML — just add a parallel "running" halo alongside the failure halo</li>
+      <li>Very noticeable at any zoom level</li>
+      <li>Consistent with the visual language users already know (failure = red pulse)</li>
+    </ul>
+    <ul class="cons"><h4>CONS</h4>
+      <li>Could feel heavy if many nodes run simultaneously</li>
+      <li>Only border + glow — no fine-grained progress indication</li>
+    </ul>
+  </div>
+  <div class="impl-note">
+    <strong>Implementation:</strong> Add <code>running_node_lookup</code> + <code>completed_node_lookup</code> dicts to <code>GraphCanvasStateBridge</code> (same pattern as <code>failed_node_lookup</code>). In <code>GraphNodeChromeBackground.qml</code>, add a <code>runningPulseHalo</code> rectangle with blue color driven by <code>isRunningNode</code>. Clear lookups on <code>run_completed</code> / <code>run_stopped</code>.
+  </div>
+</div>
+
+<!-- ========== ALTERNATIVE B ========== -->
+<div class="alternative alt-b">
+  <div class="alt-header">
+    <h2>B — Progress Bar + Status Badge</h2>
+    <span class="tag">Most informative</span>
+  </div>
+  <p class="alt-desc">
+    A thin progress bar sweeps across the bottom of the running node. A small circular badge in the top-right shows state
+    (spinning dot = running, checkmark = done). Completed nodes show a full green bar.
+  </p>
+  <div class="canvas">
+    <div class="node idle" style="position:relative;">
+      <div class="status-badge idle"></div>
+      <div class="node-header">Write CSV</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_in</div>
+        <div class="node-port"><span class="port-dot data"></span> file_path</div>
+      </div>
+      <div class="progress-bar"><div class="fill" style="animation:none;width:0;"></div></div>
+      <div class="state-label">Pending</div>
+    </div>
+    <div class="arrow">&#10230;</div>
+    <div class="node running" style="position:relative;">
+      <div class="status-badge running">&#9679;</div>
+      <div class="node-header">Transform Data</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_in</div>
+        <div class="node-port"><span class="port-dot data"></span> input</div>
+        <div class="node-port"><span class="port-dot data"></span> output</div>
+      </div>
+      <div class="progress-bar"><div class="fill"></div></div>
+      <div class="state-label" style="color:#4a9eff;">Running</div>
+    </div>
+    <div class="arrow done">&#10230;</div>
+    <div class="node completed" style="position:relative;">
+      <div class="status-badge done">&#10003;</div>
+      <div class="node-header" style="color:#4ade80;">Read File</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_out</div>
+        <div class="node-port"><span class="port-dot data"></span> data</div>
+      </div>
+      <div class="progress-bar done"><div class="fill"></div></div>
+      <div class="state-label" style="color:#4ade80;">Completed</div>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <ul class="pros"><h4>PROS</h4>
+      <li>Highest information density — shows state + progress at once</li>
+      <li>Badge is visible even when zoomed out</li>
+      <li>Indeterminate sweep bar communicates "working" without needing % progress</li>
+    </ul>
+    <ul class="cons"><h4>CONS</h4>
+      <li>More QML components to add (progress bar + badge)</li>
+      <li>Badge may overlap with other chrome (e.g. scope badges, collapse button)</li>
+      <li>Progress bar at bottom could be clipped by nodes below</li>
+    </ul>
+  </div>
+  <div class="impl-note">
+    <strong>Implementation:</strong> Add a <code>NodeExecutionProgressBar</code> QML component anchored to the node bottom inside <code>GraphNodeHost</code>. Badge is an overlay <code>Rectangle</code> in the chrome layer. Both driven by a new <code>nodeExecutionState</code> property (<code>"idle"</code> | <code>"running"</code> | <code>"completed"</code> | <code>"failed"</code>) resolved from the bridge lookups.
+  </div>
+</div>
+
+<!-- ========== ALTERNATIVE C ========== -->
+<div class="alternative alt-c">
+  <div class="alt-header">
+    <h2>C — Animated Edge Flow + Border Highlight</h2>
+    <span class="tag">Best spatial awareness</span>
+  </div>
+  <p class="alt-desc">
+    Edges between completed → running nodes animate with marching dashes (like electricity flowing).
+    The running node gets a subtle blue border. Completed edges turn solid green.
+    Shows execution flow direction visually.
+  </p>
+  <div class="canvas" style="min-height: 200px;">
+    <svg class="edge-svg" viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;">
+      <!-- Completed edge -->
+      <path d="M 510 100 C 460 100, 440 100, 390 100" stroke="#4ade80" stroke-width="2.5" fill="none" />
+      <!-- Active edge with marching dashes -->
+      <path d="M 310 100 C 260 100, 240 100, 190 100" stroke="#4a9eff" stroke-width="2.5" fill="none" class="edge-active" />
+    </svg>
+    <div class="node idle" style="z-index:1;">
+      <div class="node-header">Write CSV</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_in</div>
+        <div class="node-port"><span class="port-dot data"></span> file_path</div>
+      </div>
+      <div class="state-label">Pending</div>
+    </div>
+    <div class="arrow" style="visibility:hidden;">&#10230;</div>
+    <div class="node running" style="z-index:1;">
+      <div class="node-header">Transform Data</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_in</div>
+        <div class="node-port"><span class="port-dot data"></span> input</div>
+        <div class="node-port"><span class="port-dot data"></span> output</div>
+      </div>
+      <div class="state-label" style="color:#4a9eff;">Running</div>
+    </div>
+    <div class="arrow" style="visibility:hidden;">&#10230;</div>
+    <div class="node completed" style="z-index:1;">
+      <div class="node-header" style="color:#4ade80;">Read File</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_out</div>
+        <div class="node-port"><span class="port-dot data"></span> data</div>
+      </div>
+      <div class="state-label" style="color:#4ade80;">Completed</div>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <ul class="pros"><h4>PROS</h4>
+      <li>Shows execution flow direction — makes graph traversal visible</li>
+      <li>Leverages the existing <code>EdgeLayer.qml</code> rendering infrastructure</li>
+      <li>Scales beautifully to large graphs — only active edges animate</li>
+      <li>Users can trace exactly which path the runner is taking</li>
+    </ul>
+    <ul class="cons"><h4>CONS</h4>
+      <li>Edge animation in QML requires <code>ShaderEffect</code> or <code>PathAnimation</code> on edge shapes</li>
+      <li>More complex to implement (edge state tracking, not just node state)</li>
+      <li>Less visible when zoomed out (thin lines)</li>
+    </ul>
+  </div>
+  <div class="impl-note">
+    <strong>Implementation:</strong> Extend <code>EdgeLayer.qml</code> edge payloads with an <code>execution_state</code> field. Use <code>strokeDashArray</code> + <code>strokeDashOffset</code> animation on <code>ShapePath</code> for marching dashes. Track edge states by mapping <code>node_started</code>/<code>node_completed</code> events to upstream/downstream edges. Requires a new <code>active_edge_lookup</code> in the bridge.
+  </div>
+</div>
+
+<!-- ========== ALTERNATIVE D ========== -->
+<div class="alternative alt-d">
+  <div class="alt-header">
+    <h2>D — Spinner Overlay + Pending Dimming</h2>
+    <span class="tag">Clearest busy signal</span>
+  </div>
+  <p class="alt-desc">
+    Pending nodes dim to ~45% opacity. The running node shows a semi-transparent overlay with a centered spinner.
+    Completed nodes return to full opacity with a green border. Makes the active node impossible to miss.
+  </p>
+  <div class="canvas">
+    <div class="node idle-pending">
+      <div class="node-header">Write CSV</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_in</div>
+        <div class="node-port"><span class="port-dot data"></span> file_path</div>
+      </div>
+      <div class="state-label">Pending</div>
+    </div>
+    <div class="arrow">&#10230;</div>
+    <div class="node running" style="position:relative;">
+      <div class="spinner-overlay"><div class="spinner"></div></div>
+      <div class="node-header">Transform Data</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_in</div>
+        <div class="node-port"><span class="port-dot data"></span> input</div>
+        <div class="node-port"><span class="port-dot data"></span> output</div>
+      </div>
+      <div class="state-label" style="color:#4a9eff;">Running</div>
+    </div>
+    <div class="arrow done">&#10230;</div>
+    <div class="node completed">
+      <div class="node-header" style="color:#4ade80;">Read File</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_out</div>
+        <div class="node-port"><span class="port-dot data"></span> data</div>
+      </div>
+      <div class="state-label" style="color:#4ade80;">Completed</div>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <ul class="pros"><h4>PROS</h4>
+      <li>Impossible to miss — spinner is universally understood as "busy"</li>
+      <li>Dimming gives instant overview of what's done vs. pending</li>
+      <li>Simple mental model: dim = waiting, spinner = working, bright = done</li>
+    </ul>
+    <ul class="cons"><h4>CONS</h4>
+      <li>Spinner overlay obscures node content while running</li>
+      <li>Dimming many nodes could make the canvas feel "dead"</li>
+      <li>Opacity changes may fight with the existing selection/hover visual states</li>
+      <li>Feels heavier than the other options — more intrusive UX</li>
+    </ul>
+  </div>
+  <div class="impl-note">
+    <strong>Implementation:</strong> Add a <code>NodeExecutionOverlay</code> QML component layered above the node surface inside <code>GraphNodeHost</code>. Overlay visibility and spinner controlled by <code>nodeExecutionState</code>. Pending dimming via <code>opacity</code> binding on the host item. Need to ensure opacity doesn't stack with collapse/selection states.
+  </div>
+</div>
+
+<!-- ========== ALTERNATIVE E ========== -->
+<div class="alternative alt-e">
+  <div class="alt-header">
+    <h2>E — Header Color Wave + Elapsed Timer</h2>
+    <span class="tag">Most subtle / professional</span>
+  </div>
+  <p class="alt-desc">
+    The running node's header background animates with a slow color wave (dark-to-blue sweep).
+    A small elapsed-time counter appears below the node. Completed nodes get a green-tinted header.
+    Minimal visual disruption while still being informative.
+  </p>
+  <div class="canvas">
+    <div class="node idle">
+      <div class="node-header">Write CSV</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_in</div>
+        <div class="node-port"><span class="port-dot data"></span> file_path</div>
+      </div>
+      <div class="state-label">Pending</div>
+    </div>
+    <div class="arrow">&#10230;</div>
+    <div class="node running" style="position:relative;">
+      <div class="node-header">Transform Data</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_in</div>
+        <div class="node-port"><span class="port-dot data"></span> input</div>
+        <div class="node-port"><span class="port-dot data"></span> output</div>
+      </div>
+      <div class="execution-counter active">&#9202; 1.3s</div>
+      <div class="state-label" style="color:#4a9eff;">Running</div>
+    </div>
+    <div class="arrow done">&#10230;</div>
+    <div class="node completed" style="position:relative;">
+      <div class="node-header" style="color:#4ade80; background: linear-gradient(90deg, #1a3028, #1e1e36);">Read File</div>
+      <div class="node-body">
+        <div class="node-port"><span class="port-dot exec"></span> exec_out</div>
+        <div class="node-port"><span class="port-dot data"></span> data</div>
+      </div>
+      <div class="execution-counter done">&#10003; 0.4s</div>
+      <div class="state-label" style="color:#4ade80;">Completed</div>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <ul class="pros"><h4>PROS</h4>
+      <li>Least intrusive — doesn't fight with selection/failure visuals</li>
+      <li>Elapsed timer gives useful profiling info (which nodes are slow?)</li>
+      <li>Header-only change is contained, doesn't affect ports or body</li>
+      <li>Professional, polished feel suitable for engineering tools</li>
+    </ul>
+    <ul class="cons"><h4>CONS</h4>
+      <li>Subtle — might be hard to spot in a large, dense graph</li>
+      <li>Timer requires continuous updates (QML Timer or property binding to Python clock)</li>
+      <li>Header wave may not be visible if node is collapsed</li>
+    </ul>
+  </div>
+  <div class="impl-note">
+    <strong>Implementation:</strong> Override <code>NodeCard.qml</code> header background with animated gradient when <code>isRunningNode</code>. Elapsed counter as a <code>Text</code> item anchored below the node in <code>GraphNodeHost</code>. Timer started on <code>node_started</code>, stopped on <code>node_completed</code>. Store start timestamps in a <code>running_node_timestamps</code> dict on the bridge.
+  </div>
+</div>
+
+<!-- ========== RECOMMENDATION ========== -->
+<div class="recommendation">
+  <h2>Recommendation: Combine A + E (Hybrid)</h2>
+  <p>
+    Use <strong>Alternative A (Glowing Border Pulse)</strong> as the primary running indicator — it reuses the existing failure pulse architecture in <code>GraphNodeChromeBackground.qml</code> with minimal new code, and is visible at all zoom levels.
+    <br><br>
+    Optionally layer in <strong>Alternative E's elapsed timer</strong> below nodes for profiling insight. The timer is a small additive feature that provides real diagnostic value without cluttering the visual.
+    <br><br>
+    <strong>Shared backend for all alternatives:</strong> Every option requires the same Python-side change — a <code>running_node_lookup</code> and <code>completed_node_lookup</code> dictionary on <code>GraphCanvasStateBridge</code>, populated by reacting to <code>node_started</code> / <code>node_completed</code> events in <code>RunController.handle_execution_event()</code>. The protocol already emits these events — no worker changes needed.
+  </p>
+</div>
+
+</body>
+</html>

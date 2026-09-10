@@ -1,0 +1,64 @@
+{
+  "schema_version": 2,
+  "purpose": "Two bounded neutral fixtures for the complete 2026 R1 capability qualification.",
+  "release": 261,
+  "geometry": {
+    "length_unit": "mm",
+    "cylinder": {"radius": 5, "height": 40, "axis": "Z"},
+    "witness_block": {"origin": [20, 0, 0], "size": [10, 10, 10]}
+  },
+  "query_fixture": {
+    "analyses": ["static_structural", "static_structural", "steady_state_thermal"],
+    "shared_object": "model_level_bolt_pretension",
+    "activation": ["ObjectActive", "ObjectInactive", "ObjectNotApplicable"],
+    "load_definitions": ["constant", "tabular", "formula"],
+    "other_cases": ["duplicate_names", "direct_tags", "explicit_coordinate_system", "solution_coordinates", "hidden_body", "named_selection", "empty_selection", "contact_source_and_target", "positive_imported_source_id"]
+  },
+  "workbench_fixture": {
+    "system_count": 3,
+    "model_groups": [[0, 1], [2]],
+    "analysis_type": "static_structural",
+    "solved_analysis": 0,
+    "witness_suppressed": true,
+    "fixed_scope": "cylinder_bottom_face",
+    "load_scope": "cylinder_top_face_named_selection",
+    "load_x": {"time_s": [0, 1, 2, 3], "force_N": [0, 100, 200, 300]},
+    "load_y_N": 25,
+    "mesh_size_mm": 5,
+    "solver_cores": 2,
+    "stored_times_s": [1, 2, 3],
+    "results": ["total_deformation", "force_reaction"]
+  },
+  "archive_controls": {
+    "defaults": {
+      "include_results": true,
+      "include_user_files": true,
+      "include_external_imported_files": true
+    },
+    "workbench_native_arguments": {
+      "include_results": "IncludeSkippedFiles",
+      "include_user_files": "IncludeUserFiles",
+      "include_external_imported_files": "IncludeExternalImportedFiles"
+    },
+    "standalone_native_arguments": {
+      "include_results": "ArchiveSettings.IncludeResultAndSolutionFiles",
+      "include_user_files": "ArchiveSettings.IncludeUserFiles"
+    }
+  },
+  "routes": {
+    "workbench_archive": ".wbpz with three native inclusion flags and FailIfMissingFiles=True",
+    "standalone_archive": ".mechpz with ArchiveSettings result and user-file flags",
+    "selected_model_export": ".dsdb bridge to .mechdb and .mechdat; model-only, never an archive"
+  },
+  "approved_result_policy": {
+    "force_reaction": "Accept only already-Time probes with unambiguous stored times; never assign By; restore DisplayTime and verify By unchanged; reject other modes.",
+    "configured_result": "For initial By=Time and inactive SetNumber=0 only, retain and report a valid positive SetNumber when the public setter rejects zero; restore By, DisplayTime, and CalculateTimeHistory exactly; all other restoration failures are fatal."
+  },
+  "qualification_cases": {
+    "A": {"inputs": ["qualified standalone query model", "native Workbench-connected imported model"], "artifact": "stage_a_qualified.json and workbench_native_remaining.json", "expected": ["eleven background relations", "positive native opaque import ID", "no native tree UI calls"], "solve": false},
+    "B": {"inputs": ["shared two-analysis Model", "independent one-analysis Model"], "artifact": "isolated_export_verification.json", "expected": ["separate mechdb/mechdat reopen", "tree/geometry/load/selection/snippet/view boundary", "model-only omissions"], "solve": false},
+    "C": {"inputs": ["saved-view fixture with rename/delete/collision cases"], "artifact": "remaining_embedded.json", "expected": ["direct ModelView children", "stable indices", "duplicate names retained by parser", "camera restoration"], "solve": false},
+    "D": {"inputs": ["retained solved Workbench static model", "standalone solved modal model", "solid and layered worksheet models"], "artifact": "workbench_native_remaining.json and standalone_modal_archive.json", "expected": ["Field/Variable", "ITable Key/Value mapping", "configured result and PlotData", "ForceReaction", "mesh/layered worksheets", "exact state restoration", "no implicit solve"], "solve": "reuse retained results; one standalone modal solve was authorized because no solved standalone fixture existed"},
+    "E": {"inputs": ["native Workbench project", "genuine standalone model"], "artifact": "workbench_archive_controls.json and standalone_modal_archive.json", "expected": ["all-enabled plus each inclusion disabled separately", "missing requested dependency failure", "source-family rejection", "formats/lifecycle/image/script/snippet/cleanup"], "solve": false}
+  }
+}
