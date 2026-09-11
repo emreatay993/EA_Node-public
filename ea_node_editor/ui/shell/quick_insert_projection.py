@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from typing import Any
 
-from ea_node_editor.graph.effective_ports import port_compatibility
+from ea_node_editor.graph.type_forwarding import ResolvedSourceContract, source_port_compatibility
 from ea_node_editor.nodes.node_specs import PortSpec
 from ea_node_editor.runtime_contracts import (
     CONNECTION_FALLBACK_CAPABILITY,
@@ -101,6 +101,7 @@ def _compatible_library_ports(
     source_kind: str,
     source_data_type: str,
     source_accepted_data_types: Iterable[str] = (),
+    source_contract: ResolvedSourceContract | None = None,
 ) -> list[dict[str, Any]]:
     normalized_source_direction = str(source_direction).strip().lower()
     normalized_source_kind = str(source_kind).strip().lower()
@@ -144,10 +145,14 @@ def _compatible_library_ports(
             source, target = candidate_port, source_port
         else:
             continue
-        compatibility = port_compatibility(source, target, data_types=data_types)
-        kind = _compatibility_kind(compatibility, data_types)
-        if not kind:
+        compatibility = source_port_compatibility(
+            source, target, data_types=data_types,
+            source_contract=source_contract if normalized_source_direction == "out" else None,
+        )
+        kinds = tuple(_compatibility_kind(member, data_types) for member in compatibility.members)
+        if not all(kinds):
             continue
+        kind = max(kinds, key=_COMPATIBILITY_TIERS.__getitem__)
         tier = _COMPATIBILITY_TIERS[kind]
         if tier > best_tier:
             continue
@@ -158,7 +163,7 @@ def _compatible_library_ports(
             **port,
             "compatibility_kind": kind,
             "compatibility_label": _COMPATIBILITY_LABELS[kind],
-            "matched_data_type": compatibility.matched_type_id,
+            "matched_data_type": compatibility.worst_match.matched_type_id,
         })
     return compatible_ports
 
@@ -193,6 +198,7 @@ def build_connection_quick_insert_items(
     source_kind: str,
     source_data_type: str,
     source_accepted_data_types: Iterable[str] = (),
+    source_contract: ResolvedSourceContract | None = None,
     limit: int = 12,
 ) -> list[dict[str, Any]]:
     ranked: list[dict[str, Any]] = []
@@ -206,6 +212,7 @@ def build_connection_quick_insert_items(
             source_kind=source_kind,
             source_data_type=source_data_type,
             source_accepted_data_types=source_accepted_data_types,
+            source_contract=source_contract,
         )
         if not compatible_ports:
             continue

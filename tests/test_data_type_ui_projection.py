@@ -242,6 +242,7 @@ def test_scene_and_library_ports_share_one_bounded_catalog_projection() -> None:
             "Boolean",
             "Unknown." + ("x" * 151) + "\u2026",
         ],
+        "accepted_data_types": [BOOLEAN_DATA_TYPE_ID, "Unknown." + ("x" * 400)],
         "data_access": "list",
         "catalog_generation": registry.data_types.fingerprint(),
     }

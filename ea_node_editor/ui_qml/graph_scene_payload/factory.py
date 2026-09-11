@@ -23,6 +23,7 @@ from ea_node_editor.graph.node_comments import node_comment_badge_payload, node_
 from ea_node_editor.graph.node_links import node_links_to_payload
 from ea_node_editor.graph.transform_layout_ops import LayoutNodeBounds
 from ea_node_editor.graph.workspace_state import WorkspaceData
+from ea_node_editor.graph.type_forwarding import GraphTypeResolver, ResolvedSourceContract
 from ea_node_editor.nodes.builtins.subnode import is_subnode_shell_type
 from ea_node_editor.nodes.plugin_contracts import PluginProvenance
 from ea_node_editor.nodes.node_specs import NodeTypeSpec
@@ -228,6 +229,7 @@ class _NodePresentationFacts:
     icon_source: str
     icon_theme_aware: bool
     is_group_backdrop: bool
+    source_contracts: Mapping[str, ResolvedSourceContract]
 
 
 class _GraphSceneNodePayloadFactory:
@@ -886,6 +888,7 @@ class _GraphSceneNodePayloadFactory:
         show_port_labels: bool,
         graph_label_pixel_size: int,
         graph_node_icon_pixel_size: int,
+        type_resolver: GraphTypeResolver | None = None,
     ) -> _NodePresentationFacts:
         payload_node = self.payload_node(node, spec)
         node_id = str(node.node_id)
@@ -977,6 +980,11 @@ class _GraphSceneNodePayloadFactory:
             icon_source=icon.source,
             icon_theme_aware=icon.theme_aware,
             is_group_backdrop=is_group_backdrop,
+            source_contracts=MappingProxyType({
+                port.key: type_resolver.source_contract(node_id, port.key)
+                for port in visible_ports
+                if type_resolver is not None and port.direction == "out" and port.kind == "data"
+            }),
         )
 
     def _expanded_bounds_for_facts(
@@ -1114,6 +1122,7 @@ class _GraphSceneNodePayloadFactory:
         changed_fields: set[str] | frozenset[str] | tuple[str, ...] | None = None,
         presentation_facts: _NodePresentationFacts | None = None,
         data_type_projection: Mapping[str, Any] | None = None,
+        type_resolver: GraphTypeResolver | None = None,
     ) -> dict[str, Any]:
         self._workspace_edges = workspace.edges
         if presentation_facts is None:
@@ -1194,7 +1203,13 @@ class _GraphSceneNodePayloadFactory:
             spec=spec,
             workspace_nodes=workspace_nodes,
         )
+        source_contracts = presentation_facts.source_contracts if presentation_facts is not None else {
+            port.key: type_resolver.source_contract(node.node_id, port.key)
+            for port in visible_ports
+            if type_resolver is not None and port.direction == "out" and port.kind == "data"
+        }
         ports_payload = self.build_ports_payload(
+            source_contracts=source_contracts,
             node=layout_node,
             spec=spec,
             workspace=workspace,
@@ -1396,6 +1411,7 @@ class _GraphSceneNodePayloadFactory:
         port_presentation: _PortPresentationLayout | None = None,
         inline_property_by_key: Mapping[str, Mapping[str, Any]] | None = None,
         data_type_projection: Mapping[str, Any] | None = None,
+        source_contracts: Mapping[str, ResolvedSourceContract] | None = None,
     ) -> list[dict[str, Any]]:
         self._workspace_edges = workspace.edges
         ports_payload: list[dict[str, Any]] = []
@@ -1455,6 +1471,7 @@ class _GraphSceneNodePayloadFactory:
             if data_access not in {"item", "list", "tree"}:
                 data_access = "item"
             port_key = str(port.key)
+            source_contract = (source_contracts or {}).get(port_key)
             connection_count = self._port_connection_count(
                 node_id=str(node.node_id),
                 port_key=port_key,
@@ -1498,6 +1515,8 @@ class _GraphSceneNodePayloadFactory:
                         data_access=data_access,
                         kind=port.kind,
                         projection=data_type_projection,
+                        source_type_ids=source_contract.type_ids if source_contract is not None else None,
+                        source_types_unresolved=source_contract.has_unresolved_sources if source_contract is not None else False,
                     ),
                     "modifiers": list(node.port_modifiers.get(port_key, ())),
                     "principal": node.principal_input_port_id == port_key,

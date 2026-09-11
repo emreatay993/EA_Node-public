@@ -50,6 +50,7 @@ class ShellLibraryPresenter(QObject):
         super().__init__(_presenter_parent(host, parent))
         self._host = host
         self._registry_cache_owner: Any | None = None
+        self._registry_cache_fingerprint = ""
         self._registry_items_cache: list[dict[str, Any]] | None = None
         self._data_type_projection_cache: dict[str, Any] | None = None
         self._custom_workflow_items_cache: list[dict[str, Any]] | None = None
@@ -67,6 +68,16 @@ class ShellLibraryPresenter(QObject):
         host.graph_search_changed.connect(self.graph_search_changed.emit)
         host.connection_quick_insert_changed.connect(self.connection_quick_insert_changed.emit)
         host.graph_hint_changed.connect(self.graph_hint_changed.emit)
+        scene = getattr(host, "scene", None)
+        if scene is not None:
+            scene.nodes_changed.connect(self._on_connection_graph_changed)
+            scene.workspace_changed.connect(self.request_close_connection_quick_insert)
+            scene.scope_changed.connect(self.request_close_connection_quick_insert)
+
+    def _on_connection_graph_changed(self) -> None:
+        quick_insert = self._connection_quick_insert()
+        if quick_insert.open:
+            self._refresh_connection_quick_insert_results(quick_insert.query, preserve_selection=True)
 
     def _invalidate_filtered_items(self) -> None:
         self._filtered_items_cache = None
@@ -87,6 +98,7 @@ class ShellLibraryPresenter(QObject):
 
     def _invalidate_registry_items(self) -> None:
         self._registry_cache_owner = None
+        self._registry_cache_fingerprint = ""
         self._registry_items_cache = None
         self._data_type_projection_cache = None
         self._invalidate_combined_items()
@@ -97,6 +109,8 @@ class ShellLibraryPresenter(QObject):
         if not self._preserve_projection_caches:
             self._invalidate_custom_workflow_items()
         self.node_library_changed.emit()
+        if getattr(self._host, "search_scope_state", None) is not None:
+            self._on_connection_graph_changed()
 
     def _emit_filter_changed(self) -> None:
         self._invalidate_filtered_items()
@@ -108,7 +122,8 @@ class ShellLibraryPresenter(QObject):
 
     def _ensure_registry_items(self) -> None:
         registry = self._host.registry
-        if self._registry_cache_owner is registry and self._registry_items_cache is not None:
+        fingerprint = registry.contract_fingerprint()
+        if self._registry_cache_owner is registry and self._registry_cache_fingerprint == fingerprint and self._registry_items_cache is not None:
             return
         specs = registry.all_specs()
         data_type_projection = build_data_type_ui_projection(registry.data_types)
@@ -119,6 +134,7 @@ class ShellLibraryPresenter(QObject):
         )
         self._invalidate_registry_items()
         self._registry_cache_owner = registry
+        self._registry_cache_fingerprint = fingerprint
         self._registry_items_cache = items
         self._data_type_projection_cache = data_type_projection
 
@@ -384,8 +400,17 @@ class ShellLibraryPresenter(QObject):
     def _connection_quick_insert_context_for_port(self, node_id: str, port_key: str) -> dict[str, Any] | None:
         return build_connection_quick_insert_context(self._host, node_id, port_key)
 
-    def _refresh_connection_quick_insert_results(self, query: str) -> None:
+    def _refresh_connection_quick_insert_results(self, query: str, *, preserve_selection: bool = False) -> None:
         quick_insert = self._connection_quick_insert()
+        previous_item = (quick_insert.results[quick_insert.highlight_index]
+                         if 0 <= quick_insert.highlight_index < len(quick_insert.results) else None)
+        context = quick_insert.context
+        if context is not None and not connection_quick_insert_is_canvas_mode(context):
+            live_context = self._connection_quick_insert_context_for_port(context["node_id"], context["port_key"])
+            if live_context is None:
+                self.request_close_connection_quick_insert()
+                return
+            self._set_connection_quick_insert_state(context={**context, **live_context})
         if quick_insert.context is None:
             self._set_connection_quick_insert_state(query=str(query), results=[], highlight_index=-1)
             return
@@ -395,6 +420,11 @@ class ShellLibraryPresenter(QObject):
             query,
             quick_insert,
         )
+        if preserve_selection:
+            previous_ports = {port["key"] for port in previous_item.get("compatible_ports", ())} if previous_item else set()
+            highlight_index = next((index for index, item in enumerate(results)
+                if previous_item is not None and item.get("type_id") == previous_item.get("type_id")
+                and previous_ports == {port["key"] for port in item.get("compatible_ports", ())}), -1)
         self._set_connection_quick_insert_state(
             query=str(query),
             results=results,
@@ -517,8 +547,7 @@ class ShellLibraryPresenter(QObject):
         quick_insert = self._connection_quick_insert()
         if not quick_insert.open or not quick_insert.results:
             return False
-        index = quick_insert.highlight_index if 0 <= quick_insert.highlight_index < len(quick_insert.results) else 0
-        return self.request_connection_quick_insert_choose(index)
+        return self.request_connection_quick_insert_choose(quick_insert.highlight_index)
 
     def request_connection_quick_insert_choose(self, index: int) -> bool:
         quick_insert = self._connection_quick_insert()
@@ -528,6 +557,20 @@ class ShellLibraryPresenter(QObject):
         if context is None:
             return False
         selected_item = quick_insert.results[index]
+        if not connection_quick_insert_is_canvas_mode(context):
+            selected_type_id = selected_item.get("type_id")
+            selected_port_keys = {port["key"] for port in selected_item.get("compatible_ports", ())}
+            self._refresh_connection_quick_insert_results(quick_insert.query)
+            context = quick_insert.context
+            if context is None:
+                return False
+            live_item = next((item for item in quick_insert.results if item.get("type_id") == selected_type_id), None)
+            if live_item is None:
+                return False
+            ports = [port for port in live_item.get("compatible_ports", ()) if port["key"] in selected_port_keys]
+            if not ports:
+                return False
+            selected_item = {**live_item, "compatible_ports": ports}
         scene_x = float(context.get("scene_x", 0.0))
         scene_y = float(context.get("scene_y", 0.0))
         if connection_quick_insert_is_canvas_mode(context):

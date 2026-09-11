@@ -576,6 +576,7 @@ def port_spec(
     uses_property_default: bool = False,
     accepted_data_types: tuple[str, ...] = (),
     allow_empty_string: bool = False,
+    type_from_input: str = "",
 ) -> PortSpec:
     return PortSpec(
         key,
@@ -589,6 +590,7 @@ def port_spec(
         uses_property_default=uses_property_default,
         accepted_data_types=accepted_data_types,
         allow_empty_string=allow_empty_string,
+        type_from_input=type_from_input,
     )
 
 

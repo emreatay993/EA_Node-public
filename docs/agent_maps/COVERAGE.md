@@ -7,10 +7,10 @@ implementation studies are intentionally excluded.
 
 | Source area | Primary map | Main responsibility |
 | --- | --- | --- |
-| `ea_node_editor/graph` | [Graph Domain](subsystems/graph_domain.md) | Graph records, invariants, mutation, transforms, and workspace state |
-| `ea_node_editor/execution` | [Execution](subsystems/execution.md) | Runtime snapshots, protocol, workers, node-scoped result identity, current data-port consumption, invalidation, and workspace retirement |
+| `ea_node_editor/graph` | [Graph Domain](subsystems/graph_domain.md) | Graph records, invariants, forwarding inference, batched rewire validation, mutation, transforms, and workspace state |
+| `ea_node_editor/execution` | [Execution](subsystems/execution.md) | Runtime snapshots, protocol, workers, node-scoped result identity, inferred-source identities, actual-carrier validation, current data-port consumption, invalidation, and workspace retirement |
 | `ea_node_editor/persistence` | [Persistence](subsystems/persistence.md) | Project codecs, migrations, artifacts, and sessions |
-| `ea_node_editor/nodes` | [Nodes And Built-ins](subsystems/nodes_registry_builtins.md) | Registry, contracts, built-ins, packages, and plugins |
+| `ea_node_editor/nodes` | [Nodes And Built-ins](subsystems/nodes_registry_builtins.md) | Registry, explicit forwarding declarations, contracts, built-ins, packages, and plugins |
 | `ea_node_editor/addons` | [Add-ons](subsystems/addons.md) | Add-on records, dependency-gated catalogs, runtime helpers, backend contributions, and Mechanical runtime/examples/help with nullable catalogue projection |
 | `ea_node_editor/common` | [Supporting Runtime Assets](subsystems/supporting_runtime_assets.md) | Dependency-light helpers shared across subsystem boundaries |
 | `ea_node_editor/ui` | [UI Shell](subsystems/ui_shell.md) | Shell composition, controllers, presenters, and native hosts |
@@ -161,6 +161,7 @@ Settings-section size transitions use shared 180 ms width/height animations with
   helper modules.
 - Retired import and placeholder surfaces are absent from current ownership.
 - Typed connection reliability keeps relation authority in `runtime_contracts/data_types.py` plus `graph/effective_ports.py`, recommendation tiers in `ui/shell/quick_insert_projection.py`, default-port Library/filter projection in `ui/shell/library_projection.py`, and restrictive post-insertion endpoint checks in `workspace_drop_connect_controller.py`. Public/Python Script input/output types are explicit; malformed workflow/Library/QML previews never become Any. The trusted repo-owned primary/accepted Any audit is exactly 20 endpoints, with existing MARS artifact maps retained.
+- Forwarding ownership is shared by graph `type_forwarding.py` (transient source sets/all-member compatibility) and `edge_rewire.py` (prepared batched proposals), node declarations, execution carrier/conversion and identity checks, Quick Insert/drop-connect, and scene payload/drag revision publication. Panel, Trigger, and Stream Gate opt in explicitly; inputs remain generic and downstream pruning shares the source edit history. `tests/test_type_forwarding.py`, `tests/test_type_forwarding_declarations.py`, `tests/test_type_forwarding_integration.py`, `tests/test_type_forwarding_ui.py`, and `tests/test_rewire_validation.py` own focused proof.
 
 ## Hygiene
 

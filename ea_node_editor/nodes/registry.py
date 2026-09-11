@@ -802,6 +802,11 @@ class NodeRegistry:
                     "kind": type(entry).__name__,
                     "owner_id": entry.owner_id,
                     "spec": _contract_value(entry.spec),
+                    "resolved_default_ports": _contract_value(
+                        instance_resolution.resolve_instance_ports(
+                            entry.spec, {}, data_types=self._data_types
+                        )
+                    ),
                     "implementation": _contract_value(implementation),
                 }
             )

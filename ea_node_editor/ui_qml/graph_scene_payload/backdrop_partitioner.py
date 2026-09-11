@@ -18,6 +18,7 @@ from ea_node_editor.graph.hierarchy import ScopePath
 from ea_node_editor.graph.hierarchy import node_scope_path, scope_edges, scope_node_ids
 from ea_node_editor.graph.transform_layout_ops import LayoutNodeBounds
 from ea_node_editor.graph.workspace_state import WorkspaceData
+from ea_node_editor.graph.type_forwarding import GraphTypeResolver
 from ea_node_editor.nodes.registry import NodeRegistry
 from ea_node_editor.nodes.node_specs import NodeTypeSpec
 from ea_node_editor.settings import (
@@ -79,7 +80,11 @@ class _GraphSceneBackdropPartitioner:
         graph_node_icon_pixel_size: int = DEFAULT_GRAPH_LABEL_PIXEL_SIZE,
         lightweight_canvas: bool = False,
         show_port_labels: bool = True,
+        type_resolver: GraphTypeResolver | None = None,
     ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+        type_resolver = type_resolver or GraphTypeResolver(
+            registry=registry, workspace_nodes=workspace.nodes, workspace_edges=workspace.edges.values(),
+        )
         visible_node_ids = scope_node_ids(workspace, scope_path)
         comment_peek_node_id = str(comment_peek_node_id or "").strip()
         workspace_edges = scope_edges(workspace, scope_path)
@@ -120,6 +125,7 @@ class _GraphSceneBackdropPartitioner:
             spec = registry.resolve_spec(node.type_id, node.properties)
             node_specs[node_id] = spec
             presentation_facts = self._node_payload_factory.build_presentation_facts(
+                type_resolver=type_resolver,
                 node=node,
                 spec=spec,
                 provenance=provenance,

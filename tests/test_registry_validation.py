@@ -890,7 +890,7 @@ class RegistryValidationTests(unittest.TestCase):
 
         self.assertIsNotNone(first)
         self.assertIsNotNone(second)
-        self.assertEqual(edge_values.iterations, 0)
+        self.assertEqual(edge_values.iterations, 1)
         self.assertEqual(spy.call_count, 2)
         self.assertEqual(
             set(memo.effective_ports_by_node_id), {source.node_id, target.node_id}

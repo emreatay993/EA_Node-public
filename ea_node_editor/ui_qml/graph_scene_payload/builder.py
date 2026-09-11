@@ -6,6 +6,7 @@ from __future__ import annotations
 import copy
 from collections import ChainMap
 from collections.abc import Callable
+from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Mapping
 
 
@@ -19,6 +20,7 @@ from ea_node_editor.graph.hierarchy import is_node_in_scope, node_scope_path, sc
 from ea_node_editor.graph.model import GraphModel
 from ea_node_editor.graph.records import NodeInstance
 from ea_node_editor.graph.workspace_state import WorkspaceData
+from ea_node_editor.graph.type_forwarding import GraphTypeResolver
 from ea_node_editor.app_preferences import (
     effective_graph_node_icon_pixel_size,
     normalize_graph_label_pixel_size,
@@ -64,6 +66,22 @@ class GraphScenePayloadBuilder:
         self._backdrop_partitioner = _GraphSceneBackdropPartitioner(self._node_payload_factory)
         self._mutation_timing_enabled = False
         self._last_mutation_phase_timings_ms: dict[str, float] = {}
+        self._active_type_snapshot: GraphTypeResolver | None = None
+
+    @contextmanager
+    def type_snapshot(self, resolver: GraphTypeResolver):
+        """Share one immutable type snapshot across a scene publication batch."""
+        previous = self._active_type_snapshot
+        self._active_type_snapshot = resolver
+        try:
+            yield
+        finally:
+            self._active_type_snapshot = previous
+
+    def graph_type_resolver(self, workspace: WorkspaceData, registry: NodeRegistry) -> GraphTypeResolver:
+        return self._active_type_snapshot or GraphTypeResolver(
+            registry=registry, workspace_nodes=workspace.nodes, workspace_edges=workspace.edges.values(),
+        )
 
     def build_inline_properties_payload(
         self,
@@ -288,6 +306,7 @@ class GraphScenePayloadBuilder:
                 workspace_edges
             )
         )
+        type_resolver = self.graph_type_resolver(workspace, registry)
         graph_label_pixel_size, graph_node_icon_pixel_size = self._presentation_sizes(
             graph_label_pixel_size,
             graph_node_icon_pixel_size,
@@ -310,6 +329,7 @@ class GraphScenePayloadBuilder:
             if spec is None:
                 continue
             presentation_facts = self._node_payload_factory.build_presentation_facts(
+                type_resolver=type_resolver,
                 node=node,
                 spec=spec,
                 provenance=provenance,
@@ -324,6 +344,7 @@ class GraphScenePayloadBuilder:
                 graph_node_icon_pixel_size=graph_node_icon_pixel_size,
             )
             payload = self._node_payload_factory.build_node_payload(
+                type_resolver=type_resolver,
                 node=node,
                 spec=spec,
                 provenance=provenance,
@@ -395,6 +416,7 @@ class GraphScenePayloadBuilder:
             port_connection_counts = dict(port_connection_counts)
         workspace_nodes = dict(workspace.nodes)
         hide_optional_ports = _GraphSceneBackdropPartitioner.active_view_hide_optional_ports(workspace)
+        type_resolver = self.graph_type_resolver(workspace, registry)
         graph_label_pixel_size, graph_node_icon_pixel_size = self._presentation_sizes(
             graph_label_pixel_size,
             graph_node_icon_pixel_size,
@@ -416,6 +438,7 @@ class GraphScenePayloadBuilder:
             payload_node = self._node_payload_factory.payload_node(node, spec)
             workspace_nodes[node_id] = payload_node
             full_payload = self._node_payload_factory.build_node_payload(
+                type_resolver=type_resolver,
                 node=payload_node,
                 spec=spec,
                 provenance=provenance,
@@ -498,6 +521,7 @@ class GraphScenePayloadBuilder:
         )
         workspace_nodes = dict(workspace.nodes)
         hide_optional_ports = _GraphSceneBackdropPartitioner.active_view_hide_optional_ports(workspace)
+        type_resolver = self.graph_type_resolver(workspace, registry)
         graph_label_pixel_size, graph_node_icon_pixel_size = self._presentation_sizes(
             graph_label_pixel_size,
             graph_node_icon_pixel_size,
@@ -521,6 +545,7 @@ class GraphScenePayloadBuilder:
             if spec is None:
                 continue
             presentation_facts = self._node_payload_factory.build_presentation_facts(
+                type_resolver=type_resolver,
                 node=node,
                 spec=spec,
                 provenance=provenance,
@@ -536,6 +561,7 @@ class GraphScenePayloadBuilder:
             )
             presentation_facts_by_node_id[node_id] = presentation_facts
             node_payload = self._node_payload_factory.build_node_payload(
+                type_resolver=type_resolver,
                 node=node,
                 spec=spec,
                 provenance=provenance,
@@ -669,6 +695,7 @@ class GraphScenePayloadBuilder:
         if workspace is None:
             return []
 
+        type_resolver = self.graph_type_resolver(workspace, registry)
         graph_label_pixel_size, graph_node_icon_pixel_size = self._presentation_sizes(
             graph_label_pixel_size,
             graph_node_icon_pixel_size,
@@ -707,6 +734,7 @@ class GraphScenePayloadBuilder:
                 continue
             node_specs[node_id] = spec
             presentation_facts = self._node_payload_factory.build_presentation_facts(
+                type_resolver=type_resolver,
                 node=node,
                 spec=spec,
                 provenance=provenance,
@@ -885,6 +913,7 @@ class GraphScenePayloadBuilder:
             graph_node_icon_pixel_size,
         )
         payloads = self._backdrop_partitioner.build_payload_models(
+            type_resolver=self.graph_type_resolver(workspace, registry),
             workspace=workspace,
             registry=registry,
             scope_path=scope_path,

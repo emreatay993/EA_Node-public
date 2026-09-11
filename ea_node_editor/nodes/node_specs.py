@@ -185,10 +185,18 @@ class PortSpec:
     display_tier: PortDisplayTier = ""
     description: str = ""
     data_access: DataAccess = "item"
+    type_from_input: str = ""
 
     def __post_init__(self) -> None:
         if type(self.allow_empty_string) is not bool:
             raise TypeError("PortSpec.allow_empty_string must be a bool")
+        object.__setattr__(
+            self,
+            "type_from_input",
+            _normalize_trimmed_string(
+                "PortSpec.type_from_input", self.type_from_input, allow_empty=True
+            ),
+        )
         object.__setattr__(
             self,
             "description",

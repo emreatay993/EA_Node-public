@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 _SHA256_CHARS = frozenset("0123456789abcdef")
 _CANONICAL_SCHEMA_VERSION = 1
-_SOLUTION_KEY_SCHEMA_VERSION = 2
+_SOLUTION_KEY_SCHEMA_VERSION = 3
 _BUILD_DIGEST_SCHEMA_VERSION = 1
 _HASH_CHUNK_SIZE = 1024 * 1024
 MAX_CANONICAL_DEPTH = 32
@@ -965,6 +965,7 @@ def node_contract_digest(
     *,
     port_modifiers: Mapping[str, Sequence[str]] | None = None,
     principal_input_port_id: str | None = None,
+    source_contracts: Mapping[str, object] | None = None,
 ) -> str:
     properties = {property_spec.key: property_spec for property_spec in spec.properties}
     modifiers = {} if port_modifiers is None else port_modifiers
@@ -981,6 +982,8 @@ def node_contract_digest(
                     "kind": port.kind,
                     "data_type": port.data_type,
                     "accepted_data_types": port.accepted_data_types,
+                    "type_from_input": port.type_from_input,
+                    "source_contract": (source_contracts or {}).get(port.key),
                     "data_access": port.data_access,
                     "required": port.required,
                     "uses_property_default": port.uses_property_default,
@@ -1022,6 +1025,7 @@ class IncomingEdgeIdentity:
     target_port_key: str
     input_order: int
     conversion_id: str = ""
+    source_contract: tuple[tuple[str, ...], bool] = ((), False)
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
@@ -1124,6 +1128,7 @@ def solution_key(identity: NodeSolutionIdentity) -> str:
                     "target_port_key": edge.target_port_key,
                     "input_order": edge.input_order,
                     "conversion_id": edge.conversion_id,
+                    "source_contract": edge.source_contract,
                 }
                 for edge in sorted(
                     identity.incoming_edges,
@@ -1228,23 +1233,19 @@ def assemble_node_solution(
         conversion_pairs: set[tuple[str, str]] = set()
         dependency_key_list: list[str] = []
         trigger_generations: list[tuple[str, int]] = []
+        incoming_type_ids: set[str] = set()
         for edge in plan.incoming_edges_for(node_id):
             source_node_id = edge.source_node_id
-            source_port = plan.ports_by_key[source_node_id][edge.source_port_key]
             target_port = plan.ports_by_key[node_id][edge.target_port_key]
-            compatibility = registry.data_types.compatibility(
-                source_port.data_type,
-                target_port.data_type,
-                target_port.accepted_data_types,
-            )
-            conversion_id = ""
-            if compatibility.status == "convertible":
-                conversion_pairs.add(
-                    (source_port.data_type, compatibility.matched_type_id)
-                )
-                conversion_id = (
-                    f"{source_port.data_type}->{compatibility.matched_type_id}"
-                )
+            contract = plan.type_resolver.source_contract(source_node_id, edge.source_port_key)
+            incoming_type_ids.update(contract.type_ids)
+            compatibility = plan.type_resolver.compatibility(source_node_id, edge.source_port_key, target_port)
+            conversions = {
+                (member.source_type_id, member.matched_type_id)
+                for member in compatibility.members if member.status == "convertible"
+            }
+            conversion_pairs.update(conversions)
+            conversion_id = ";".join(f"{source}->{target}" for source, target in sorted(conversions))
             incoming_identities.append(
                 IncomingEdgeIdentity(
                     source_node_id=source_node_id,
@@ -1252,6 +1253,7 @@ def assemble_node_solution(
                     target_port_key=edge.target_port_key,
                     input_order=edge.input_order,
                     conversion_id=conversion_id,
+                    source_contract=contract.identity,
                 )
             )
             if plan.is_trigger(source_node_id):
@@ -1279,6 +1281,8 @@ def assemble_node_solution(
             plan.node_ports[node_id],
             port_modifiers=node.port_modifiers,
             principal_input_port_id=node.principal_input_port_id,
+            source_contracts={port.key: plan.source_contracts[(node_id, port.key)].identity
+                              for port in plan.output_ports(node_id) if port.kind == "data"},
         )
         provenance_hash = _node_input_provenance_digest(
             plan=plan,
@@ -1291,6 +1295,9 @@ def assemble_node_solution(
             for port in plan.node_ports[node_id]
             for type_id in (port.data_type, *port.accepted_data_types)
         }
+        used_type_ids.update(incoming_type_ids)
+        used_type_ids.update(type_id for port in plan.output_ports(node_id) if port.kind == "data"
+                             for type_id in plan.source_contracts[(node_id, port.key)].type_ids)
         catalog_hash = catalog_revision_digest(
             registry.data_types,
             type_ids=tuple(sorted(used_type_ids)),

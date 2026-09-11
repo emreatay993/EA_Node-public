@@ -14,6 +14,7 @@ from types import SimpleNamespace
 from typing import Any, Mapping
 
 from ea_node_editor.nodes import declaration_engine as _declaration_engine
+from ea_node_editor.nodes.instance_resolution import validate_type_forwarding
 from ea_node_editor.nodes.builtins.core_values import (
     COLOR_DATA_TYPE_ID,
     IMAGE_DATA_TYPE_ID,
@@ -171,7 +172,7 @@ def _parse(source: str) -> _Declaration:
             key, values, _nodes = _declaration_engine.call_values(
                 decorator,
                 name,
-                allowed={"value_type", "structure", "label", "description", "section"},
+                allowed={"value_type", "structure", "label", "description", "section", "type_from_input"},
                 fail=_fail,
             )
             if "section" in values:
@@ -191,6 +192,7 @@ def _parse(source: str) -> _Declaration:
                 label=_declaration_engine.label_value(key, values),
                 description=_declaration_engine.string_value(values, "description"),
                 data_access=structure,
+                type_from_input=_declaration_engine.string_value(values, "type_from_input"),
             )
             prop = None
             section = ""
@@ -289,6 +291,10 @@ def _parse(source: str) -> _Declaration:
         )
         for label, items in section_items.items()
     )
+    try:
+        validate_type_forwarding("core.python_script", tuple(ports))
+    except ValueError as exc:
+        raise _fail(function, str(exc)) from exc
     return _Declaration(
         ports=tuple(ports),
         properties=tuple(properties),

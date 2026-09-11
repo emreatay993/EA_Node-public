@@ -26,7 +26,8 @@ from ea_node_editor.app_preferences import (
     normalize_selection_toolbar_mode,
     normalize_shell_panel_collapsed,
 )
-from ea_node_editor.graph.effective_ports import find_port
+from ea_node_editor.graph.type_forwarding import GraphTypeResolver, ResolvedSourceContract
+from ea_node_editor.graph.hierarchy import is_node_in_scope
 from ea_node_editor.settings import DEFAULT_GRAPHICS_SETTINGS
 from ea_node_editor.text_style import normalize_recent_text_colors
 from ea_node_editor.ui.shell.tooltip_policy import normalize_tooltip_category_preferences
@@ -250,7 +251,7 @@ def connection_quick_insert_source_summary(context: dict[str, Any] | None) -> st
     context = context or {}
     node_title = str(context.get("node_title", "")).strip()
     port_label = str(context.get("port_label", "")).strip()
-    data_type = str(context.get("data_type", "")).strip()
+    data_type = " | ".join(context.get("source_type_ids", ())) or str(context.get("data_type", "")).strip()
     if not node_title and not port_label:
         return ""
     summary = f"{node_title}.{port_label}" if node_title and port_label else (node_title or port_label)
@@ -312,15 +313,18 @@ def build_connection_quick_insert_context(host: Any, node_id: str, port_key: str
     node = workspace.nodes.get(normalized_node_id)
     if node is None:
         return None
+    scene = getattr(host, "scene", None)
+    if scene is not None and not is_node_in_scope(workspace, normalized_node_id, tuple(scene.active_scope_path)):
+        return None
     spec = host.registry.spec_or_none(node.type_id)
     if spec is None:
         return None
-    port = find_port(
-        node=node,
-        spec=spec,
+    resolver = GraphTypeResolver(
+        registry=host.registry,
         workspace_nodes=workspace.nodes,
-        port_key=normalized_port_key,
+        workspace_edges=workspace.edges.values(),
     )
+    port = resolver.port(normalized_node_id, normalized_port_key)
     if port is None or not bool(port.exposed):
         return None
     return {
@@ -333,6 +337,8 @@ def build_connection_quick_insert_context(host: Any, node_id: str, port_key: str
         "kind": str(port.kind),
         "data_type": str(port.data_type),
         "accepted_data_types": list(port.accepted_data_types),
+        "source_type_ids": list(resolver.source_contract(normalized_node_id, normalized_port_key).type_ids) if port.direction == "out" else [],
+        "source_types_unresolved": resolver.source_contract(normalized_node_id, normalized_port_key).has_unresolved_sources,
     }
 
 
@@ -362,6 +368,10 @@ def build_connection_quick_insert_results(
             source_kind=str(context.get("kind", "")),
             source_data_type=str(context.get("data_type", "")),
             source_accepted_data_types=context.get("accepted_data_types", ()),
+            source_contract=ResolvedSourceContract(
+                tuple(context.get("source_type_ids", ())),
+                bool(context.get("source_types_unresolved", False)),
+            ) if context.get("direction") == "out" else None,
             limit=host._CONNECTION_QUICK_INSERT_LIMIT,
         )
     highlight_index = 0 if results else -1

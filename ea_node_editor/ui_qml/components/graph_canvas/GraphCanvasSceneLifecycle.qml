@@ -33,8 +33,8 @@ Item {
             else if (root.sceneState.liveNodeGeometry && Object.keys(root.sceneState.liveNodeGeometry).length > 0)
                 root.sceneState.liveNodeGeometry = ({});
         }
-        if (root.interactionState && root.interactionState._clearWireDragState)
-            root.interactionState._clearWireDragState();
+        if (root.interactionState && root.interactionState.invalidateWireCompatibility)
+            root.interactionState.invalidateWireCompatibility();
         if (root.interactionState && root.interactionState.clearLibraryDropPreview)
             root.interactionState.clearLibraryDropPreview();
     }

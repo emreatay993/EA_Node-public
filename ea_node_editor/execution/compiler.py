@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 from collections import defaultdict
+from dataclasses import replace
 from typing import TYPE_CHECKING, Any, Mapping
 
 from ea_node_editor.execution.runtime_dto import RuntimeEdge, RuntimeNode, RuntimeWorkspace
@@ -301,6 +302,18 @@ def _normalize_edges(
         )
     if kernel is not None and memo is None:
         memo = RegistryValidationPassMemo()
+    if kernel is not None:
+        candidates = tuple(edge for edge in raw_edges if isinstance(edge, RuntimeEdge)
+                           and edge.source_node_id in valid_node_ids
+                           and edge.target_node_id in valid_node_ids)
+        # Runtime DTO edge IDs are optional; use unique pass-local IDs for pruning.
+        kernel.workspace_edges = tuple(replace(edge, edge_id=str(index))
+                                       for index, edge in enumerate(candidates))
+        memo.invalidate_edges()
+        pruned_ids = set(kernel.prunable_edge_ids(memo=memo))
+        raw_edges = tuple(edge for index, edge in enumerate(candidates) if str(index) not in pruned_ids)
+        kernel.workspace_edges = raw_edges
+        memo.invalidate_edges()
     resolved_nodes = kernel.resolve_registry_nodes(memo=memo) if kernel is not None else {}
     spec_cache: dict[str, NodeTypeSpec | None] = {}
     for raw_edge in raw_edges:

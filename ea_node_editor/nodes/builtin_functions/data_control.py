@@ -104,6 +104,7 @@ def number_slider(ctx, settings):
     structure="tree",
     label="Output",
     description="The output value.",
+    type_from_input="input",
 )
 @corex.text_area(
     "value",

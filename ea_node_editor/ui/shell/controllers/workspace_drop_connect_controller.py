@@ -10,17 +10,15 @@ from typing import TYPE_CHECKING, Any
 from ea_node_editor.custom_workflows import parse_custom_workflow_type_id
 from ea_node_editor.graph.effective_ports import (
     EffectivePort,
-    effective_ports,
-    find_port,
     is_neutral_flow_port,
     is_subnode_pin_type,
-    port_compatibility,
-    ports_compatible,
     target_port_has_capacity,
 )
 from ea_node_editor.graph.hierarchy import scope_parent_id
+from ea_node_editor.graph.invariant_kernel import GraphInvariantKernel, RegistryValidationPassMemo
+from ea_node_editor.graph.type_forwarding import GraphTypeResolver
 from ea_node_editor.graph.workspace_state import WorkspaceData
-from ea_node_editor.graph.records import NodeInstance
+from ea_node_editor.graph.records import EdgeInstance, NodeInstance
 from ea_node_editor.graph.transforms import encode_fragment_external_parent_id
 from ea_node_editor.nodes.builtins.media_panel import MEDIA_PANEL_TYPE_ID
 from ea_node_editor.nodes.builtins.subnode import SUBNODE_TYPE_ID
@@ -400,30 +398,22 @@ class WorkspaceDropConnectController:
         workspace = self._active_workspace()
         if workspace is None:
             return False
+        resolver = GraphTypeResolver(registry=self._host.registry, workspace_nodes=workspace.nodes, workspace_edges=workspace.edges.values())
 
         new_node = workspace.nodes.get(new_node_id)
         target_node = workspace.nodes.get(target_node_id)
         if new_node is None or target_node is None:
             return False
 
-        new_spec = self._host.registry.get_spec(new_node.type_id)
-        target_spec = self._host.registry.get_spec(target_node.type_id)
-        target_port = find_port(
-            node=target_node,
-            spec=target_spec,
-            workspace_nodes=workspace.nodes,
-            port_key=str(target_port_key).strip(),
-        )
-        if target_port is None:
+        new_spec = self._host.registry.resolve_spec(new_node.type_id, new_node.properties)
+        target_spec = self._host.registry.resolve_spec(target_node.type_id, target_node.properties)
+        target_port = resolver.port(target_node.node_id, str(target_port_key).strip())
+        if target_port is None or not target_port.exposed:
             return False
 
         new_ports = [
             port
-            for port in effective_ports(
-                node=new_node,
-                spec=new_spec,
-                workspace_nodes=workspace.nodes,
-            )
+            for port in resolver.ports_for_node(new_node.node_id)
             if port.exposed and (compatible_port_keys is None or port.key in compatible_port_keys)
         ]
         candidates: list[dict[str, Any]] = []
@@ -433,9 +423,7 @@ class WorkspaceDropConnectController:
                 peer_node=target_node,
                 neutral_ports=_neutral_flow_ports(new_ports),
             )
-            if selected_port is not None and port_compatibility(
-                target_port, selected_port, data_types=self._host.registry.data_types
-            ).is_compatible:
+            if selected_port is not None and resolver.compatibility(target_node.node_id, target_port.key, selected_port).is_compatible:
                 candidates.append(
                     {
                         "source_node_id": target_node.node_id,
@@ -464,11 +452,7 @@ class WorkspaceDropConnectController:
             for port in new_ports:
                 if port.direction != "out":
                     continue
-                if not port_compatibility(
-                    port,
-                    target_port,
-                    data_types=self._host.registry.data_types,
-                ).is_compatible:
+                if not resolver.compatibility(new_node.node_id, port.key, target_port).is_compatible:
                     continue
                 candidates.append(
                     {
@@ -486,11 +470,7 @@ class WorkspaceDropConnectController:
             for port in new_ports:
                 if port.direction != "in":
                     continue
-                if not port_compatibility(
-                    target_port,
-                    port,
-                    data_types=self._host.registry.data_types,
-                ).is_compatible:
+                if not resolver.compatibility(target_node.node_id, target_port.key, port).is_compatible:
                     continue
                 candidates.append(
                     {
@@ -533,6 +513,7 @@ class WorkspaceDropConnectController:
         workspace = self._active_workspace()
         if workspace is None:
             return False
+        resolver = GraphTypeResolver(registry=self._host.registry, workspace_nodes=workspace.nodes, workspace_edges=workspace.edges.values())
         edge = workspace.edges.get(target_edge_id)
         new_node = workspace.nodes.get(new_node_id)
         if edge is None or new_node is None:
@@ -543,31 +524,17 @@ class WorkspaceDropConnectController:
         if source_node is None or target_node is None:
             return False
 
-        source_spec = self._host.registry.get_spec(source_node.type_id)
-        target_spec = self._host.registry.get_spec(target_node.type_id)
-        new_spec = self._host.registry.get_spec(new_node.type_id)
-        source_port = find_port(
-            node=source_node,
-            spec=source_spec,
-            workspace_nodes=workspace.nodes,
-            port_key=str(edge.source_port_key).strip(),
-        )
-        target_port = find_port(
-            node=target_node,
-            spec=target_spec,
-            workspace_nodes=workspace.nodes,
-            port_key=str(edge.target_port_key).strip(),
-        )
+        source_spec = self._host.registry.resolve_spec(source_node.type_id, source_node.properties)
+        target_spec = self._host.registry.resolve_spec(target_node.type_id, target_node.properties)
+        new_spec = self._host.registry.resolve_spec(new_node.type_id, new_node.properties)
+        source_port = resolver.port(source_node.node_id, str(edge.source_port_key).strip())
+        target_port = resolver.port(target_node.node_id, str(edge.target_port_key).strip())
         if source_port is None or target_port is None:
             return False
 
         new_ports = [
             port
-            for port in effective_ports(
-                node=new_node,
-                spec=new_spec,
-                workspace_nodes=workspace.nodes,
-            )
+            for port in resolver.ports_for_node(new_node.node_id)
             if port.exposed
         ]
         candidates: list[dict[str, Any]] = []
@@ -602,25 +569,14 @@ class WorkspaceDropConnectController:
                 port
                 for port in new_ports
                 if port.direction == "in"
-                and ports_compatible(
-                    source_port,
-                    port,
-                    data_types=self._host.registry.data_types,
-                )
+                and resolver.compatibility(source_node.node_id, source_port.key, port).is_compatible
             ]
-            candidate_outputs = [
-                port
-                for port in new_ports
-                if port.direction == "out"
-                and ports_compatible(
-                    port,
-                    target_port,
-                    data_types=self._host.registry.data_types,
-                )
-            ]
-
             for input_port in candidate_inputs:
-                for output_port in candidate_outputs:
+                for output_port in new_ports:
+                    if output_port.direction != "out" or not self._edge_insertion_is_valid(
+                        workspace, edge, (new_node_id, input_port.key), (new_node_id, output_port.key)
+                    ):
+                        continue
                     candidates.append(
                         {
                             "new_input_port": input_port.key,
@@ -683,6 +639,39 @@ class WorkspaceDropConnectController:
                     pass
             return False
 
+    def _edge_insertion_is_valid(
+        self,
+        workspace: WorkspaceData,
+        edge: EdgeInstance,
+        input_endpoint: tuple[str, str],
+        output_endpoint: tuple[str, str],
+    ) -> bool:
+        """Validate both new wires against the completed, proposed topology."""
+        incoming, outgoing = edge.clone(), edge.clone()
+        incoming.edge_id = "__insert_in_" + edge.edge_id
+        outgoing.edge_id = "__insert_out_" + edge.edge_id
+        incoming.target_node_id, incoming.target_port_key = input_endpoint
+        outgoing.source_node_id, outgoing.source_port_key = output_endpoint
+        retained = [current for current in workspace.edges.values()
+                    if current.edge_id != edge.edge_id
+                    and (current.target_node_id, current.target_port_key) != input_endpoint]
+        kernel = GraphInvariantKernel(self._host.registry, workspace.nodes, [*retained, incoming, outgoing])
+        memo = RegistryValidationPassMemo()
+        try:
+            for candidate in (incoming, outgoing):
+                kernel.add_edge_or_raise(
+                    source_node_id=candidate.source_node_id,
+                    source_port_key=candidate.source_port_key,
+                    target_node_id=candidate.target_node_id,
+                    target_port_key=candidate.target_port_key,
+                    append_requested=True,
+                    capacity_excluded_edge_id=candidate.edge_id,
+                    memo=memo,
+                )
+        except (KeyError, ValueError):
+            return False
+        return True
+
     def _connect_workflow_endpoint_to_port(
         self,
         endpoints: list[dict[str, str]],
@@ -695,17 +684,13 @@ class WorkspaceDropConnectController:
         workspace = self._active_workspace()
         if workspace is None:
             return False
+        resolver = GraphTypeResolver(registry=self._host.registry, workspace_nodes=workspace.nodes, workspace_edges=workspace.edges.values())
         target_node = workspace.nodes.get(str(target_node_id).strip())
         if target_node is None:
             return False
-        target_spec = self._host.registry.get_spec(target_node.type_id)
-        target_port = find_port(
-            node=target_node,
-            spec=target_spec,
-            workspace_nodes=workspace.nodes,
-            port_key=str(target_port_key).strip(),
-        )
-        if target_port is None:
+        target_spec = self._host.registry.resolve_spec(target_node.type_id, target_node.properties)
+        target_port = resolver.port(target_node.node_id, str(target_port_key).strip())
+        if target_port is None or not target_port.exposed:
             return False
         if (
             target_port.direction == "in"
@@ -731,20 +716,11 @@ class WorkspaceDropConnectController:
             endpoint_spec = self._host.registry.spec_or_none(endpoint_node.type_id)
             if endpoint_spec is None:
                 continue
-            endpoint_port = find_port(
-                node=endpoint_node,
-                spec=endpoint_spec,
-                workspace_nodes=workspace.nodes,
-                port_key=endpoint["port_key"],
-            )
+            endpoint_port = resolver.port(endpoint_node.node_id, endpoint["port_key"])
             if endpoint_port is None or not endpoint_port.exposed:
                 continue
             if target_port.direction == "in":
-                if endpoint_port.direction != "out" or not port_compatibility(
-                    endpoint_port,
-                    target_port,
-                    data_types=self._host.registry.data_types,
-                ).is_compatible:
+                if endpoint_port.direction != "out" or not resolver.compatibility(endpoint_node.node_id, endpoint_port.key, target_port).is_compatible:
                     continue
                 source_node_id, source_port_key = (
                     endpoint_node.node_id,
@@ -755,11 +731,7 @@ class WorkspaceDropConnectController:
                     target_port.key,
                 )
             elif target_port.direction == "out":
-                if endpoint_port.direction != "in" or not port_compatibility(
-                    target_port,
-                    endpoint_port,
-                    data_types=self._host.registry.data_types,
-                ).is_compatible:
+                if endpoint_port.direction != "in" or not resolver.compatibility(target_node.node_id, target_port.key, endpoint_port).is_compatible:
                     continue
                 if not target_port_has_capacity(
                     edges=workspace.edges.values(),
@@ -822,6 +794,7 @@ class WorkspaceDropConnectController:
         workspace = self._active_workspace()
         if workspace is None:
             return False
+        resolver = GraphTypeResolver(registry=self._host.registry, workspace_nodes=workspace.nodes, workspace_edges=workspace.edges.values())
         edge = workspace.edges.get(str(target_edge_id).strip())
         if edge is None:
             return False
@@ -829,60 +802,29 @@ class WorkspaceDropConnectController:
         target_node = workspace.nodes.get(edge.target_node_id)
         if source_node is None or target_node is None:
             return False
-        source_spec = self._host.registry.get_spec(source_node.type_id)
-        target_spec = self._host.registry.get_spec(target_node.type_id)
-        source_port = find_port(
-            node=source_node,
-            spec=source_spec,
-            workspace_nodes=workspace.nodes,
-            port_key=edge.source_port_key,
-        )
-        target_port = find_port(
-            node=target_node,
-            spec=target_spec,
-            workspace_nodes=workspace.nodes,
-            port_key=edge.target_port_key,
-        )
+        source_spec = self._host.registry.resolve_spec(source_node.type_id, source_node.properties)
+        target_spec = self._host.registry.resolve_spec(target_node.type_id, target_node.properties)
+        source_port = resolver.port(source_node.node_id, edge.source_port_key)
+        target_port = resolver.port(target_node.node_id, edge.target_port_key)
         if source_port is None or target_port is None:
             return False
 
-        input_endpoint: tuple[str, str] | None = None
-        output_endpoint: tuple[str, str] | None = None
+        input_candidates, output_candidates = [], []
         for endpoint in endpoints:
-            endpoint_node = workspace.nodes.get(endpoint["node_id"])
-            if endpoint_node is None:
+            endpoint_port = resolver.port(endpoint["node_id"], endpoint["port_key"])
+            if endpoint_port is None or not endpoint_port.exposed:
                 continue
-            endpoint_spec = self._host.registry.get_spec(endpoint_node.type_id)
-            endpoint_port = find_port(
-                node=endpoint_node,
-                spec=endpoint_spec,
-                workspace_nodes=workspace.nodes,
-                port_key=endpoint["port_key"],
-            )
-            if endpoint_port is None:
-                continue
-            if (
-                input_endpoint is None
-                and endpoint_port.direction == "in"
-                and ports_compatible(
-                    source_port,
-                    endpoint_port,
-                    data_types=self._host.registry.data_types,
-                )
-            ):
-                input_endpoint = (endpoint_node.node_id, endpoint_port.key)
-            if (
-                output_endpoint is None
-                and endpoint_port.direction == "out"
-                and ports_compatible(
-                    endpoint_port,
-                    target_port,
-                    data_types=self._host.registry.data_types,
-                )
-            ):
-                output_endpoint = (endpoint_node.node_id, endpoint_port.key)
-        if input_endpoint is None or output_endpoint is None:
+            pair = (endpoint["node_id"], endpoint["port_key"])
+            if endpoint_port.direction == "in" and resolver.compatibility(source_node.node_id, source_port.key, endpoint_port).is_compatible:
+                input_candidates.append(pair)
+            elif endpoint_port.direction == "out":
+                output_candidates.append(pair)
+        pair = next(((input_endpoint, output_endpoint)
+                     for input_endpoint in input_candidates for output_endpoint in output_candidates
+                     if self._edge_insertion_is_valid(workspace, edge, input_endpoint, output_endpoint)), None)
+        if pair is None:
             return False
+        input_endpoint, output_endpoint = pair
 
         original = (
             edge.source_node_id,

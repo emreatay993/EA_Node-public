@@ -126,29 +126,9 @@ def normalize_project_for_registry(project: ProjectData, registry: NodeRegistry)
                     resolution.node.principal_input_port_id = None
                     workspace_changed = True
 
-        seen_connections: set[tuple[str, str, str, str]] = set()
-        occupied_single_target_ports: set[tuple[str, str]] = set()
-        for edge_id, edge in list(workspace.edges.items()):
-            resolution = kernel.validate_registry_edge(
-                source_node_id=edge.source_node_id,
-                source_port_key=edge.source_port_key,
-                target_node_id=edge.target_node_id,
-                target_port_key=edge.target_port_key,
-                resolved_nodes=resolved_nodes,
-                memo=memo,
-                require_source_output=True,
-                require_target_input=True,
-                require_exposed_ports=True,
-                require_compatible_ports=True,
-            )
-            if resolution is None or not kernel.accept_registry_edge(
-                resolution,
-                seen_connections=seen_connections,
-                occupied_single_target_ports=occupied_single_target_ports,
-            ):
-                if workspace.edges.pop(edge_id, None) is not None:
-                    memo.invalidate_edges()
-                    workspace_changed = True
+        for edge_id in kernel.prunable_edge_ids(memo=memo):
+            workspace.edges.pop(edge_id, None)
+            workspace_changed = True
 
         input_groups: dict[tuple[str, str], list] = {}
         for edge in workspace.edges.values():

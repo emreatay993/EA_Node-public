@@ -15,6 +15,7 @@ from typing import Any, Mapping
 from corex import _unknown_setting_message
 from ea_node_editor.nodes import declaration_engine as _engine
 from ea_node_editor.nodes.function_plugin import INTERNAL_BUILTIN_FUNCTION_OWNER_ID
+from ea_node_editor.nodes.instance_resolution import validate_type_forwarding
 from ea_node_editor.nodes.node_specs import (
     NodeRenderQualitySpec,
     NodeTypeSpec,
@@ -683,7 +684,7 @@ def _parse_function(
             key, values, _nodes = _engine.call_values(
                 decorator,
                 name,
-                allowed={"value_type", "structure", "label", "description"},
+                allowed={"value_type", "structure", "label", "description", "type_from_input"},
                 fail=fail,
                 constants=constants,
                 cache=cache,
@@ -702,6 +703,7 @@ def _parse_function(
                 label=_engine.label_value(key, values),
                 description=_engine.string_value(values, "description"),
                 data_access=structure,
+                type_from_input=_engine.string_value(values, "type_from_input"),
             )
             prop = None
             section = ""
@@ -900,6 +902,10 @@ def _parse_function(
         fail=fail,
         node=decorators[0],
     )
+    try:
+        validate_type_forwarding(metadata["type_id"], tuple(ports))
+    except ValueError as exc:
+        raise fail(function, str(exc)) from exc
     return PythonFunctionDeclaration(
         spec=NodeTypeSpec(
             type_id=metadata["type_id"],

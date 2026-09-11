@@ -22,6 +22,8 @@ QtObject {
     property real dropPreviewScreenY: -1
     property var pendingConnectionPort: null
     property var wireDragState: null
+    property int compatibilityGraphRevision: 0
+    property bool compatibilityRefreshPending: false
     property var wireDropCandidate: null
     property var wireInvalidDropCandidate: null
     property bool edgeContextVisible: false
@@ -161,19 +163,14 @@ QtObject {
     function _isDropAllowed(sourceDrag, candidate) {
         if (!sourceDrag || !candidate)
             return false;
-        return GraphCanvasLogic.isDropAllowedWithCompatibility(
-            sourceDrag,
-            candidate,
-            _canvasEdges(),
-            _arePortKindsCompatible(
-                _portKind(sourceDrag.node_id, sourceDrag.port_key),
-                _portKind(candidate.node_id, candidate.port_key)
-            ),
-            _areDataTypesCompatible(
-                _portDataType(sourceDrag.node_id, sourceDrag.port_key),
-                _portDataType(candidate.node_id, candidate.port_key)
-            )
-        );
+        var state = root.pendingConnectionPort || sourceDrag;
+        state.source_direction = sourceDrag.source_direction;
+        _activateWireCompatibilitySnapshot(state);
+        var candidatePort = _scenePortData(candidate.node_id, candidate.port_key);
+        if (!candidatePort || candidatePort.exposed === false)
+            return false;
+        return _isWireDragDropAllowed(state, _wireDragSourceData(state),
+            Object.assign({}, candidate, candidatePort));
     }
 
     function _compatibleEndpointKey(nodeId, portKey) {
@@ -198,6 +195,7 @@ QtObject {
         if (!source || !target || source.compatibility_snapshot_loaded === undefined)
             return;
         target.compatibility_snapshot_loaded = Boolean(source.compatibility_snapshot_loaded);
+        target.compatibility_graph_revision = source.compatibility_graph_revision;
         target.compatibility_snapshot_valid = Boolean(source.compatibility_snapshot_valid);
         target.compatibility_candidate_role = String(source.compatibility_candidate_role || "");
         target.compatibility_catalog_generation = String(source.compatibility_catalog_generation || "");
@@ -209,9 +207,11 @@ QtObject {
     }
 
     function _activateWireCompatibilitySnapshot(state) {
-        if (!state || state.compatibility_snapshot_loaded)
+        if (!state || (state.compatibility_snapshot_loaded
+                && state.compatibility_graph_revision === root.compatibilityGraphRevision))
             return state;
 
+        state.compatibility_graph_revision = root.compatibilityGraphRevision;
         state.compatibility_snapshot_loaded = true;
         state.compatibility_snapshot_valid = false;
         state.compatibility_candidate_role = _wireDragCandidateRole(state);
@@ -223,6 +223,8 @@ QtObject {
             return state;
 
         var sourcePort = _scenePortData(state.node_id, state.port_key);
+        if (!sourcePort || sourcePort.exposed === false)
+            return state;
         var anchorGeneration = String(sourcePort && sourcePort.catalog_generation || "").trim();
         state.compatibility_anchor_catalog_generation = anchorGeneration;
         var snapshot = null;
@@ -284,11 +286,61 @@ QtObject {
         return state;
     }
 
+    function _rewireTopologyIsCurrent(state) {
+        if (!state.rewire)
+            return true;
+        var original = _scenePortData(state.origin_node_id, state.origin_port_key);
+        if (!original || original.exposed === false)
+            return false;
+        var edges = _canvasEdges();
+        return (state.moving_edges || []).every(function(member) {
+            return edges.some(function(edge) {
+                if (edge.edge_id !== member.edge_id)
+                    return false;
+                var sourceMoved = state.moving_endpoint === "source";
+                return edge.source_node_id === (sourceMoved ? state.origin_node_id : member.fixed_node_id)
+                    && edge.source_port_key === (sourceMoved ? state.origin_port_key : member.fixed_port_key)
+                    && edge.target_node_id === (sourceMoved ? member.fixed_node_id : state.origin_node_id)
+                    && edge.target_port_key === (sourceMoved ? member.fixed_port_key : state.origin_port_key);
+            });
+        });
+    }
+
+    function invalidateWireCompatibility() {
+        // Scene publications invalidate graph facts independently of the type catalog.
+        root.compatibilityGraphRevision += 1;
+        if (root.compatibilityRefreshPending)
+            return;
+        root.compatibilityRefreshPending = true;
+        Qt.callLater(function() {
+            root.compatibilityRefreshPending = false;
+            var state = root.wireDragState ? Object.assign({}, root.wireDragState) : null;
+            var pending = root.pendingConnectionPort;
+            if (pending && !_scenePortData(pending.node_id, pending.port_key))
+                root.clearPendingConnection();
+            if (!state || !state.active) {
+                _requestEdgeRedraw();
+                return;
+            }
+            var anchor = _scenePortData(state.node_id, state.port_key);
+            if (!anchor || anchor.exposed === false || !_rewireTopologyIsCurrent(state)) {
+                root._clearWireDragState();
+                return;
+            }
+            _activateWireCompatibilitySnapshot(state);
+            root.wireDragState = state;
+            root._updateWireDropCandidate(root.canvasItem.sceneToScreenX(state.cursor_x),
+                root.canvasItem.sceneToScreenY(state.cursor_y), state);
+            _requestEdgeRedraw();
+        });
+    }
+
     function _isWireDragDropAllowed(state, sourceDrag, candidate) {
         if (!state || !sourceDrag || !candidate)
             return false;
         if (Boolean(candidate.blocks_new_connections) || Boolean(candidate.inactive))
             return false;
+        _activateWireCompatibilitySnapshot(state);
         var snapshotCompatible = Boolean(state.compatibility_snapshot_valid)
             && String(state.compatibility_catalog_generation || "").length > 0
             && String(sourceDrag.catalog_generation || "")
@@ -553,11 +605,18 @@ QtObject {
                 sourcePort ? sourcePort.kind : "",
                 targetPort ? targetPort.kind : ""
             ),
-            _areDataTypesCompatible(
-                sourcePort ? sourcePort.data_type : "",
-                targetPort ? targetPort.data_type : ""
-            )
+            _arePortTypesCompatible(sourcePort, targetPort)
         );
+    }
+
+    function _arePortTypesCompatible(sourcePort, targetPort) {
+        if (!sourcePort || !targetPort || sourcePort.source_types_unresolved)
+            return false;
+        var sources = sourcePort.source_type_ids || [sourcePort.data_type];
+        var targets = [targetPort.data_type].concat(targetPort.accepted_data_types || []);
+        return sources.length > 0 && sources.every(function(sourceType) {
+            return targets.some(function(targetType) { return _areDataTypesCompatible(sourceType, targetType); });
+        });
     }
 
     function _libraryPorts(payload) {
@@ -587,10 +646,8 @@ QtObject {
                         nodePort.kind || "",
                         targetPort.kind || ""
                     ),
-                    _areDataTypesCompatible(
-                        nodePort.data_type || "",
-                        targetPort.data_type || ""
-                    )
+                    targetPort.direction === "out" ? _arePortTypesCompatible(targetPort, nodePort)
+                        : _arePortTypesCompatible(nodePort, targetPort)
                 )
             )
                 return true;
@@ -684,10 +741,7 @@ QtObject {
                         sourcePort.kind || "",
                         nodePort.kind || ""
                     ),
-                    _areDataTypesCompatible(
-                        sourcePort.data_type || "",
-                        nodePort.data_type || ""
-                    )
+                    _arePortTypesCompatible(sourcePort, nodePort)
                 )
             )
                 hasInputCandidate = true;
@@ -700,10 +754,7 @@ QtObject {
                         nodePort.kind || "",
                         targetPort.kind || ""
                     ),
-                    _areDataTypesCompatible(
-                        nodePort.data_type || "",
-                        targetPort.data_type || ""
-                    )
+                    _arePortTypesCompatible(nodePort, targetPort)
                 )
             )
                 hasOutputCandidate = true;
@@ -1254,7 +1305,7 @@ QtObject {
             next.origin_side = state.origin_side;
         var becameActive = movedEnough && !state.active;
         _copyWireCompatibilitySnapshot(state, next);
-        if (becameActive)
+        if (next.active)
             _activateWireCompatibilitySnapshot(next);
         root.wireDragState = next;
         if (!next.active)

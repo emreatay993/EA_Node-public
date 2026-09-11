@@ -87,6 +87,7 @@ Use this for runtime snapshot assembly, ordered data-edge DTOs, dependency sched
 - `tests/test_engineering_import_nodes.py`
 - `tests/test_engineering_viewer_backend.py`
 - `tests/test_execution_type_enforcement.py`
+- `tests/test_type_forwarding_integration.py`
 - `tests/test_viewer_viewport.py`
 - `tests/test_security_contracts.py`
 - `tests/test_parameter_setup_pool_links.py`
@@ -110,6 +111,7 @@ Use this for runtime snapshot assembly, ordered data-edge DTOs, dependency sched
 - Compiler/runtime edges are structured, ordered records. Only enabled data edges contribute dependencies or values; disabled edges remain authored graph state but are absent from dependency traversal and path-wise merge.
 - Headless prepare, prepared-dispatch validation, worker validation, and solution invalidation build plans from the compiled runtime workspace while retaining the authored snapshot/envelope fingerprint. `ExecutionPlan.for_invalidation(...)` alone may recover from a private topology-cycle error by using compiled declaration order so invalidation closure and stale-record cleanup remain deterministic; ordinary preparation and worker admission still reject active cycles with the existing `ValueError` text.
 - Registry-backed compilation uses the same `NodeRegistry.data_types.compatibility(...)` decision as graph mutation and prunes incompatible, unresolved, or unresolvable-node/port data edges before runtime DTO assembly. It revalidates real-to-real edges after subnode flattening so two direct conversion legs never imply a chained synthetic conversion. Compilation without a registry can enforce structural rules only. Conversion remains worker-owned and is never performed by the graph or compiler.
+- Compilation additionally uses graph-owned all-member forwarding compatibility before and after boundary flattening. `ExecutionPlan` holds transient inferred source contracts separately from declared runtime ports; `worker_runner.py` still validates actual Any values, including retained Trigger outputs, before a catalog-selected direct conversion and target validation. `solution_identity.py` includes incoming source contracts and selected per-member converter revisions so consumer reuse changes without advancing Trigger publication.
 - Worker evaluation follows the fixed pipeline: each enabled wire is catalog-validated or directly converted item-by-item before persisted-order fan-in; explicit property defaults are catalog-validated/coerced as untyped values; input modifiers; Item/List/Tree matching and Principal selection; sequential plugin calls; catalog validation of emitted items against the deduplicated primary-plus-accepted type union without output coercion; private atomic output aggregation; output modifiers; then DataTree publication. A scheduled node may invoke its plugin several times internally without being scheduled twice.
 - The one bounded exception in default assembly is an exact built-in
   `TypedInlineValue`: the worker validates it against the candidate port types

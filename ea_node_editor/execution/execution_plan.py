@@ -9,6 +9,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import replace
 import hashlib
 import json
+from types import MappingProxyType
 from typing import Any
 
 from ea_node_editor.common.optimization_links import (
@@ -23,7 +24,7 @@ from ea_node_editor.execution.solution_identity import canonical_digest
 
 _TRIGGER_TYPE_ID = "core.trigger"
 _FINGERPRINT_SCHEMA_VERSION = 1
-WORKFLOW_INTERFACE_REVISION = 2
+WORKFLOW_INTERFACE_REVISION = 3
 
 
 class _ExecutionCycleError(ValueError):
@@ -122,6 +123,18 @@ class ExecutionPlan:
             node_id: {port.key: port for port in ports}
             for node_id, ports in self.node_ports.items()
         }
+        from ea_node_editor.graph.type_forwarding import GraphTypeResolver
+
+        # Topology contracts are identity/authoring facts, never runtime schemas.
+        self.type_resolver = GraphTypeResolver(
+            registry=registry, workspace_nodes=self.node_instances,
+            workspace_edges=workspace.edges, ports_by_node_id=self.node_ports,
+        )
+        self.source_contracts = MappingProxyType({
+            (node_id, port.key): self.type_resolver.source_contract(node_id, port.key)
+            for node_id, ports in self.node_ports.items() for port in ports
+            if port.direction == "out" and port.kind == "data"
+        })
         self.data_incoming: dict[str, list[RuntimeEdge]] = defaultdict(list)
         self.data_outgoing: dict[str, list[RuntimeEdge]] = defaultdict(list)
         for edge in sorted(
@@ -533,6 +546,9 @@ class ExecutionPlan:
                     "kind": port.kind,
                     "data_type": port.data_type,
                     "accepted_data_types": port.accepted_data_types,
+                    "type_from_input": port.type_from_input,
+                    "source_contract": self.source_contracts[(node_id, port.key)].identity
+                    if (node_id, port.key) in self.source_contracts else None,
                     "data_access": port.data_access,
                     "required": port.required,
                     "uses_property_default": port.uses_property_default,
@@ -588,6 +604,9 @@ class ExecutionPlan:
                             "allow_multiple_connections": port.allow_multiple_connections,
                             "uses_property_default": port.uses_property_default,
                             "accepted_data_types": list(port.accepted_data_types),
+                            "type_from_input": port.type_from_input,
+                            "source_contract": self.source_contracts[(node_id, port.key)].identity
+                            if (node_id, port.key) in self.source_contracts else None,
                         }
                         for port in self.node_ports.get(node_id, ())
                     ],

@@ -43,6 +43,7 @@ class _Plan:
     ) -> None:
         self.nodes = nodes
         self.ports_by_key = ports_by_key
+        self.source_contracts = {}
         self._incoming = incoming
         self._outputs = outputs
 
@@ -163,6 +164,60 @@ def _executor(
     executor._plan = plan
     executor.node_outputs = node_outputs or {}
     return executor
+
+
+def test_forwarded_conversion_rejects_retained_value_outside_inferred_type() -> None:
+    calls = []
+    catalog = _catalog(conversions=(DataConversionSpec(
+        _INTEGER, _TOKEN, lambda value: calls.append(value) or ("token", value),
+    ),))
+    executor = _executor(catalog, _Plan(nodes={"sink": SimpleNamespace(type_id="tests.sink")}, ports_by_key={}))
+    with pytest.raises(ValueError, match="catalog reason"):
+        executor._prepare_wired_item("sink", _port("value", _TOKEN), _GRAPH, "old text",
+                                    path=(), item_index=0, source_type_candidates=(_INTEGER,))
+    assert calls == []
+
+
+def test_forwarded_union_conversion_failure_does_not_try_an_unselected_converter() -> None:
+    calls = []
+
+    def fail(value):
+        calls.append("selected")
+        raise ValueError("selected converter failed")
+
+    catalog = _catalog(conversions=(
+        DataConversionSpec(_INTEGER, _TOKEN, fail),
+        DataConversionSpec(_INTEGER, _TEXT, lambda value: calls.append("alternative") or str(value)),
+    ))
+    executor = _executor(catalog, _Plan(nodes={"sink": SimpleNamespace(type_id="tests.sink")}, ports_by_key={}))
+    with pytest.raises(ValueError, match="selected converter failed"):
+        executor._prepare_wired_item("sink", _port("value", _TOKEN, accepted=(_TEXT,)), _GRAPH, 42,
+                                    path=(), item_index=0, source_type_candidates=(_INTEGER,))
+    assert calls == ["selected"]
+
+
+def test_forwarded_conversion_validates_the_converted_carrier() -> None:
+    catalog = _catalog(conversions=(DataConversionSpec(_INTEGER, _INLINE, lambda value: {"value": value}),))
+    executor = _executor(catalog, _Plan(nodes={"sink": SimpleNamespace(type_id="tests.sink")}, ports_by_key={}))
+    with pytest.raises(ValueError, match="native.*carriers"):
+        executor._prepare_wired_item("sink", _port("value", _INLINE), _GRAPH, 42,
+                                    path=(), item_index=0, source_type_candidates=(_INTEGER,))
+
+
+def test_forwarded_abstract_source_conversion_has_direct_connection_parity() -> None:
+    abstract = "Test.AbstractForwarded"
+    catalog = _catalog().fork()
+    catalog.register_many(types=(DataTypeSpec(
+        abstract, "Abstract forwarded", "test", lambda value: type(value) is int,
+        abstract=True, parents=(_GRAPH,),
+    ),), conversions=(DataConversionSpec(abstract, _TOKEN, lambda value: ("token", value)),),
+        owner_id="tests.abstract_forwarding")
+    executor = _executor(catalog, _Plan(nodes={"sink": SimpleNamespace(type_id="tests.sink")}, ports_by_key={}))
+    port = _port("value", _TOKEN)
+    direct = executor._prepare_wired_item("sink", port, abstract, 42, path=(), item_index=0)
+    forwarded = executor._prepare_wired_item("sink", port, _GRAPH, 42, path=(), item_index=0,
+                                            source_type_candidates=(abstract,))
+    assert direct == forwarded == ("token", 42)
 
 
 def test_each_incoming_tree_is_converted_before_ordered_fan_in_and_modifiers() -> None:

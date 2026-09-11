@@ -76,6 +76,8 @@ def project_port_data_type_presentation(
     *,
     data_type: object,
     accepted_data_types: Collection[object] = (),
+    source_type_ids: tuple[str, ...] | None = None,
+    source_types_unresolved: bool = False,
     data_access: object = "item",
     kind: object = "data",
     projection: Mapping[str, Any] | None,
@@ -113,7 +115,7 @@ def project_port_data_type_presentation(
             accepted_labels.append(accepted_label)
         if len(accepted_labels) >= _ACCEPTED_DATA_TYPE_LABEL_LIMIT:
             break
-    return {
+    result = {
         "data_type": type_id,
         "data_type_label": label,
         "data_type_family": "" if is_flow else str(type_item.get("family", "")),
@@ -125,9 +127,28 @@ def project_port_data_type_presentation(
         ),
         "data_type_icon_key": "" if is_flow else str(type_item.get("icon_key", "")),
         "accepted_data_type_labels": accepted_labels,
+        "accepted_data_types": list(accepted_data_types),
         "data_access": access,
         "catalog_generation": str(projection.get("catalog_generation", "")),
     }
+    if source_type_ids is not None:
+        # Possible output members are not alternative input acceptance rules.
+        source_labels = [
+            _bounded_data_type_label(type_lookup.get(value, {}).get("label", value))
+            for value in source_type_ids[:_ACCEPTED_DATA_TYPE_LABEL_LIMIT]
+        ]
+        if len(source_type_ids) > _ACCEPTED_DATA_TYPE_LABEL_LIMIT:
+            source_labels.append("\u2026")
+        if source_types_unresolved:
+            source_labels.append("Unknown")
+        result.update(source_type_ids=list(source_type_ids), source_types_unresolved=source_types_unresolved)
+        result["data_type_label"] = _bounded_data_type_label(" | ".join(source_labels))
+        if len(source_type_ids) == 1 and not source_types_unresolved:
+            source_item = type_lookup.get(source_type_ids[0], {})
+            for key, source_key in (("data_type_family", "family"), ("data_type_family_label", "family_label"),
+                                    ("data_type_color_token", "color_token"), ("data_type_icon_key", "icon_key")):
+                result[key] = str(source_item.get(source_key, ""))
+    return result
 
 
 def _inside_declared_domain(

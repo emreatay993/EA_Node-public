@@ -7,11 +7,11 @@ from typing import Any
 
 from ea_node_editor.graph.effective_ports import (
     find_port,
-    port_compatibility,
     port_data_access,
     port_kind,
 )
 from ea_node_editor.graph.records import EdgeInstance, NodeInstance
+from ea_node_editor.graph.type_forwarding import ResolvedSourceContract, source_port_compatibility
 from ea_node_editor.nodes.node_specs import NodeTypeSpec
 from ea_node_editor.runtime_contracts import DataTypeCatalog
 from ea_node_editor.ui.graph_theme import GraphThemeDefinition, resolve_edge_color
@@ -99,16 +99,18 @@ def _data_type_warning_reason(
     target_port: object | None,
     *,
     data_types: DataTypeCatalog,
+    source_contract: ResolvedSourceContract | None = None,
 ) -> str:
     if source_port is None:
         return "missing_source_port"
     if target_port is None:
         return "missing_target_port"
-    compatibility = port_compatibility(
+    compatibility = source_port_compatibility(
         source_port,
         target_port,
         data_types=data_types,
-    )
+        source_contract=source_contract,
+    ).worst_match
     if compatibility.reason_code == "port_kind_mismatch":
         return "incompatible_port_kind"
     if compatibility.is_compatible:
@@ -405,10 +407,12 @@ def _resolve_edge_payload_context(
         workspace_nodes=workspace_nodes,
         port_key=edge.target_port_key,
     )
+    source_facts = (presentation_facts_by_node_id or {}).get(edge.source_node_id)
     data_type_warning_reason = _data_type_warning_reason(
         source_effective_port,
         target_effective_port,
         data_types=data_types,
+        source_contract=source_facts.source_contracts.get(edge.source_port_key) if source_facts is not None else None,
     )
     return _ResolvedEdgePayloadContext(
         source_node=source_node,

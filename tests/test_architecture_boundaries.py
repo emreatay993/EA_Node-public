@@ -1717,7 +1717,6 @@ class GraphArchitectureBoundaryTests(unittest.TestCase):
         }
 
         for method_name in {
-            "remove_edge",
             "remove_node",
             "set_edge_label",
             "set_edge_visual_style",
@@ -1729,6 +1728,12 @@ class GraphArchitectureBoundaryTests(unittest.TestCase):
             "set_node_visual_style",
         }:
             self.assertNotIn(method_name, validated_methods)
+
+        remove_edge_calls = call_names(
+            method_node(validated_tree, "ValidatedGraphMutation", "remove_edge")
+        )
+        self.assertIn("self.model._remove_edge_record", remove_edge_calls)
+        self.assertIn("self._prune_edges_for_nodes", remove_edge_calls)
 
         public_model_write_calls = {
             "self.model.add_edge",

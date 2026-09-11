@@ -40,6 +40,7 @@ class EffectivePort:
     accepted_data_types: tuple[str, ...] = ()
     display_tier: str = ""
     description: str = ""
+    type_from_input: str = ""
 
 
 PortLike = TypeVar("PortLike", EffectivePort, PortSpec)
@@ -207,6 +208,7 @@ def effective_ports(
             accepted_data_types=port.accepted_data_types,
             display_tier=port_display_tier(port),
             description=str(getattr(port, "description", "") or ""),
+            type_from_input=port.type_from_input,
         )
         for port in resolved_ports
     )

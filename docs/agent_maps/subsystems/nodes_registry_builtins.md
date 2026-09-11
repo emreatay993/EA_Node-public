@@ -51,6 +51,7 @@ Use this for node definitions, registry validation, built-in node families, data
 - `core_data_types.py` registers concrete scientific ArrayValue/TableValue/SeriesValue IDs. `builtins/core.py` and `function_plugin.py` adapt immutable runtime values to isolated native NumPy/pandas inputs and snapshot native outputs. These are item values, independent of outer Item/List/Tree access.
 - `ea_node_editor/nodes/builtins/plot/signal_schema.py` owns metadata-only scientific column suggestions; its shared property adapter preserves exact string/int selectors and uses the ordinary enum/list QML controls.
 - Public function plugins use the dependency-free top-level `corex` decorators and static `plugin_declaration.py` discovery. Both public plugins and Python Script require explicit `value_type=` on every input/output decorator; missing types fail at their source location, and deliberate broad ports use `corex.Any`. Python Script keeps its one-`run` signature while sharing only the bounded literal/control engine.
+- `PortSpec.type_from_input` and public/Python Script `@corex.output(..., type_from_input="input")` declare an Any data output following an Any input with the same access structure. `instance_resolution.py` validates static and resolved relationships; parsers retain source-located errors, and registry fingerprints include the declaration. Panel, Trigger, and all Stream Gate outputs opt in; Stream Gate follows Stream, never its Gate selector. Graph inference belongs to `graph/type_forwarding.py`, separate from declared input/runtime contracts.
 - Core metadata narrows Constant/File Write data to JsonValue, Force output to Force, and eight generic plot exports to Plot Export Bundle. `tests/test_corex_contract_catalog.py` pins exactly 20 intentional repo-owned Any endpoints across primary and accepted declarations, including three MARS artifact maps, and rejects primary-type repetition in accepted alternatives. `tests/repo_owned_catalog_fixture.py` loads the exact current catalog.
 - `corex.__all__` is the exact 17-name public SDK. `ea_node_editor.nodes` exports
   no authoring helpers, `nodes/types.py` is deleted, and `nodes/decorators.py`,
@@ -119,6 +120,8 @@ Use this for node definitions, registry validation, built-in node families, data
 - `tests/test_solution_identity.py`
 - `tests/test_solution_store_session.py`
 - `tests/test_corex_type_conformance.py`
+- `tests/test_type_forwarding_declarations.py`
+- `tests/test_type_forwarding.py`
 - `tests/test_core_value_types.py`
 - `tests/test_spatial_values.py`
 - `tests/test_geometry_contracts.py`

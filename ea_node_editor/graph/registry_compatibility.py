@@ -45,6 +45,7 @@ _PORT_FIELDS = (
     ("direction", "port_direction_changed", "direction"),
     ("kind", "port_kind_changed", "kind"),
     ("data_type", "port_data_type_changed", "data type"),
+    ("type_from_input", "port_type_forwarding_changed", "type forwarding"),
     (
         "accepted_data_types",
         "port_accepted_data_types_changed",

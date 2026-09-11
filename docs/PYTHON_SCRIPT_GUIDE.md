@@ -59,14 +59,15 @@ this, and click **Apply**:
 ```python
 @corex.node
 @corex.input("payload", value_type=corex.Any)
-@corex.output("result", value_type=corex.Any)
+@corex.output("result", value_type=corex.Any, type_from_input="payload")
 def run(ctx, payload):
     return {"result": payload}
 ```
 
 `payload` is now an input socket and `result` is an output socket. The `run`
 function receives the input and returns a mapping whose keys are declared
-outputs.
+outputs. `type_from_input="payload"` makes recommendations from `result` follow
+the connected source type, while leaving `payload` open to any data type.
 
 ## Declare ports
 
@@ -101,8 +102,19 @@ dynamic port; no type is inferred from the port name or function body.
 
 `@corex.input` also accepts `structure=`, `required=`, `label=`,
 `description=`, and `section=`. `@corex.output` accepts the same fields except
-`required` and `section`. Names must be ordinary Python identifiers and cannot
-be reused.
+`required` and `section`, and additionally accepts `type_from_input=`. Names must
+be ordinary Python identifiers and cannot be reused.
+
+Use `type_from_input="input_name"` only when the output preserves that input's
+type. Both ports must declare `value_type=corex.Any` and matching `structure`.
+Missing inputs or invalid relationships produce an Apply error. COREX follows
+enabled wires through declared forwarding chains without running the script or
+examining cached values; mixed sources require a destination that accepts every
+type. Unconnected forwarding outputs remain Any. Runtime checks still use actual
+values, and incompatible downstream wires removed after an Apply or connection
+edit restore with that edit in one Undo. Ordinary Any outputs without this
+declaration retain broad matching. See the
+[forwarding contract](PLUGIN_AUTHORING_GUIDE.md#forward-a-connected-inputs-type).
 
 Use a built-in type, a supported alias, or a registered canonical type ID:
 

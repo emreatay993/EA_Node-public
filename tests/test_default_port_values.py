@@ -13,6 +13,7 @@ from ea_node_editor.graph.effective_ports import effective_ports
 from ea_node_editor.graph.model import GraphModel
 from ea_node_editor.graph.record_payloads import node_instance_from_mapping, node_instance_to_mapping
 from ea_node_editor.graph.records import NodeInstance
+from ea_node_editor.graph.type_forwarding import ResolvedSourceContract
 from ea_node_editor.nodes.bootstrap import build_default_registry
 from ea_node_editor.runtime_contracts import (
     GRAPH_DATA_TYPE_ID,
@@ -47,6 +48,9 @@ def _input_result(
             }
         },
         incoming_edges_for=lambda _node_id, _port_key: [] if incoming is None else [edge],
+        source_contracts={
+            ("source", "result"): ResolvedSourceContract((data_type,)),
+        },
     )
     executor = NodeExecutor.__new__(NodeExecutor)
     executor._plan = plan

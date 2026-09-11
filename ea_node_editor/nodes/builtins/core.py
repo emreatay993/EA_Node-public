@@ -210,6 +210,7 @@ class TriggerNodePlugin:
                     'COREX.DataTypes.Any',
                     label="Output",
                     data_access="tree",
+                    type_from_input="input",
                     description=(
                         "The current output. The output is not updated until you "
                         "click the button."
@@ -263,6 +264,7 @@ def resolve_stream_gate_output_ports(
             'COREX.DataTypes.Any',
             label=f"Output {ordinal}",
             data_access="tree",
+            type_from_input="stream",
             description=f"Tree published when Gate selects output {ordinal}.",
         )
         for ordinal, output_id in enumerate(

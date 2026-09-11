@@ -108,7 +108,7 @@ def test_selected_plan_excludes_sibling_and_disabled_upstream() -> None:
     assert disabled.node_id not in plan.scheduled_node_ids
     assert sibling.node_id not in plan.scheduled_node_ids
     assert plan.hidden_ordering_pairs == ()
-    assert plan.workflow_interface_revision == 2
+    assert plan.workflow_interface_revision == 3
     assert len(plan.workflow_interface_digest) == 64
 
 

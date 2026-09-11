@@ -84,7 +84,8 @@ Every `@corex.input` and `@corex.output` requires explicit `value_type=`.
 Omission produces a source-located declaration error; it never defaults to Any.
 Use `value_type=corex.Any` only for an intentionally generic or dynamic port.
 Inputs and outputs also accept `structure`, `label`, and `description`.
-Inputs also accept `required` and `section`. `structure` is exactly `"item"`,
+Inputs also accept `required` and `section`; outputs also accept
+`type_from_input`. `structure` is exactly `"item"`,
 `"list"`, or `"tree"`. Use Python `bool`, `int`, `float`, and `str`, one of
 `corex.Any`, `corex.Image`, `corex.Color`, `corex.Interval`, or a registered
 canonical type-ID string.
@@ -94,6 +95,36 @@ produces or accepts. Blank connection Quick Insert shows precise type matches;
 legal broad and runtime-checked matches require a search and are labeled
 `Broad data match` or `Checked at runtime`. This recommendation policy does not
 prohibit an otherwise graph-legal manual connection.
+
+## Forward a connected input's type
+
+For an output that passes values through without changing their type, declare
+the input name with `type_from_input`:
+
+```python
+@corex.node(id="custom.forward.6ab491d2", name="Forward", category="Utilities")
+@corex.input("payload", value_type=corex.Any)
+@corex.output("result", value_type=corex.Any, type_from_input="payload")
+def forward(ctx, payload):
+    return {"result": payload}
+```
+
+Both ports must be Any data ports with the same `structure`. The referenced
+input must exist in the same node. Static validation rejects other types,
+missing references, and invalid directions; trusted internal declarations also
+reject flow ports. Leaving the field empty keeps the declared output type.
+
+COREX follows enabled upstream connections to determine output recommendations,
+port descriptions, and connection compatibility. Multiple source types must all
+be accepted by a destination. Input acceptance stays Any; disconnected forwarding
+ports retain their declared type. Panel, Trigger, and Stream Gate use this same
+declaration, with every Stream Gate output following Stream rather than Gate.
+
+This is a declaration about your function, not an analysis of its code or cached
+values. Declare it only when the output preserves the input's type. Runtime
+validation still checks actual values and conversions. Upstream edits remove
+newly incompatible downstream wires in the same undoable action; inferred types
+are transient and add no project-file fields.
 
 ## Scientific array and table values
 

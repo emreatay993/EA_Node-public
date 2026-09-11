@@ -88,6 +88,10 @@ from ea_node_editor.nodes.readiness import (
 )
 from ea_node_editor.nodes.instance_resolution import resolve_instance_ports
 from ea_node_editor.runtime_contracts import (
+    BOOLEAN_DATA_TYPE_ID,
+    DOUBLE_DATA_TYPE_ID,
+    INTEGER_DATA_TYPE_ID,
+    STRING_DATA_TYPE_ID,
     DataTree,
     DataTypeCatalog,
     DataTypeCatalogError,
@@ -1112,6 +1116,9 @@ class NodeExecutor:
                 )
             )
         source_type_id = str(source_port.data_type).strip()
+        source_contract = self._plan.source_contracts.get(
+            (edge.source_node_id, edge.source_port_key)
+        )
         return DataTree(
             (
                 path,
@@ -1123,6 +1130,7 @@ class NodeExecutor:
                         item,
                         path=path,
                         item_index=item_index,
+                        source_type_candidates=source_contract.type_ids if source_contract is not None else (),
                     )
                     for item_index, item in enumerate(items)
                 ),
@@ -1139,6 +1147,7 @@ class NodeExecutor:
         *,
         path: tuple[int, ...],
         item_index: int,
+        source_type_candidates: tuple[str, ...] = (),
     ) -> Any:
         if value is None:
             return None
@@ -1166,6 +1175,34 @@ class NodeExecutor:
                 )
             except DataTypeCatalogError as exc:
                 runtime_reasons.append(f"{candidate}: {exc}")
+
+        # Forwarded Any values can require a concrete catalog conversion. Inferred
+        # topology is only a candidate list: validate the actual retained value
+        # and its carrier before choosing a conversion, never an unchecked cast.
+        if any(decision.status == "runtime_check" for _, decision in decisions):
+            exact_type_id = str(getattr(value, "data_type_id", "") or "") or {
+                bool: BOOLEAN_DATA_TYPE_ID, int: INTEGER_DATA_TYPE_ID,
+                float: DOUBLE_DATA_TYPE_ID, str: STRING_DATA_TYPE_ID,
+            }.get(type(value), "")
+            ordered_types = sorted(source_type_candidates, key=lambda type_id: type_id != exact_type_id)
+            for actual_type_id in ordered_types:
+                actual_spec = self._data_types.get(actual_type_id)
+                if actual_spec is None:
+                    continue
+                try:
+                    self._data_types.validate_carrier(actual_type_id, value)
+                except DataTypeCatalogError:
+                    continue
+                decision = self._data_types.compatibility(actual_type_id, candidates[0], candidates[1:])
+                if decision.status != "convertible":
+                    continue
+                try:
+                    converted = self._data_types.convert_typed_input(actual_type_id, decision.matched_type_id, value)
+                    self._data_types.validate_carrier(decision.matched_type_id, converted)
+                    return converted
+                except DataTypeCatalogError as exc:
+                    runtime_reasons.append(f"{actual_type_id}->{decision.matched_type_id}: {exc}")
+                    break
 
         convertible = next(
             (

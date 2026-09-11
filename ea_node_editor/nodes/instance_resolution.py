@@ -8,7 +8,9 @@ from __future__ import annotations
 import copy
 from collections.abc import Mapping
 
-from ea_node_editor.runtime_contracts import DataTypeCatalog, DataTypeCatalogError
+from ea_node_editor.runtime_contracts import (
+    DataTypeCatalog, DataTypeCatalogError, GRAPH_DATA_TYPE_ID,
+)
 
 from . import property_coercion
 from .node_specs import NodeTypeSpec, PortSpec
@@ -126,6 +128,24 @@ def validate_port(
         )
 
 
+def validate_type_forwarding(type_id: str, ports: tuple[PortSpec, ...]) -> None:
+    """Validate relationships against the complete static or resolved interface."""
+    by_key = {port.key: port for port in ports}
+    for port in ports:
+        if not port.type_from_input:
+            continue
+        prefix = f"Node {type_id} port {port.key} type_from_input"
+        if port.direction != "out" or port.kind != "data" or port.data_type != GRAPH_DATA_TYPE_ID:
+            raise ValueError(f"{prefix} requires an Any data output")
+        source = by_key.get(port.type_from_input)
+        if source is None:
+            raise ValueError(f"{prefix} references missing input {port.type_from_input!r}")
+        if source.direction != "in" or source.kind != "data" or source.data_type != GRAPH_DATA_TYPE_ID:
+            raise ValueError(f"{prefix} must reference an Any data input")
+        if source.data_access != port.data_access:
+            raise ValueError(f"{prefix} requires matching input and output data_access")
+
+
 def resolve_dynamic_port_groups(
     spec: NodeTypeSpec,
     properties: Mapping[str, object],
@@ -205,6 +225,15 @@ def resolve_dynamic_port_groups(
         resolved_groups.append(ports)
         if group.property_editor is None:
             resolved_properties[group.property_key] = [port.key for port in ports]
+    validate_type_forwarding(
+        spec.type_id,
+        spec.ports + tuple(
+            port
+            for group, ports in zip(spec.dynamic_port_groups, resolved_groups, strict=True)
+            if group.property_editor is None
+            for port in ports
+        ),
+    )
     return tuple(resolved_groups)
 
 
@@ -225,7 +254,9 @@ def resolve_instance_ports(
         if group.property_editor is None
         for port in group_ports
     )
-    return spec.ports + dynamic_ports
+    ports = spec.ports + dynamic_ports
+    validate_type_forwarding(spec.type_id, ports)
+    return ports
 
 
 def resolve_instance_spec(
@@ -260,4 +291,5 @@ __all__ = [
     "resolve_instance_ports",
     "resolve_instance_spec",
     "validate_port",
+    "validate_type_forwarding",
 ]

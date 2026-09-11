@@ -9,12 +9,12 @@ from ea_node_editor.common.node_property_migrations import migrate_panel_propert
 from ea_node_editor.graph.effective_ports import (
     effective_ports,
     find_port,
-    ports_compatible,
     port_supports_incoming_edge,
     port_supports_outgoing_edge,
 )
 from ea_node_editor.graph.invariant_kernel import GraphInvariantKernel, RegistryEdgeResolution
-from ea_node_editor.graph.records import NodeInstance
+from ea_node_editor.graph.records import EdgeInstance, NodeInstance
+from ea_node_editor.graph.type_forwarding import GraphTypeResolver
 from ea_node_editor.graph.record_payloads import (
     edge_instance_from_mapping,
     edge_instance_to_mapping,
@@ -421,6 +421,13 @@ def graph_fragment_payload_is_valid(
         except (KeyError, ValueError):
             return False
 
+    resolver = GraphTypeResolver(
+        registry=registry, workspace_nodes=fragment_nodes,
+        workspace_edges=tuple(EdgeInstance(
+            str(index), edge["source_ref_id"], edge["source_port_key"],
+            edge["target_ref_id"], edge["target_port_key"], enabled=edge.get("enabled", True),
+        ) for index, edge in enumerate(raw_edges)),
+    )
     seen_connections: set[tuple[str, str, str, str]] = set()
     occupied_single_target_ports: set[tuple[str, str]] = set()
     for edge_payload in raw_edges:
@@ -449,11 +456,9 @@ def graph_fragment_payload_is_valid(
         if (
             not port_supports_outgoing_edge(source_port)
             or not port_supports_incoming_edge(target_port)
-            or not ports_compatible(
-                source_port,
-                target_port,
-                data_types=registry.data_types,
-            )
+            or not resolver.compatibility(
+                source_ref_id, edge_payload["source_port_key"], target_port,
+            ).is_compatible
         ):
             return False
         if not GraphInvariantKernel.accept_registry_edge(

@@ -39,7 +39,6 @@ from ea_node_editor.graph.effective_ports import (
     visible_ports,
 )
 from ea_node_editor.graph.hierarchy import is_node_in_scope, scope_parent_id
-from ea_node_editor.graph.invariant_kernel import GraphInvariantKernel
 from ea_node_editor.graph.records import NodeInstance
 from ea_node_editor.nodes.builtins.media_panel import MEDIA_PANEL_TYPE_ID
 from ea_node_editor.nodes.builtins.subnode import (
@@ -706,11 +705,11 @@ def remove_edge(self, edge_id: str) -> None:
     ):
         return
     history_before = self._capture_history_snapshot()
-    self._record_mutations().remove_edge(edge_id)
+    removed_edge_ids = self._validated_mutations().remove_edge(edge_id)
     related_edge_ids = self._scene_context.related_edge_ids_for_edges([edge])
     self._scene_context.publish_edge_topology_delta(
         updated_edge_ids=related_edge_ids,
-        removed_edge_ids={edge.edge_id},
+        removed_edge_ids=set(removed_edge_ids),
         dirty_node_ids={edge.source_node_id, edge.target_node_id},
     )
     self._record_history(ACTION_REMOVE_EDGE, history_before)
@@ -1591,47 +1590,18 @@ def set_edges_enabled(self, edge_ids: list[Any], enabled: bool) -> bool:
         return False
 
     mutations = self._validated_mutations()
-    if normalized_enabled:
-        requested_edge_id_set = set(requested_edge_ids)
-        temporary_edges = []
-        for edge in workspace.edges.values():
-            candidate = edge.clone()
-            if candidate.edge_id in requested_edge_id_set:
-                candidate.enabled = True
-            temporary_edges.append(candidate)
-        kernel = GraphInvariantKernel(
-            registry=mutations.registry,
-            workspace_nodes=workspace.nodes,
-            workspace_edges=temporary_edges,
-        )
-        try:
-            for edge_id in requested_edge_ids:
-                edge = workspace.edges[edge_id]
-                kernel.add_edge_or_raise(
-                    source_node_id=edge.source_node_id,
-                    source_port_key=edge.source_port_key,
-                    target_node_id=edge.target_node_id,
-                    target_port_key=edge.target_port_key,
-                )
-        except (KeyError, ValueError):
-            return False
-
     history_before = self._capture_history_snapshot()
-    record_mutations = self._record_mutations()
-    changed_edge_ids: set[str] = set()
-    dirty_node_ids: set[str] = set()
-    for edge_id in requested_edge_ids:
-        edge = workspace.edges.get(edge_id)
-        if edge is None:
-            continue
-        record_mutations.set_edge_enabled(edge_id, normalized_enabled)
-        changed_edge_ids.add(edge_id)
-        dirty_node_ids.update((edge.source_node_id, edge.target_node_id))
-    if not changed_edge_ids:
+    before_edges = dict(workspace.edges)
+    if not mutations.set_edges_enabled(requested_edge_ids, normalized_enabled):
         return False
-
+    removed_edge_ids = set(before_edges).difference(workspace.edges)
+    changed_edge_ids = set(requested_edge_ids).intersection(workspace.edges)
+    dirty_node_ids = {
+        node_id for edge_id in set(requested_edge_ids) | removed_edge_ids
+        for node_id in (before_edges[edge_id].source_node_id, before_edges[edge_id].target_node_id)
+    }
     self._scene_context.publish_edge_topology_delta(
-        updated_edge_ids=changed_edge_ids,
+        updated_edge_ids=changed_edge_ids, removed_edge_ids=removed_edge_ids,
         dirty_node_ids=dirty_node_ids,
     )
     self._record_history(ACTION_TOGGLE_EDGE_ENABLED, history_before)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager, nullcontext
+from functools import wraps
 import time
 from typing import TYPE_CHECKING, Any, Callable
 
@@ -12,6 +13,7 @@ from ea_node_editor.graph.hierarchy import ScopePath, is_node_in_scope
 from ea_node_editor.graph.model import GraphModel
 from ea_node_editor.graph.workspace_state import WorkspaceData, WorkspaceSnapshot
 from ea_node_editor.graph.records import EdgeInstance, NodeInstance
+from ea_node_editor.graph.type_forwarding import GraphTypeResolver
 from ea_node_editor.nodes.registry import NodeRegistry
 from ea_node_editor.nodes.node_specs import NodeTypeSpec
 from ea_node_editor.ui.graph_theme import GraphThemeDefinition
@@ -44,6 +46,35 @@ def _sync_surface_title(node: NodeInstance, spec: NodeTypeSpec) -> None:
     node.title = _synced_surface_title(node, spec)
 
 
+def _with_type_snapshot(publish):
+    """Resolve once for the entire publication, including any cache fallback."""
+    @wraps(publish)
+    def wrapped(self, *args, **kwargs):
+        workspace = self.workspace_or_none()
+        if self._publishing_types or workspace is None or self.registry is None:
+            return publish(self, *args, **kwargs)
+        resolver = GraphTypeResolver(
+            registry=self.registry, workspace_nodes=workspace.nodes, workspace_edges=workspace.edges.values(),
+        )
+        previous = self._published_source_contracts
+        current = resolver.source_contracts
+        self._changed_source_node_ids = {
+            endpoint[0] for endpoint in previous.keys() | current.keys()
+            if previous.get(endpoint) != current.get(endpoint)
+        }
+        self._publishing_types = True
+        try:
+            with self._payload_builder.type_snapshot(resolver):
+                result = publish(self, *args, **kwargs)
+            if result is not False:
+                self._published_source_contracts = current
+            return result
+        finally:
+            self._publishing_types = False
+            self._changed_source_node_ids = set()
+    return wrapped
+
+
 class _GraphSceneContext:
     def __init__(self, bridge: GraphSceneBridge, payload_builder: GraphScenePayloadBuilder) -> None:
         self._bridge = bridge
@@ -55,6 +86,26 @@ class _GraphSceneContext:
         self.interact_with_locked_objects = False
         self.selected_node_ids: list[str] = []
         self.selected_node_lookup: dict[str, bool] = {}
+        self._published_source_contracts = {}
+        self._changed_source_node_ids: set[str] = set()
+        self._publishing_types = False
+
+    def _forwarding_payload_delta(self) -> tuple[set[str], set[str], set[str]]:
+        """Include transitive type changes and edges pruned by the graph kernel."""
+        workspace = self.current_workspace()
+        cache = self._bridge._payload_cache
+        if not cache.indexes_valid:
+            cache.rebuild_indexes()
+        removed_edges = set(cache.edge_payload_by_id) - set(workspace.edges)
+        dirty_nodes = set(self._changed_source_node_ids)
+        for edge_id in removed_edges:
+            dirty_nodes.update(self._edge_payload_endpoint_node_ids(cache.edge_payload_by_id[edge_id]))
+        updated_edges = {
+            edge.edge_id for edge in workspace.edges.values()
+            if edge.edge_id in cache.edge_payload_by_id
+            and (edge.source_node_id in dirty_nodes or edge.target_node_id in dirty_nodes)
+        }
+        return dirty_nodes & self._payload_cache_sync.cached_node_payload_ids(), updated_edges, removed_edges
 
     def _set_node_delta_payload(
         self,
@@ -368,6 +419,7 @@ class _GraphSceneContext:
             edge_id=edge_id,
         )
 
+    @_with_type_snapshot
     def publish_edge_topology_delta(
         self,
         *,
@@ -391,6 +443,10 @@ class _GraphSceneContext:
         updated_ids = self._normalized_id_set(list(updated_edge_ids or set())) - removed_ids - added_ids
         removed_nodes = self._normalized_id_set(list(removed_node_ids or set()))
         dirty_nodes = self._normalized_id_set(list(dirty_node_ids or set())) | removed_nodes
+        forwarding_nodes, forwarding_edges, pruned_edges = self._forwarding_payload_delta()
+        dirty_nodes |= forwarding_nodes
+        removed_ids |= pruned_edges
+        updated_ids = (updated_ids | forwarding_edges) - removed_ids - added_ids
 
         timing_enabled = self.mutation_timing_enabled()
         payload_start = time.perf_counter()
@@ -479,6 +535,7 @@ class _GraphSceneContext:
             publication_path=publication_path,
         )
 
+    @_with_type_snapshot
     def publish_node_additions_delta(
         self,
         node_ids: set[str] | list[str] | tuple[str, ...],
@@ -844,6 +901,7 @@ class _GraphSceneContext:
         if callable(recorder):
             recorder(counter_name, amount, reason=reason)
 
+    @_with_type_snapshot
     def rebuild_models(self) -> None:
         timing_enabled = self.mutation_timing_enabled()
         if timing_enabled:
@@ -1076,6 +1134,7 @@ class _GraphSceneContext:
                 )
         return True
 
+    @_with_type_snapshot
     def publish_node_payload_delta(
         self,
         node_id: str,
@@ -1102,21 +1161,24 @@ class _GraphSceneContext:
 
         incident_edges = self.incident_edges_for_node(normalized_node_id)
         dirty_edge_ids = self.related_edge_ids_for_edges(incident_edges)
+        forwarding_nodes, forwarding_edges, pruned_edges = self._forwarding_payload_delta()
+        dirty_node_ids = {normalized_node_id} | forwarding_nodes
+        dirty_edge_ids |= forwarding_edges
 
         timing_enabled = self.mutation_timing_enabled()
         payload_start = time.perf_counter()
         changed_fields_by_node_id = (
             {normalized_node_id: changed_fields} if changed_fields is not None else None
         )
+        edge_payloads = self._payload_cache_sync.replace_cached_edge_payloads(dirty_edge_ids, pruned_edges)
         replacements = self._payload_cache_sync.replace_cached_full_node_payloads(
-            {normalized_node_id},
+            dirty_node_ids,
             changed_fields_by_node_id=changed_fields_by_node_id,
         )
         if replacements is None:
             self.rebuild_models()
             return True
         node_payloads, minimap_payloads = replacements
-        edge_payloads = self._payload_cache_sync.replace_cached_edge_payloads(dirty_edge_ids, set())
         if timing_enabled:
             self.record_mutation_timing_phase(
                 "payload_rebuild_ms",
@@ -1127,8 +1189,8 @@ class _GraphSceneContext:
             reason=edge_delta_reason,
             added_edge_ids=set(),
             updated_edge_ids=dirty_edge_ids,
-            removed_edge_ids=set(),
-            dirty_node_ids={normalized_node_id},
+            removed_edge_ids=pruned_edges,
+            dirty_node_ids=dirty_node_ids,
             removed_node_ids=set(),
         )
         cache.edge_delta_payload = delta_payload
@@ -1157,7 +1219,7 @@ class _GraphSceneContext:
                 visibility_may_change=False,
             )
             self._bridge.nodes_changed.emit()
-            if dirty_edge_ids:
+            if dirty_edge_ids or pruned_edges:
                 self._bridge.edges_changed.emit()
         finally:
             if timing_enabled:
