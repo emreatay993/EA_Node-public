@@ -8668,6 +8668,8 @@
         "refresh",
         "after",
         "attach",
+        "engineeringviewerwidgetbinder",
+        "nativewindow",
         "add",
         "presentation",
         "hold",

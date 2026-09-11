@@ -14,7 +14,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import PropertyMock, patch
 
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, Qt, pyqtSignal
 from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import QApplication, QWidget
 
@@ -1576,13 +1576,26 @@ class EngineeringViewerWidgetBinderTests(unittest.TestCase):
                 dataset_loader=lambda _path: _FakeDataset("mesh", [10]),
                 background_loading=False,
             )
+            native_before_attachment: list[bool] = []
+            set_parent = widget.setParent
 
-            with patch("pyvistaqt.QtInteractor", return_value=widget) as constructor:
+            def attach(parent: QWidget) -> None:
+                native_before_attachment.append(
+                    widget.testAttribute(Qt.WidgetAttribute.WA_NativeWindow)
+                )
+                set_parent(parent)
+
+            with (
+                patch("pyvistaqt.QtInteractor", return_value=widget) as constructor,
+                patch.object(widget, "setParent", side_effect=attach),
+            ):
                 bound = binder.bind_widget(_request(surface_path, container=container))
 
             self.assertIs(bound, widget)
             self.assertIsNone(constructor.call_args.kwargs["parent"])
             self.assertIs(widget.parent(), container)
+            self.assertEqual(native_before_attachment, [True])
+            self.assertTrue(widget.testAttribute(Qt.WidgetAttribute.WA_NativeWindow))
 
             binder.release_widget(
                 ViewerWidgetReleaseRequest(

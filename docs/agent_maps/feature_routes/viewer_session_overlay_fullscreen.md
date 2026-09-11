@@ -111,6 +111,10 @@ Use this for execution viewer sessions, native overlay lifecycle, fullscreen con
   post-attach result remains pending and is never published as a ready overlay;
   a terminal refresh failure releases the bad attachment and preserves the real
   host error.
+- `EngineeringViewerWidgetBinder` establishes `WA_NativeWindow` before parenting
+  an interactor into the host. This separates OpenGL viewer composition from a
+  Direct3D Qt Quick canvas, including QOpenGLWidget-based PyVistaQt interactors;
+  Qt owns native handles and context lifetime across subsequent reparenting.
 - Content fullscreen terminal shutdown disconnects scene topology/node/workspace and execution notifications, drops queued tabular identities, destroys the active Web bridge without close/export persistence, rejects late work, and cannot recreate lazy providers. Normal user close still owns authored video/Web state persistence before terminal project/window teardown.
 - Detached windows hold their session live through viewer presentation holds:
   `ViewerHostService.open_detached_viewer` acquires

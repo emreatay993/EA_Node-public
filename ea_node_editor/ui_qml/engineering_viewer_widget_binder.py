@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 from weakref import WeakKeyDictionary
 
-from PyQt6.QtCore import QObject, QTimer, pyqtSignal
+from PyQt6.QtCore import QObject, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import QApplication, QWidget
 
@@ -1084,16 +1084,16 @@ class EngineeringViewerWidgetBinder(QObject):
     ) -> QWidget:
         if self._is_reusable_interactor(current_widget):
             interactor = current_widget
+            self._mark_native_window_overlay(interactor)
             if container is not None and interactor.parent() is not container:
                 interactor.setParent(container)
-            self._mark_native_window_overlay(interactor)
             return interactor
         interactor = self._interactor_factory(container)
         if not isinstance(interactor, QWidget):
             raise TypeError("Model viewer interactor factory must return a QWidget instance.")
+        self._mark_native_window_overlay(interactor)
         if container is not None and interactor.parent() is not container:
             interactor.setParent(container)
-        self._mark_native_window_overlay(interactor)
         self._apply_canvas_background(interactor)
         self._widget_state[interactor] = _EngineeringWidgetState(backend_id=self.backend_id)
         return interactor
@@ -2927,6 +2927,10 @@ class EngineeringViewerWidgetBinder(QObject):
 
     @staticmethod
     def _mark_native_window_overlay(widget: QWidget) -> None:
+        # QOpenGLWidget-based interactors need a native surface before joining
+        # the Qt Quick host, whose compositor can use a different graphics API.
+        # Qt manages this boundary, including context lifetime during reparenting.
+        widget.setAttribute(Qt.WidgetAttribute.WA_NativeWindow, True)
         widget.setProperty(_NATIVE_WINDOW_OVERLAY_PROPERTY, True)
 
 
