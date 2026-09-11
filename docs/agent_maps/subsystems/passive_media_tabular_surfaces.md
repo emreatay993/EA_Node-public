@@ -22,6 +22,7 @@ Use this for passive node QML surfaces, media/image/video/PDF/mail panels, tabul
 
 ## Common Changes
 - Keep surface metric contracts and QML surface geometry aligned.
+- Board preview loading and freshness follow [Excalidraw Web Host And Real Editor](../feature_routes/excalidraw_web_host_real_editor.md). `GraphWebBoardPreviewViewport.qml` uses native image/empty/updating/unavailable states and hides stale images; its retry action opens the editor through the existing fullscreen surface action.
 - Reusable passive prose text uses `GraphRichTextBlock.qml` for markdown/plain rendering, source editing, grouped typography popovers, searchable font-family selection, and Text-only internal style copy/paste. `GraphBareTextSurface.qml` wraps that shared block for the chrome-free annotation text node.
 - `GraphRichTextBlock.qml` also owns app-created `corex-link:<link_id>` Markdown anchors for node-link hover/open behavior and delete unwrap while preserving ordinary user Markdown links.
 - Rich-text slot fields are real node properties on adopter nodes: existing non-bare prose defaults to `plain` plus inherited style sentinels, while bare annotation text keeps its existing unprefixed `format` and style properties.

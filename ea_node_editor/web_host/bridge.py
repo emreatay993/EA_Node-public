@@ -13,7 +13,8 @@ import re
 import stat
 from typing import Any
 
-from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QBuffer, QByteArray, QIODevice, QObject, pyqtProperty, pyqtSignal, pyqtSlot
+from PyQt6.QtGui import QImageReader
 
 from ea_node_editor.common.artifact_refs import ManagedArtifactRef, parse_artifact_ref
 from ea_node_editor.persistence.artifact_store import ProjectArtifactStore, StagedArtifactEntry
@@ -35,6 +36,7 @@ _SUPPORTED_IMAGE_MIME_TYPES = {
     "image/webp": ".webp",
 }
 _PREVIEW_MIME_TYPE = "image/png"
+MAX_PREVIEW_EDGE = 2048
 
 
 class _SceneStateValidationError(ValueError):
@@ -262,6 +264,7 @@ class WebSurfaceArtifactService:
         height: int,
         name: str = "",
         artifact_scope: str = "",
+        on_staged: Callable[[WebSurfaceAssetWriteResult], bool] | None = None,
     ) -> WebSurfaceAssetWriteResult:
         if mime_type != _PREVIEW_MIME_TYPE:
             raise WebSurfaceArtifactError("Preview export must be an image/png data URL.")
@@ -283,12 +286,15 @@ class WebSurfaceArtifactService:
                 sha256=digest,
                 size=len(payload),
                 name=name,
-            )
+            ),
+            on_staged=on_staged,
         )
 
     def stage_artifacts(
         self,
         pending_writes: tuple[_PendingArtifactWrite, ...] | list[_PendingArtifactWrite],
+        *,
+        on_staged: Callable[[tuple[WebSurfaceAssetWriteResult, ...]], bool] | None = None,
     ) -> tuple[WebSurfaceAssetWriteResult, ...]:
         if not pending_writes:
             return ()
@@ -378,6 +384,8 @@ class WebSurfaceArtifactService:
                     )
                 )
             self._persist_store_metadata(store)
+            if on_staged is not None and on_staged(tuple(results)) is not True:
+                raise WebSurfaceArtifactError("Preview reference could not be saved to the drawing node.")
         except Exception as exc:  # noqa: BLE001 - cleanup must not mask the original failure
             self._rollback_staged_artifacts(
                 store,
@@ -392,8 +400,14 @@ class WebSurfaceArtifactService:
             raise WebSurfaceArtifactError("Artifact payload could not be written.") from exc
         return tuple(results)
 
-    def stage_artifact(self, pending_write: _PendingArtifactWrite) -> WebSurfaceAssetWriteResult:
-        return self.stage_artifacts((pending_write,))[0]
+    def stage_artifact(
+        self, pending_write: _PendingArtifactWrite, *,
+        on_staged: Callable[[WebSurfaceAssetWriteResult], bool] | None = None,
+    ) -> WebSurfaceAssetWriteResult:
+        return self.stage_artifacts(
+            (pending_write,),
+            on_staged=(lambda results: on_staged(results[0])) if on_staged is not None else None,
+        )[0]
 
     def _rollback_staged_artifacts(
         self,
@@ -634,6 +648,7 @@ class WebSurfaceBridge(QObject):
     @pyqtSlot("QVariant", result="QVariantMap")
     def export_preview(self, payload: Any = None) -> dict[str, Any]:
         if self._artifact_service is None:
+            self._set_error("Preview export is not connected.")
             return {
                 "ok": False,
                 "preview_ref": "",
@@ -650,8 +665,12 @@ class WebSurfaceBridge(QObject):
             result = self._artifact_service.stage_preview(
                 **preview_payload,
                 artifact_scope=self._artifact_scope,
+                on_staged=lambda staged: self._accept_preview_result(
+                    _preview_result_payload(staged, preview_payload["width"], preview_payload["height"])
+                ),
             )
         except WebSurfaceArtifactError as exc:
+            self._set_error(str(exc))
             return {
                 "ok": False,
                 "preview_ref": "",
@@ -663,17 +682,11 @@ class WebSurfaceBridge(QObject):
                 "sha256": "",
                 "error": str(exc),
             }
-        return {
-            "ok": True,
-            "preview_ref": result.artifact_ref,
-            "artifact_ref": result.artifact_ref,
-            "mime_type": result.mime_type,
-            "width": preview_payload["width"],
-            "height": preview_payload["height"],
-            "size": result.size,
-            "sha256": result.sha256,
-            "error": "",
-        }
+        self._clear_error()
+        return _preview_result_payload(result, preview_payload["width"], preview_payload["height"])
+
+    def _accept_preview_result(self, result: dict[str, Any]) -> bool:
+        return True
 
     def _set_error(self, message: str) -> None:
         normalized = str(message or "Scene state could not be saved.")
@@ -694,6 +707,14 @@ def _normalize_payload_limit(value: int) -> int:
     if limit < 1:
         raise ValueError("max_payload_bytes must be at least 1")
     return limit
+
+
+def _preview_result_payload(result: WebSurfaceAssetWriteResult, width: int, height: int) -> dict[str, Any]:
+    return {
+        "ok": True, "preview_ref": result.artifact_ref, "artifact_ref": result.artifact_ref,
+        "mime_type": result.mime_type, "width": width, "height": height,
+        "size": result.size, "sha256": result.sha256, "error": "",
+    }
 
 
 def _normalize_scene_state(
@@ -921,6 +942,21 @@ def _preview_export_payload(payload: Any, *, max_payload_bytes: int) -> dict[str
         supported_mime_types={_PREVIEW_MIME_TYPE: ".png"},
         max_payload_bytes=max_payload_bytes,
     )
+    # Check the header size before decoding, then decode the complete PNG. MIME
+    # labels, signatures and caller-supplied dimensions alone are not evidence.
+    device = QBuffer()
+    device.setData(QByteArray(decoded.data))
+    device.open(QIODevice.OpenModeFlag.ReadOnly)
+    reader = QImageReader(device, b"png")
+    size = reader.size()
+    if not size.isValid() or max(size.width(), size.height()) > MAX_PREVIEW_EDGE:
+        raise WebSurfaceArtifactError("Preview must be a valid PNG with a maximum edge of 2048 pixels.")
+    image = reader.read()
+    if image.isNull():
+        raise WebSurfaceArtifactError("Preview PNG is corrupt or incomplete.")
+    if (width and width != image.width()) or (height and height != image.height()):
+        raise WebSurfaceArtifactError("Preview dimensions do not match the PNG.")
+    width, height = image.width(), image.height()
     return {
         "payload": decoded.data,
         "mime_type": decoded.mime_type,

@@ -24,6 +24,8 @@ implementation studies are intentionally excluded.
 
 The viewer-session route owns the engineering interactor's native surface boundary, established before host attachment so OpenGL viewers can coexist with the Qt Quick graphics backend.
 
+The [board editor route](feature_routes/excalidraw_web_host_real_editor.md) owns snapshot debounce/export/close coordination, revision-gated artifact commits, visual-content identity across project saves, and native canvas freshness/error states. Stale snapshots are hidden immediately after edits; the editor is the only drawing renderer.
+
 Panel value interpretation spans the passive surface editor/badge, data-control runtime, and project/fragment property migration. The passive surfaces map owns UI/runtime evidence; serialization migration owns the legacy flag conversion.
 
 Shared node-toolbar Expand/Collapse and Run-options icons are owned by the floating-toolbar route and the shell icon registry.

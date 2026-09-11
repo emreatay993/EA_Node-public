@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import gc
 import hashlib
+import copy
 import json
 from pathlib import Path
 import tempfile
@@ -10,7 +11,11 @@ from typing import Any
 import unittest
 from unittest import mock
 
-from PyQt6.QtCore import QObject, QPointF, QMarginsF, QRectF, Qt, QUrl, pyqtSignal
+from tests.web_snapshot_test_support import png_bytes
+from ea_node_editor.common.board_snapshot import board_scene_digest
+from ea_node_editor.web_host.bridge import WebSurfaceArtifactError
+
+from PyQt6.QtCore import Q_ARG, Q_RETURN_ARG, QMetaObject, QObject, QPointF, QMarginsF, QRectF, Qt, QUrl, pyqtSignal
 from PyQt6.QtGui import QImage, QPainter, QPageLayout, QPageSize, QPdfWriter
 from PyQt6.QtTest import QTest
 from PyQt6.QtWidgets import QApplication
@@ -1647,7 +1652,7 @@ class ContentFullscreenBridgeRemainingTests(_ContentFullscreenDirectTestCase):
         self.assertNotIn(TABULAR_TABLE_VIEW_STATE_PROPERTY, node.properties)
         self.assertNotIn(TABULAR_SELECTED_COLUMNS_PROPERTY, node.properties)
 
-    def test_content_fullscreen_web_editor_save_updates_excalidraw_state_only(self) -> None:
+    def test_content_fullscreen_web_editor_save_updates_drawing_and_hides_previous_preview(self) -> None:
         node_id, _state, preview_ref = self._add_excalidraw_node()
         workspace_id = self.workspace_id
         bridge = self._bridge()
@@ -1667,7 +1672,8 @@ class ContentFullscreenBridgeRemainingTests(_ContentFullscreenDirectTestCase):
 
         node = self.model.project.workspaces[workspace_id].nodes[node_id]
         self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], updated_state)
-        self.assertEqual(node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY], preview_ref)
+        self.assertEqual(node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]["status"], "updating")
+        self.assertEqual(node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]["uri"], preview_ref["uri"])
         self.assertEqual(bridge.web_surface_bridge.load_state(), updated_state)
 
     def test_content_fullscreen_web_editor_save_uses_project_artifact_callbacks(self) -> None:
@@ -1727,7 +1733,7 @@ class ContentFullscreenBridgeRemainingTests(_ContentFullscreenDirectTestCase):
         before_revision = self.model.project.project_document_revision
         self.project_metadata_events.clear()
 
-        preview_payload = b"\x89PNG\r\n\x1a\nfullscreen-preview"
+        preview_payload = png_bytes()
         preview_hash = hashlib.sha256(preview_payload).hexdigest()
         project = self.model.project
         replace_metadata_impl = ProjectData.replace_metadata
@@ -1740,8 +1746,10 @@ class ContentFullscreenBridgeRemainingTests(_ContentFullscreenDirectTestCase):
             ) as replace_metadata,
             mock.patch.object(self.serializer, "save") as save_project,
         ):
-            result = web_bridge.export_preview(
+            web_bridge.snapshot_status({"revision": 0, "state": "updating", "attempt": "test"})
+            result = web_bridge.commit_snapshot(
                 {
+                    "revision": 0, "attempt": "test",
                     "dataURL": _data_url("image/png", preview_payload),
                     "width": 640,
                     "height": 360,
@@ -1752,7 +1760,7 @@ class ContentFullscreenBridgeRemainingTests(_ContentFullscreenDirectTestCase):
             save_project.assert_not_called()
 
         self.assertTrue(result["ok"])
-        bridge.finish_web_editor_close(result)
+        web_bridge.finish_close(result)
         self.app.processEvents()
 
         self.assertFalse(bridge.open)
@@ -1790,33 +1798,37 @@ class ContentFullscreenBridgeRemainingTests(_ContentFullscreenDirectTestCase):
         self.assertTrue(bridge.request_open_node(first_node_id))
         first_web_bridge = bridge.web_surface_bridge
         self.assertIsInstance(first_web_bridge, WebSurfaceBridge)
-        first_payload = b"\x89PNG\r\n\x1a\nfirst-fullscreen-board-preview"
-        first_result = first_web_bridge.export_preview(
+        first_payload = png_bytes(color="#ff0000")
+        first_web_bridge.snapshot_status({"revision": 0, "state": "updating", "attempt": "test"})
+        first_result = first_web_bridge.commit_snapshot(
             {
-                "dataURL": _data_url("image/png", first_payload),
+                "revision": 0, "attempt": "test",
+                    "dataURL": _data_url("image/png", first_payload),
                 "width": 640,
                 "height": 360,
                 "name": "first-fullscreen-preview.png",
             }
         )
         self.assertTrue(first_result["ok"])
-        bridge.finish_web_editor_close(first_result)
+        first_web_bridge.finish_close(first_result)
         self.app.processEvents()
 
         self.assertTrue(bridge.request_open_node(second_node_id))
         second_web_bridge = bridge.web_surface_bridge
         self.assertIsInstance(second_web_bridge, WebSurfaceBridge)
-        second_payload = b"\x89PNG\r\n\x1a\nsecond-fullscreen-board-preview"
-        second_result = second_web_bridge.export_preview(
+        second_payload = png_bytes(color="#00ff00")
+        second_web_bridge.snapshot_status({"revision": 0, "state": "updating", "attempt": "test"})
+        second_result = second_web_bridge.commit_snapshot(
             {
-                "dataURL": _data_url("image/png", second_payload),
+                "revision": 0, "attempt": "test",
+                    "dataURL": _data_url("image/png", second_payload),
                 "width": 640,
                 "height": 360,
                 "name": "second-fullscreen-preview.png",
             }
         )
         self.assertTrue(second_result["ok"])
-        bridge.finish_web_editor_close(second_result)
+        second_web_bridge.finish_close(second_result)
         self.app.processEvents()
 
         first_node = self.model.project.workspaces[workspace_id].nodes[first_node_id]
@@ -1853,311 +1865,299 @@ class ContentFullscreenBridgeRemainingTests(_ContentFullscreenDirectTestCase):
         self.assertEqual(first_path.read_bytes(), first_payload)
         self.assertEqual(second_path.read_bytes(), second_payload)
 
-    def test_content_fullscreen_web_editor_close_export_persists_scene_state_from_payload(self) -> None:
-        project_path = self.temp_path / "fullscreen-close-state-board.cxproj"
-        self.project_path = str(project_path)
-        node_id, _state, _preview_ref = self._add_excalidraw_node()
-        workspace_id = self.workspace_id
+    def test_web_snapshot_storage_failure_preserves_drawing_and_hidden_last_good_png(self) -> None:
+        node_id, _state, _ref = self._add_excalidraw_node()
         bridge = self._bridge()
         self.assertTrue(bridge.request_open_node(node_id))
-        web_bridge = bridge.web_surface_bridge
-        self.assertIsInstance(web_bridge, WebSurfaceBridge)
-
-        updated_state = {
-            "type": "excalidraw",
-            "elements": [{"id": "freehand-1", "type": "freedraw", "isDeleted": False}],
-            "appState": {"name": "Close persisted board"},
-            "files": {},
-        }
-        preview_payload = b"\x89PNG\r\n\x1a\nfullscreen-close-state-preview"
-        result = web_bridge.export_preview(
-            {
-                "dataURL": _data_url("image/png", preview_payload),
-                "width": 800,
-                "height": 480,
-                "name": "fullscreen-close-state-preview.png",
-                "scene_state": updated_state,
-            }
-        )
-
-        self.assertTrue(result["ok"])
-        self.app.processEvents()
-        node = self.model.project.workspaces[workspace_id].nodes[node_id]
-        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], updated_state)
-
-        bridge.finish_web_editor_close(result)
-        self.app.processEvents()
-
-        self.assertFalse(bridge.open)
-        node = self.model.project.workspaces[workspace_id].nodes[node_id]
-        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], updated_state)
-        self.assertEqual(
-            node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]["artifact_ref"],
-            result["preview_ref"],
-        )
-
-    def test_content_fullscreen_web_editor_export_signal_includes_close_scene_payload(self) -> None:
-        project_path = self.temp_path / "fullscreen-close-signal-board.cxproj"
-        self.project_path = str(project_path)
-        node_id, _state, _preview_ref = self._add_excalidraw_node()
-        bridge = self._bridge()
-        self.assertTrue(bridge.request_open_node(node_id))
-        web_bridge = bridge.web_surface_bridge
-        self.assertIsInstance(web_bridge, WebSurfaceBridge)
-
-        emitted: list[dict[str, object]] = []
-        web_bridge.preview_export_finished.connect(lambda result: emitted.append(result))
-
-        updated_state = {
-            "type": "excalidraw",
-            "elements": [{"id": "signal-freedraw-1", "type": "freedraw", "isDeleted": False}],
-            "appState": {"name": "Signal close payload"},
-            "files": {},
-        }
-        preview_payload = b"\x89PNG\r\n\x1a\nfullscreen-close-signal-preview"
-        result = web_bridge.export_preview(
-            {
-                "dataURL": _data_url("image/png", preview_payload),
-                "width": 640,
-                "height": 360,
-                "name": "fullscreen-close-signal-preview.png",
-                "scene_state": updated_state,
-            }
-        )
-        self.app.processEvents()
-
-        self.assertTrue(result["ok"])
-        self.assertEqual(result["scene_state"], updated_state)
-        self.assertEqual(result["host_payload"]["scene_state"], updated_state)
-        self.assertEqual(len(emitted), 1)
-        self.assertEqual(emitted[0]["preview_ref"], result["preview_ref"])
-        self.assertEqual(emitted[0]["scene_state"], updated_state)
-        self.assertEqual(emitted[0]["host_payload"]["scene_state"], updated_state)
-
-    def test_content_fullscreen_web_editor_close_materializes_host_payload_without_webchannel(self) -> None:
-        project_path = self.temp_path / "fullscreen-host-payload-board.cxproj"
-        self.project_path = str(project_path)
-        node_id, _state, _preview_ref = self._add_excalidraw_node()
-        workspace_id = self.workspace_id
-        bridge = self._bridge()
-        self.assertTrue(bridge.request_open_node(node_id))
-
-        updated_state = {
-            "type": "excalidraw",
-            "elements": [{"id": "offline-rect-1", "type": "rectangle", "isDeleted": False}],
-            "appState": {"name": "Offline close payload"},
-            "files": {},
-        }
-        preview_payload = b"\x89PNG\r\n\x1a\noffline-close-preview"
-        preview_hash = hashlib.sha256(preview_payload).hexdigest()
-
-        bridge.finish_web_editor_close(
-            {
-                "ok": False,
-                "error": "Preview export did not return a bridge response.",
-                "host_payload": {
-                    "dataURL": _data_url("image/png", preview_payload),
-                    "width": 512,
-                    "height": 320,
-                    "name": "offline-close-preview.png",
-                    "scene_state": updated_state,
-                },
-            }
-        )
-        self.app.processEvents()
-
-        self.assertFalse(bridge.open)
-        node = self.model.project.workspaces[workspace_id].nodes[node_id]
-        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], updated_state)
-        preview_ref = node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]
-        self.assertEqual(preview_ref["mime_type"], "image/png")
-        self.assertEqual(preview_ref["width"], 512)
-        self.assertEqual(preview_ref["height"], 320)
-        self.assertEqual(preview_ref["sha256"], preview_hash)
-
+        web = bridge.web_surface_bridge
+        web.snapshot_status({"revision": 0, "state": "updating", "attempt": "first"})
+        first = web.commit_snapshot({"revision": 0, "attempt": "first", "data_url": _data_url("image/png", png_bytes())})
+        self.assertTrue(first["ok"])
         store = self._project_artifact_store()
-        preview_path = store.resolve_staged_path(preview_ref["artifact_ref"])
-        self.assertIsNotNone(preview_path)
-        self.assertEqual(preview_path.read_bytes(), preview_payload)
+        old_path = store.resolve_staged_path(first["artifact_ref"])
+        old_bytes = old_path.read_bytes()
+        current = {"elements": [{"id": "new-shape", "type": "rectangle"}], "appState": {}, "files": {}}
+        web.note_revision(1)
+        node = self.model.project.workspaces[self.workspace_id].nodes[node_id]
+        self.assertEqual(node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]["status"], "updating")
+        self.assertTrue(web.save_scene({"revision": 1, "scene_state": current}))
+        web.snapshot_status({"revision": 1, "state": "closing", "attempt": "failed"})
+        with mock.patch.object(web._artifact_service, "stage_preview", side_effect=WebSurfaceArtifactError("Disk full")):
+            failed = web.commit_snapshot({"revision": 1, "attempt": "failed", "data_url": _data_url("image/png", png_bytes(color="#ff0000"))})
+        self.assertFalse(failed["ok"])
+        self.assertFalse(web.finish_close(failed))
+        self.assertTrue(bridge.open)
+        self.assertEqual(web.last_error, "Disk full")
+        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], current)
+        hidden = node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]
+        self.assertEqual(hidden["artifact_ref"], first["artifact_ref"])
+        self.assertEqual(hidden["status"], "error")
+        self.assertEqual(old_path.read_bytes(), old_bytes)
+        web.snapshot_status({"revision": 1, "state": "closing", "attempt": "retry"})
+        retried = web.commit_snapshot({"revision": 1, "attempt": "retry", "data_url": _data_url("image/png", png_bytes(color="#ff0000"))})
+        self.assertTrue(web.finish_close(retried))
+        self.assertFalse(bridge.open)
+        self.assertEqual(node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]["scene_sha256"], board_scene_digest(current))
 
-    def test_content_fullscreen_web_editor_close_preview_failure_keeps_last_preview_ref(self) -> None:
-        project_path = self.temp_path / "fullscreen-keep-preview-board.cxproj"
-        self.project_path = str(project_path)
-        node_id, _state, _preview_ref = self._add_excalidraw_node()
-        workspace_id = self.workspace_id
+    def test_web_snapshot_rejects_stale_scene_and_late_attempt_without_storage(self) -> None:
+        node_id, initial, _ref = self._add_excalidraw_node()
         bridge = self._bridge()
         self.assertTrue(bridge.request_open_node(node_id))
-        web_bridge = bridge.web_surface_bridge
-        self.assertIsInstance(web_bridge, WebSurfaceBridge)
+        web = bridge.web_surface_bridge
+        web.snapshot_status({"revision": 0, "state": "updating", "attempt": "old"})
+        web.note_revision(1)
+        current = {"elements": [{"id": "new", "type": "rectangle"}]}
+        self.assertTrue(web.save_scene({"revision": 1, "scene_state": current}))
+        with mock.patch.object(web._artifact_service, "stage_preview") as stage:
+            self.assertFalse(web.save_scene({"revision": 0, "scene_state": initial}))
+            self.assertTrue(web.commit_snapshot({"revision": 0, "attempt": "old"})["stale"])
+            web.snapshot_status({"revision": 1, "state": "updating", "attempt": "retry"})
+            self.assertTrue(web.commit_snapshot({"revision": 1, "attempt": "old"})["stale"])
+            stage.assert_not_called()
+        self.assertEqual(web.load_state(), current)
+        self.assertTrue(bridge.open)
 
-        preview_payload = b"\x89PNG\r\n\x1a\nexisting-close-preview"
-        result = web_bridge.export_preview(
-            {
-                "dataURL": _data_url("image/png", preview_payload),
-                "width": 640,
-                "height": 360,
-                "name": "existing-close-preview.png",
-            }
+    def test_web_snapshot_close_request_requires_saved_current_revision(self) -> None:
+        node_id, _state, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(node_id))
+        web = bridge.web_surface_bridge
+        requested = []
+        web.close_requested.connect(lambda: requested.append(True))
+        bridge.request_close()
+        self.assertEqual(requested, [True])
+        self.assertTrue(bridge.open)
+        web.note_revision(1)
+        web.snapshot_status({"revision": 1, "state": "closing", "attempt": "pending"})
+        self.assertTrue(web.commit_snapshot({"revision": 1, "attempt": "pending"})["stale"])
+        self.assertFalse(web.finish_close({"ok": True, "revision": 1}))
+        self.assertTrue(bridge.open)
+
+    def test_web_snapshot_meta_object_dispatch_runs_revision_gate_and_persistence(self) -> None:
+        node_id, _state, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(node_id))
+        web = bridge.web_surface_bridge
+        meta = web.metaObject()
+        methods = [bytes(meta.method(index).name()).decode() for index in range(meta.methodCount())]
+        self.assertEqual(methods.count("commit_snapshot"), 1)
+        web.snapshot_status({"revision": 0, "state": "updating", "attempt": "qt"})
+        result = QMetaObject.invokeMethod(
+            web, "commit_snapshot", Qt.ConnectionType.DirectConnection,
+            Q_RETURN_ARG("QVariantMap"),
+            Q_ARG("QVariant", {"revision": 0, "attempt": "qt", "data_url": _data_url("image/png", png_bytes())}),
         )
         self.assertTrue(result["ok"])
-        self.app.processEvents()
-        node = self.model.project.workspaces[workspace_id].nodes[node_id]
-        preview_ref = node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]
+        self.assertEqual(web.snapshot_state, "ready")
+        node = self.model.project.workspaces[self.workspace_id].nodes[node_id]
+        self.assertEqual(node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]["artifact_ref"], result["artifact_ref"])
 
-        bridge.finish_web_editor_close({"ok": False, "error": "Preview export timed out."})
-        self.app.processEvents()
-
-        self.assertFalse(bridge.open)
-        node = self.model.project.workspaces[workspace_id].nodes[node_id]
-        self.assertEqual(node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY], preview_ref)
-
-    def test_content_fullscreen_web_editor_close_failure_refreshes_preview_after_edits(self) -> None:
-        project_path = self.temp_path / "fullscreen-refresh-preview-board.cxproj"
-        self.project_path = str(project_path)
-        node_id, _state, _preview_ref = self._add_excalidraw_node()
-        workspace_id = self.workspace_id
+    def test_web_editor_retarget_keeps_pending_scene_owner_until_explicit_close(self) -> None:
+        node_id, _state, _ref = self._add_excalidraw_node()
+        other_id, _state, _ref = self._add_excalidraw_node()
         bridge = self._bridge()
         self.assertTrue(bridge.request_open_node(node_id))
-        web_bridge = bridge.web_surface_bridge
-        self.assertIsInstance(web_bridge, WebSurfaceBridge)
+        web = bridge.web_surface_bridge
+        web.note_revision(1)
+        self.assertFalse(bridge.request_open_node(other_id))
+        self.assertIs(bridge.web_surface_bridge, web)
+        self.assertEqual(bridge.node_id, node_id)
+        self.assertIn("Close this drawing editor", web.last_error)
+        self.assertTrue(bridge.request_open_node(node_id))
+        self.assertIs(bridge.web_surface_bridge, web)
 
-        preview_payload = b"\x89PNG\r\n\x1a\ninitial-refresh-preview"
-        initial_result = web_bridge.export_preview(
-            {
-                "dataURL": _data_url("image/png", preview_payload),
-                "width": 640,
-                "height": 360,
-                "name": "initial-refresh-preview.png",
-            }
+    def test_web_editor_content_equivalent_scene_refresh_keeps_bridge(self) -> None:
+        node_id, state, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(node_id))
+        web = bridge.web_surface_bridge
+        state = copy.deepcopy(state)
+        state.setdefault("appState", {})["scrollX"] = 999
+        self.scene.set_node_property(node_id, EXCALIDRAW_STATE_PROPERTY, state)
+        self.app.processEvents()
+        self.assertIs(bridge.web_surface_bridge, web)
+
+    def test_web_snapshot_empty_board_requires_no_renderer_or_artifact(self) -> None:
+        node_id, _state, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(node_id))
+        web = bridge.web_surface_bridge
+        web.note_revision(1)
+        self.assertTrue(web.save_scene({"revision": 1, "scene_state": {"elements": []}}))
+        web.snapshot_status({"revision": 1, "state": "closing", "attempt": "empty"})
+        with mock.patch.object(web._artifact_service, "stage_preview") as stage:
+            result = web.commit_snapshot({"revision": 1, "attempt": "empty", "empty": True})
+            stage.assert_not_called()
+        self.assertTrue(web.finish_close(result))
+        self.assertFalse(bridge.open)
+        node = self.model.project.workspaces[self.workspace_id].nodes[node_id]
+        self.assertEqual(node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]["status"], "empty")
+        self.assertNotIn("artifact_ref", node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY])
+
+    def test_web_snapshot_digest_survives_artifact_promotion_and_editor_metadata(self) -> None:
+        state = {"elements": [{"type": "image", "fileId": "f", "x": 12, "version": 1}], "files": {"f": {"sha256": "abc", "artifact_ref": "temp://img", "mimeType": "image/png", "lastRetrieved": 1}}, "appState": {"viewBackgroundColor": "#ffffff", "scrollX": 12}}
+        saved = copy.deepcopy(state)
+        saved["files"]["f"].update(artifact_ref="saved://renamed-img", lastRetrieved=1234, name="renamed.png")
+        saved["elements"][0]["version"] = 2
+        saved["appState"].update(scrollX=999, selectedElementIds={"image": True})
+        self.assertEqual(board_scene_digest(state), board_scene_digest(saved))
+        saved["elements"][0]["x"] = 13
+        self.assertNotEqual(board_scene_digest(state), board_scene_digest(saved))
+
+    def test_web_snapshot_save_ack_requires_actual_graph_property_commit(self) -> None:
+        node_id, original, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(node_id))
+        web = bridge.web_surface_bridge
+        web.note_revision(1)
+        changed = {"elements": [{"id": "new", "type": "rectangle"}]}
+        with mock.patch.object(self.scene, "set_node_property", side_effect=RuntimeError("mutation rejected")):
+            self.assertFalse(web.save_scene({"revision": 1, "scene_state": changed}))
+            self.assertFalse(web.finish_without_preview({"revision": 1, "action": "close"}))
+            self.assertFalse(web.finish_close({"ok": True, "revision": 1}))
+        self.assertTrue(bridge.open)
+        node = self.model.project.workspaces[self.workspace_id].nodes[node_id]
+        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], original)
+        self.assertTrue(web.save_scene({"revision": 1, "scene_state": changed}))
+        self.assertTrue(web.finish_without_preview({"revision": 1, "action": "close"}))
+        self.assertFalse(bridge.open)
+        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], changed)
+
+    def test_web_snapshot_reference_commit_failure_rolls_back_artifact_replacement(self) -> None:
+        node_id, _state, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(node_id))
+        web = bridge.web_surface_bridge
+        web.snapshot_status({"revision": 0, "state": "updating", "attempt": "first"})
+        first = web.commit_snapshot({"revision": 0, "attempt": "first", "data_url": _data_url("image/png", png_bytes())})
+        self.assertTrue(first["ok"])
+        store = self._project_artifact_store()
+        old_path = store.resolve_staged_path(first["artifact_ref"])
+        old_bytes = old_path.read_bytes()
+        original_metadata = copy.deepcopy(store.metadata)
+        web.snapshot_status({"revision": 0, "state": "updating", "attempt": "next"})
+        with mock.patch.object(self.scene, "set_node_property", side_effect=RuntimeError("mutation rejected")):
+            result = web.commit_snapshot({"revision": 0, "attempt": "next", "data_url": _data_url("image/png", png_bytes(color="#ff0000"))})
+        self.assertFalse(result["ok"])
+        self.assertEqual(store.metadata, original_metadata)
+        self.assertEqual(old_path.read_bytes(), old_bytes)
+        self.assertTrue(bridge.open)
+
+    def test_retired_web_editor_cannot_write_to_or_close_new_owner(self) -> None:
+        first_id, _state, _ref = self._add_excalidraw_node()
+        second_id, _state, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(first_id))
+        old = bridge.web_surface_bridge
+        bridge._complete_close()
+        self.assertTrue(bridge.request_open_node(second_id))
+        node = self.model.project.workspaces[self.workspace_id].nodes[second_id]
+        before = copy.deepcopy(node.properties)
+        old.snapshot_status({"revision": 0, "state": "error", "error": "Late first editor failure"})
+        old.note_revision(99)
+        self.assertFalse(old.save_scene({"revision": 0, "scene_state": {}}))
+        self.assertFalse(old.commit_snapshot({"revision": 0, "attempt": "old"})["ok"])
+        self.assertFalse(old.finish_without_preview({"revision": 0, "action": "close"}))
+        old.close_ready.emit()
+        self.assertTrue(bridge.open)
+        self.assertEqual(bridge.node_id, second_id)
+        self.assertEqual(node.properties, before)
+
+    def test_unstarted_web_editor_can_close_but_started_draft_requires_ack(self) -> None:
+        node_id, _state, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(node_id))
+        self.assertTrue(bridge.web_surface_bridge.recover_unstarted_editor("close"))
+        self.assertFalse(bridge.open)
+        self.assertTrue(bridge.request_open_node(node_id))
+        web = bridge.web_surface_bridge
+        self.assertTrue(web.start_editor())
+        web.note_revision(1)
+        self.assertFalse(web.recover_unstarted_editor("close"))
+        self.assertFalse(web.finish_without_preview({"revision": 1, "action": "reload"}))
+        self.assertTrue(bridge.open)
+        self.assertTrue(web.save_scene({"revision": 1, "scene_state": {"elements": []}}))
+        self.assertTrue(web.finish_without_preview({"revision": 1, "action": "reload"}))
+        self.assertTrue(bridge.open)
+        self.assertIsNot(bridge.web_surface_bridge, web)
+        self.assertFalse(web.start_editor())
+
+    def test_interrupted_snapshot_session_restores_as_actionable_error(self) -> None:
+        from ea_node_editor.ui_qml.graph_scene_payload import GraphScenePayloadBuilder
+
+        node_id, _state, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(node_id))
+        bridge.web_surface_bridge.note_revision(1)
+        restored = GraphModel(self.serializer.from_document(self.serializer.to_document(self.model.project)))
+        nodes, *_rest = GraphScenePayloadBuilder().rebuild_partitioned_models(
+            model=restored, registry=self.registry, workspace_id=self.workspace_id,
+            scope_path=(), graph_theme_bridge=None,
         )
-        self.assertTrue(initial_result["ok"])
-        self.app.processEvents()
-        node = self.model.project.workspaces[workspace_id].nodes[node_id]
-        initial_preview_ref = node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]
+        ref = next(node for node in nodes if node["node_id"] == node_id)["properties"][EXCALIDRAW_PREVIEW_REF_PROPERTY]
+        self.assertEqual(ref["status"], "error")
+        self.assertFalse(ref["current"])
+        self.assertIn("interrupted", ref["error"])
+        bridge._complete_close()
+        node = self.model.project.workspaces[self.workspace_id].nodes[node_id]
+        self.assertEqual(node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]["status"], "error")
 
-        updated_state = {
-            "type": "excalidraw",
-            "elements": [
-                {
-                    "id": "refresh-diamond-1",
-                    "type": "diamond",
-                    "x": 90,
-                    "y": 70,
-                    "width": 180,
-                    "height": 140,
-                    "strokeColor": "#1e1e1e",
-                    "backgroundColor": "transparent",
-                    "strokeWidth": 2,
-                    "opacity": 100,
-                    "isDeleted": False,
-                },
-                {
-                    "id": "refresh-arrow-1",
-                    "type": "arrow",
-                    "x": 290,
-                    "y": 135,
-                    "width": 170,
-                    "height": 60,
-                    "points": [[0, 0], [170, 60]],
-                    "strokeColor": "#1e1e1e",
-                    "backgroundColor": "transparent",
-                    "strokeWidth": 2,
-                    "opacity": 100,
-                    "isDeleted": False,
-                },
-            ],
-            "appState": {"name": "Refresh preview board", "viewBackgroundColor": "#ffffff"},
-            "files": {},
-        }
-        self.assertTrue(web_bridge.save_state(updated_state))
-        self.app.processEvents()
+    def test_malformed_board_documents_have_no_snapshot_identity(self) -> None:
+        for state in ({"elements": None}, {"elements": 5}, {"elements": [None]}, {"files": []}, {"appState": []}, {"elements": [{"fileId": []}]}, {"elements": [{"fileId": {}}]}):
+            with self.subTest(state=state):
+                self.assertEqual(board_scene_digest(state), "")
 
-        bridge.finish_web_editor_close({"ok": False, "error": "Preview export timed out."})
-        self.app.processEvents()
-
-        self.assertFalse(bridge.open)
-        node = self.model.project.workspaces[workspace_id].nodes[node_id]
-        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], updated_state)
-        refreshed_preview_ref = node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]
-        self.assertNotEqual(refreshed_preview_ref["artifact_ref"], initial_preview_ref["artifact_ref"])
-        self.assertTrue(refreshed_preview_ref["artifact_ref"].startswith("temp://"))
-        self.assertEqual(refreshed_preview_ref["mime_type"], "image/png")
-        self.assertEqual(refreshed_preview_ref["width"], 640)
-        self.assertEqual(refreshed_preview_ref["height"], 360)
-
-        store = self._project_artifact_store()
-        preview_path = store.resolve_staged_path(refreshed_preview_ref["artifact_ref"])
-        self.assertIsNotNone(preview_path)
-        self.assertTrue(preview_path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
-
-    def test_content_fullscreen_web_editor_close_failure_generates_missing_preview_ref(self) -> None:
-        project_path = self.temp_path / "fullscreen-fallback-preview-board.cxproj"
-        self.project_path = str(project_path)
-        node_id, _state, _preview_ref = self._add_excalidraw_node()
-        self.scene.set_node_property(node_id, EXCALIDRAW_PREVIEW_REF_PROPERTY, "")
-        workspace_id = self.workspace_id
+    def test_web_editor_crash_recovery_keeps_saved_graph_drawing(self) -> None:
+        node_id, original, _ref = self._add_excalidraw_node()
         bridge = self._bridge()
         self.assertTrue(bridge.request_open_node(node_id))
-        web_bridge = bridge.web_surface_bridge
-        self.assertIsInstance(web_bridge, WebSurfaceBridge)
+        web = bridge.web_surface_bridge
+        self.assertTrue(web.start_editor())
+        web.note_revision(1)
+        self.assertFalse(web.recover_unstarted_editor("reload"))
+        web.editor_stopped()
+        self.assertTrue(web.recover_unstarted_editor("reload"))
+        self.assertTrue(bridge.open)
+        self.assertIsNot(bridge.web_surface_bridge, web)
+        self.assertEqual(bridge.web_surface_bridge.load_state(), original)
 
-        updated_state = {
-            "type": "excalidraw",
-            "elements": [
-                {
-                    "id": "fallback-rect-1",
-                    "type": "rectangle",
-                    "x": 100,
-                    "y": 80,
-                    "width": 260,
-                    "height": 120,
-                    "strokeColor": "#1e1e1e",
-                    "backgroundColor": "transparent",
-                    "strokeWidth": 2,
-                    "opacity": 100,
-                    "isDeleted": False,
-                },
-                {
-                    "id": "fallback-text-1",
-                    "type": "text",
-                    "x": 145,
-                    "y": 125,
-                    "width": 140,
-                    "height": 36,
-                    "text": "fallback preview",
-                    "fontSize": 24,
-                    "strokeColor": "#1e1e1e",
-                    "backgroundColor": "transparent",
-                    "opacity": 100,
-                    "isDeleted": False,
-                },
-            ],
-            "appState": {"name": "Fallback preview board", "viewBackgroundColor": "#ffffff"},
-            "files": {},
-        }
-        self.assertTrue(web_bridge.save_state(updated_state))
-        self.app.processEvents()
+    def test_web_editor_crash_recovers_received_draft_before_missing_later_revision(self) -> None:
+        node_id, original, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(node_id))
+        web = bridge.web_surface_bridge
+        self.assertTrue(web.start_editor())
+        received = {"elements": [{"id": "recoverable", "type": "rectangle"}]}
+        web.note_revision(1)
+        with mock.patch.object(self.scene, "set_node_property", side_effect=RuntimeError("mutation rejected")):
+            self.assertFalse(web.save_scene({"revision": 1, "scene_state": received}))
+        node = self.model.project.workspaces[self.workspace_id].nodes[node_id]
+        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], original)
+        web.note_revision(2)
+        web.editor_stopped()
+        self.assertIn("cannot be recovered", web.last_error)
+        self.assertTrue(web.recover_unstarted_editor("reload"))
+        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], received)
+        self.assertEqual(bridge.web_surface_bridge.load_state(), received)
+        self.assertEqual(web._saved_revision, 1)
 
-        bridge.finish_web_editor_close({"ok": False, "error": "Preview export timed out."})
-        self.app.processEvents()
-
-        self.assertFalse(bridge.open)
-        node = self.model.project.workspaces[workspace_id].nodes[node_id]
-        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], updated_state)
-        preview_ref = node.properties[EXCALIDRAW_PREVIEW_REF_PROPERTY]
-        self.assertTrue(preview_ref["artifact_ref"].startswith("temp://"))
-        self.assertEqual(preview_ref["mime_type"], "image/png")
-        self.assertEqual(preview_ref["width"], 640)
-        self.assertEqual(preview_ref["height"], 360)
-        self.assertGreater(preview_ref["size"], 0)
-        self.assertTrue(preview_ref["sha256"])
-        self.assertNotIn("data_url", json.dumps(preview_ref))
-        self.assertNotIn("dataURL", json.dumps(preview_ref))
-
-        store = self._project_artifact_store()
-        preview_path = store.resolve_staged_path(preview_ref["artifact_ref"])
-        self.assertIsNotNone(preview_path)
-        self.assertTrue(preview_path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
+    def test_content_equivalent_promotion_keeps_snapshot_close_acknowledged(self) -> None:
+        node_id, state, _ref = self._add_excalidraw_node()
+        bridge = self._bridge()
+        self.assertTrue(bridge.request_open_node(node_id))
+        web = bridge.web_surface_bridge
+        state = {"elements": [{"type": "image", "fileId": "f", "x": 10}], "files": {"f": {"artifact_ref": "temp://image", "sha256": "abc", "mimeType": "image/png"}}}
+        self.assertTrue(web.save_state(state))
+        web.snapshot_status({"revision": 1, "state": "updating", "attempt": "preview"})
+        result = web.commit_snapshot({"revision": 1, "attempt": "preview", "data_url": _data_url("image/png", png_bytes())})
+        self.assertTrue(result["ok"])
+        promoted = copy.deepcopy(state)
+        promoted["files"]["f"]["artifact_ref"] = "saved://renamed-image"
+        self.scene.set_node_property(node_id, EXCALIDRAW_STATE_PROPERTY, promoted)
+        self.assertIs(bridge.web_surface_bridge, web)
+        self.assertTrue(web.finish_close(result))
+        node = self.model.project.workspaces[self.workspace_id].nodes[node_id]
+        self.assertEqual(node.properties[EXCALIDRAW_STATE_PROPERTY], promoted)
 
     def test_content_fullscreen_web_editor_invalid_payload_stays_visible_and_non_mutating(self) -> None:
         node_id, state, preview_ref = self._add_excalidraw_node()

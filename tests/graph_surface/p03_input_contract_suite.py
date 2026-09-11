@@ -236,7 +236,6 @@ class GraphSurfaceWebBoardLoaderContractTests(GraphSurfaceInputContractTestBase)
         self._run_qml_probe(
             "surface-loader-excalidraw-web-board",
             """
-            engine.rootContext().setContextProperty("graphWebBoardForceFallback", True)
 
             payload = node_payload("web", "excalidraw_board")
             payload["node_id"] = "excalidraw_surface_loader_test"
@@ -276,7 +275,7 @@ class GraphSurfaceWebBoardLoaderContractTests(GraphSurfaceInputContractTestBase)
             loader = host.findChild(QObject, "graphNodeSurfaceLoader")
             surface = host.findChild(QObject, "graphNodeWebBoardSurface")
             viewport = host.findChild(QObject, "graphNodeWebBoardPreviewViewport")
-            fallback = host.findChild(QObject, "graphNodeWebBoardFallbackPanel")
+            fallback = host.findChild(QObject, "graphNodeWebBoardSnapshotState")
             fullscreen_button = host.findChild(QObject, "graphNodeWebBoardFullscreenButton")
 
             assert loader is not None
@@ -289,11 +288,10 @@ class GraphSurfaceWebBoardLoaderContractTests(GraphSurfaceInputContractTestBase)
             assert str(surface.property("boardTitle")) == "Board from metadata"
             assert int(surface.property("boardElementCount")) == 2
             assert int(surface.property("boardFileCount")) == 1
-            assert str(surface.property("previewMode")) == "fallback"
-            assert bool(surface.property("webEngineAvailable")) is False
+            assert str(surface.property("previewMode")) == "error"
+            assert host.findChild(QObject, "graphNodeWebBoardWebEngineView") is None
             assert bool(fallback.property("visible")) is True
-            assert str(viewport.property("previewDataUrl")).startswith("data:text/html")
-            assert "Board%20from%20metadata" in str(viewport.property("previewDataUrl"))
+            assert str(viewport.property("previewImageSource")) == ""
 
             actions = variant_list(loader.property("surfaceActions"))
             assert len(actions) == 1
@@ -302,7 +300,7 @@ class GraphSurfaceWebBoardLoaderContractTests(GraphSurfaceInputContractTestBase)
             assert actions[0]["enabled"] is False
 
             embedded_rects = variant_list(loader.property("embeddedInteractiveRects"))
-            assert len(embedded_rects) == 1
+            assert len(embedded_rects) == 2
             assert rect_field(embedded_rects[0], "x") > 240.0
             assert rect_field(embedded_rects[0], "y") >= 38.0
             assert rect_field(embedded_rects[0], "width") >= 24.0

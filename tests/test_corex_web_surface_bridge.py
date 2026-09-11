@@ -10,6 +10,7 @@ import sys
 from typing import Any
 
 import pytest
+from tests.web_snapshot_test_support import png_bytes
 from PyQt6.QtCore import Q_ARG, QMetaObject, QObject, QUrl, pyqtSlot
 from PyQt6.QtGui import QColor
 from PyQt6.QtQml import QQmlComponent, QQmlEngine
@@ -273,12 +274,12 @@ def test_web_editor_host_wires_close_preview_export_lifecycle_to_js_host() -> No
     source = qml_path.read_text(encoding="utf-8")
 
     assert "function requestClosePreviewExport()" in source
-    assert "host.flushSave" in source
-    assert "host.requestPreviewExport || host.exportPreview || window.corexExcalidrawExportPreview" in source
+    assert 'root._requestHostAction("requestClose")' in source
+    assert "function onCloseRequested()" in source
     assert "editorView.runJavaScript(script);" in source
-    assert "signal closePreviewExportResult(var result)" in source
-    assert "__corex_pending_close_preview__" in source
-    assert "window.corexClosePreviewResult" in source
+    assert "corexClosePreviewResult" not in source
+    assert "closePreviewPollTimer" not in source
+    assert "host_unavailable" in source
 
 
 def test_web_editor_host_waits_for_web_channel_bridge_before_loading_page() -> None:
@@ -1871,7 +1872,7 @@ def test_save_state_rejects_oversized_image_dataurl_without_mutating_state(tmp_p
 def test_export_preview_writes_png_preview_artifact_and_returns_metadata(tmp_path: Path) -> None:
     service, store, metadata_updates = _artifact_service(tmp_path)
     bridge = _bridge(artifact_service=service)
-    preview_payload = b"\x89PNG\r\n\x1a\npreview"
+    preview_payload = png_bytes()
     preview_hash = hashlib.sha256(preview_payload).hexdigest()
 
     result = bridge.export_preview(
@@ -1910,8 +1911,8 @@ def test_export_preview_scopes_staged_payloads_per_surface(tmp_path: Path) -> No
     service, store, _metadata_updates = _artifact_service(tmp_path)
     first_bridge = _bridge(artifact_service=service, artifact_scope="workspace-main:board-a")
     second_bridge = _bridge(artifact_service=service, artifact_scope="workspace-main:board-b")
-    first_payload = b"\x89PNG\r\n\x1a\nfirst-board-preview"
-    second_payload = b"\x89PNG\r\n\x1a\nsecond-board-preview"
+    first_payload = png_bytes(color="#ff0000")
+    second_payload = png_bytes(color="#00ff00")
 
     first_result = first_bridge.export_preview(
         {
@@ -1956,3 +1957,27 @@ def test_export_preview_rejects_non_png_preview_payload(tmp_path: Path) -> None:
     assert "Unsupported image MIME type" in result["error"]
     assert store.metadata["staged"] == {}
     assert metadata_updates == []
+
+
+@pytest.mark.parametrize("payload,width,height", [
+    (b"\x89PNG\r\n\x1a\nnot-a-png", 640, 360),
+    (png_bytes()[:100], 640, 360),
+    (png_bytes(20, 10), 640, 360),
+    (png_bytes(2049, 1), 2049, 1),
+])
+def test_export_preview_rejects_corrupt_unbounded_or_mislabeled_png(tmp_path, payload, width, height):
+    service, store, updates = _artifact_service(tmp_path)
+    bridge = _bridge(artifact_service=service)
+    result = bridge.export_preview({"data_url": _data_url("image/png", payload), "width": width, "height": height})
+    assert result["ok"] is False
+    assert bridge.last_error == result["error"]
+    assert store.metadata["staged"] == {}
+    assert updates == []
+
+
+def test_export_preview_uses_decoded_dimensions_when_not_supplied(tmp_path):
+    service, _store, _updates = _artifact_service(tmp_path)
+    bridge = _bridge(artifact_service=service)
+    result = bridge.export_preview({"data_url": _data_url("image/png", png_bytes(40, 20))})
+    assert result["ok"] is True
+    assert (result["width"], result["height"]) == (40, 20)

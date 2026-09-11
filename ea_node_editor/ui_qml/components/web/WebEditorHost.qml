@@ -1,4 +1,5 @@
 import QtQuick 2.15
+import QtQuick.Controls 2.15
 
 Item {
     id: root
@@ -39,24 +40,20 @@ Item {
         && root.webSurfaceBridge !== undefined
     property string webEngineLoadError: ""
     property var webEngineItem: null
-    property var pendingSceneState: null
-    signal closePreviewExportResult(var result)
+    readonly property bool rendererStopped: !!root.webEngineItem && Boolean(root.webEngineItem.rendererStopped)
 
     clip: true
 
     onShouldLoadWebEngineChanged: Qt.callLater(root._syncWebEngineItem)
     onAssetUrlChanged: Qt.callLater(root._syncWebEngineItem)
     onWebSurfaceBridgeChanged: {
-        if (root.webEngineItem)
-            root.webEngineItem.bridgeObject = root.webSurfaceBridge;
+        root._destroyWebEngineItem();
         Qt.callLater(root._syncWebEngineItem);
     }
     onVisibleChanged: {
         if (visible) {
             Qt.callLater(root._syncWebEngineItem);
         } else {
-            saveDebounceTimer.stop();
-            root.pendingSceneState = null;
             root._destroyWebEngineItem();
         }
     }
@@ -64,102 +61,39 @@ Item {
     Component.onCompleted: Qt.callLater(root._syncWebEngineItem)
     Component.onDestruction: root._destroyWebEngineItem()
 
-    function requestSceneSave(sceneState) {
-        root.pendingSceneState = sceneState;
-        saveDebounceTimer.restart();
-        return true;
+    Connections {
+        target: root.webSurfaceBridge
+        function onCloseRequested() { root.requestClosePreviewExport(); }
     }
 
-    function flushSceneSave() {
-        if (!root.webSurfaceBridge || !root.webSurfaceBridge.save_state)
+    function _requestHostAction(action) {
+        if (!root.webEngineItem || !root.webEngineItem.runJavaScript || root.rendererStopped) {
+            if (root.webSurfaceBridge)
+                root._hostMissing(root.webSurfaceBridge, action);
             return false;
-        var sceneState = root.pendingSceneState;
-        if (sceneState === null || sceneState === undefined)
-            return true;
-        root.pendingSceneState = null;
-        return Boolean(root.webSurfaceBridge.save_state(sceneState));
-    }
-
-    function requestClosePreviewExport() {
-        saveDebounceTimer.stop();
-        root.flushSceneSave();
-        if (!root.webEngineItem || !root.webEngineItem.runJavaScript)
-            return false;
+        }
+        var bridge = root.webSurfaceBridge;
         root.webEngineItem.runJavaScript(
-            root._closePreviewExportScript(),
-            function(result) { root._handleClosePreviewScriptResult(result); }
-        );
-        return true;
-    }
-
-    function _handleClosePreviewScriptResult(result) {
-        var text = String(result || "");
-        if (text === "__corex_pending_close_preview__") {
-            closePreviewPollTimer.attempts = 0;
-            closePreviewPollTimer.restart();
-            return;
-        }
-        if (!text.length || text === "true" || text === "false")
-            return;
-        try {
-            root.closePreviewExportResult(JSON.parse(text));
-        } catch (error) {
-            root.closePreviewExportResult({"ok": false, "error": String(error)});
-        }
-    }
-
-    function _pollClosePreviewResult() {
-        if (!root.webEngineItem || !root.webEngineItem.runJavaScript) {
-            closePreviewPollTimer.stop();
-            root.closePreviewExportResult({"ok": false, "error": "Preview export is unavailable."});
-            return;
-        }
-        closePreviewPollTimer.attempts += 1;
-        root.webEngineItem.runJavaScript(
-            "(function() { return window.corexClosePreviewResult || ''; })();",
-            function(result) {
-                var text = String(result || "");
-                if (text.length > 0) {
-                    closePreviewPollTimer.stop();
-                    root._handleClosePreviewScriptResult(text);
-                    return;
-                }
-                if (closePreviewPollTimer.attempts >= 75) {
-                    closePreviewPollTimer.stop();
-                    root.closePreviewExportResult({"ok": false, "error": "Preview export timed out."});
-                }
+            "(function() { var host = window.corexExcalidrawHost; if (!host || !host."
+                + action + ") return false; host." + action + "(); return true; })();",
+            function(started) {
+                if (!started && bridge && bridge === root.webSurfaceBridge)
+                    root._hostMissing(bridge, action);
             }
         );
+        return true;
     }
 
-    function _closePreviewExportScript() {
-        return [
-            "(function() {",
-            "  var host = window.corexExcalidrawHost || {};",
-            "  var exportPreview = host.requestPreviewExport || host.exportPreview || window.corexExcalidrawExportPreview;",
-            "  function fallbackResult(message) {",
-            "    var sceneState = typeof host.getSceneState === 'function' ? host.getSceneState() : null;",
-            "    return JSON.stringify({ok: false, error: message, scene_state: sceneState});",
-            "  }",
-            "  window.corexClosePreviewResult = '';",
-            "  if (typeof exportPreview !== 'function')",
-            "    return fallbackResult('Preview export is unavailable.');",
-            "  Promise.resolve()",
-            "    .then(function() {",
-            "      return typeof host.flushSave === 'function' ? host.flushSave() : true;",
-            "    })",
-            "    .then(function() {",
-            "      return exportPreview({reason: 'fullscreen_close'});",
-            "    })",
-            "    .then(function(result) {",
-            "      window.corexClosePreviewResult = JSON.stringify(result || {});",
-            "    })",
-            "    .catch(function(error) {",
-            "      window.corexClosePreviewResult = fallbackResult(error && error.message ? error.message : String(error));",
-            "    });",
-            "  return '__corex_pending_close_preview__';",
-            "})();"
-        ].join("\n");
+    function requestClosePreviewExport() { return root._requestHostAction("requestClose"); }
+    function retryPreview() { return root._requestHostAction("retryPreview"); }
+
+    function _hostMissing(bridge, action) {
+        if (action === "requestClose" || action === "closeWithoutPreview")
+            bridge.recover_unstarted_editor("close");
+        else if (action === "reloadEditor")
+            bridge.recover_unstarted_editor("reload");
+        else
+            bridge.host_unavailable("The editor is still loading or its connection failed. Reopen it to retry.");
     }
 
     function _syncWebEngineItem() {
@@ -207,6 +141,7 @@ Item {
             "    property var bridgeObject: null",
             "    property var registeredBridgeObject: null",
             "    property string pageUrl: \"\"",
+            "    property bool rendererStopped: false",
             "    function runJavaScript(script) {",
             "        if (arguments.length > 1 && arguments[1])",
             "            editorView.runJavaScript(script, arguments[1]);",
@@ -243,24 +178,13 @@ Item {
             "        anchors.fill: parent",
             "        url: \"\"",
             "        webChannel: editorChannel",
+            "        onRenderProcessTerminated: function(status, exitCode) {",
+            "            webRoot.rendererStopped = true;",
+            "            if (webRoot.bridgeObject) webRoot.bridgeObject.editor_stopped();",
+            "        }",
             "    }",
             "}"
         ].join("\n");
-    }
-
-    Timer {
-        id: saveDebounceTimer
-        interval: 250
-        repeat: false
-        onTriggered: root.flushSceneSave()
-    }
-
-    Timer {
-        id: closePreviewPollTimer
-        property int attempts: 0
-        interval: 100
-        repeat: true
-        onTriggered: root._pollClosePreviewResult()
     }
 
     Rectangle {
@@ -321,6 +245,31 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
             }
+
+            Button {
+                objectName: "contentFullscreenWebEditorRetryButton"
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Retry preview"
+                visible: root.bridgeErrorText.length > 0
+                onClicked: root.retryPreview()
+            }
+
+            Button {
+                objectName: "contentFullscreenWebEditorCloseWithoutPreviewButton"
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: root.rendererStopped ? "Close with saved drawing" : "Save drawing and close without preview"
+                visible: root.bridgeErrorText.length > 0
+                onClicked: root._requestHostAction("closeWithoutPreview")
+            }
+
+            Button {
+                objectName: "contentFullscreenWebEditorReloadButton"
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: root.rendererStopped ? "Reopen saved drawing" : "Save drawing and reload editor"
+                visible: root.statusMessage.length > 0 && root.webSurfaceBridge !== null
+                onClicked: root._requestHostAction("reloadEditor")
+            }
+
         }
     }
 }

@@ -5,38 +5,17 @@
 # Landmarks: ContentFullscreenBridge, _FullscreenWebSurfaceBridge
 from __future__ import annotations
 
-import base64
 import copy
 import json
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-import math
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from PyQt6.QtCore import (
-    QBuffer,
-    QByteArray,
-    QIODevice,
-    QObject,
-    QPointF,
-    QRectF,
-    Qt,
-    pyqtBoundSignal,
-    pyqtProperty,
-    pyqtSignal,
-    pyqtSlot,
-)
-from PyQt6.QtGui import (
-    QBrush,
-    QColor,
-    QFont,
-    QImage,
-    QPainter,
-    QPainterPath,
-    QPen,
-    QPolygonF,
-)
+from PyQt6.QtCore import QObject, pyqtBoundSignal, pyqtProperty, pyqtSignal, pyqtSlot
+
+from ea_node_editor.common.board_snapshot import board_scene_digest
+from ea_node_editor.ui_qml.board_snapshot_sessions import register_board_snapshot_session, retire_board_snapshot_session
 
 from ea_node_editor.nodes.builtins.excalidraw import (
     EXCALIDRAW_PREVIEW_REF_PROPERTY,
@@ -62,7 +41,6 @@ from ea_node_editor.nodes.file_dialog_filters import (
     TABULAR_ARRAY_OUTPUT_FILES_FILTER,
     TABULAR_TABLE_OUTPUT_FILES_FILTER,
 )
-from ea_node_editor.common.artifact_refs import parse_artifact_ref
 from ea_node_editor.ui.tabular_preview_provider import (
     TABULAR_PREVIEW_CONTENT_KIND,
     TABULAR_PREVIEW_FULLSCREEN_COLUMN_LIMIT,
@@ -148,38 +126,9 @@ def _positive_int(value: Any) -> int:
     return normalized if normalized > 0 else 0
 
 
-_FALLBACK_PREVIEW_WIDTH = 640
-_FALLBACK_PREVIEW_HEIGHT = 360
-_FALLBACK_PREVIEW_PADDING = 32.0
 _PLOT_FULLSCREEN_OPTION_KEYS = frozenset({"plot_theme", "hover_readout", "vertical_guide", "crosshair"})
 _PLOT_FULLSCREEN_BOOL_OPTION_KEYS = frozenset({"hover_readout", "vertical_guide", "crosshair"})
 _PLOT_FULLSCREEN_THEME_VALUES = frozenset({"system", "dark", "light"})
-
-
-@dataclass(frozen=True, slots=True)
-class _SceneBounds:
-    min_x: float
-    min_y: float
-    max_x: float
-    max_y: float
-
-    @property
-    def width(self) -> float:
-        return max(self.max_x - self.min_x, 1.0)
-
-    @property
-    def height(self) -> float:
-        return max(self.max_y - self.min_y, 1.0)
-
-
-def _finite_float(value: Any, default: float = 0.0) -> float:
-    if isinstance(value, bool):
-        return default
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return default
-    return number if math.isfinite(number) else default
 
 
 def _bool_value(value: Any, default: bool = False) -> bool:
@@ -204,341 +153,243 @@ def _normalized_plot_theme(value: Any) -> str:
     return normalized if normalized in _PLOT_FULLSCREEN_THEME_VALUES else "system"
 
 
-def _excalidraw_scene_elements(scene_state: Mapping[str, Any]) -> list[Mapping[str, Any]]:
-    elements = scene_state.get("elements")
-    if not isinstance(elements, list):
-        return []
-    return [
-        element
-        for element in elements
-        if isinstance(element, Mapping) and not bool(element.get("isDeleted"))
-    ]
-
-
-def _element_text_dimensions(element: Mapping[str, Any]) -> tuple[float, float]:
-    text = str(element.get("text") or "")
-    font_size = max(_finite_float(element.get("fontSize"), 20.0), 8.0)
-    lines = text.splitlines() or [text]
-    width = max((len(line) for line in lines), default=0) * font_size * 0.62
-    height = max(len(lines), 1) * font_size * 1.25
-    return max(width, font_size), max(height, font_size)
-
-
-def _element_points(element: Mapping[str, Any]) -> list[QPointF]:
-    x = _finite_float(element.get("x"))
-    y = _finite_float(element.get("y"))
-    raw_points = element.get("points")
-    points: list[QPointF] = []
-    if isinstance(raw_points, list):
-        for point in raw_points:
-            if isinstance(point, (list, tuple)) and len(point) >= 2:
-                points.append(
-                    QPointF(
-                        x + _finite_float(point[0]),
-                        y + _finite_float(point[1]),
-                    )
-                )
-    if points:
-        return points
-    return [
-        QPointF(x, y),
-        QPointF(x + _finite_float(element.get("width")), y + _finite_float(element.get("height"))),
-    ]
-
-
-def _element_bounds(element: Mapping[str, Any]) -> _SceneBounds | None:
-    element_type = str(element.get("type") or "").strip().lower()
-    if element_type in {"line", "arrow", "freedraw"}:
-        points = _element_points(element)
-        if not points:
-            return None
-        stroke_pad = max(_finite_float(element.get("strokeWidth"), 1.0), 1.0)
-        return _SceneBounds(
-            min(point.x() for point in points) - stroke_pad,
-            min(point.y() for point in points) - stroke_pad,
-            max(point.x() for point in points) + stroke_pad,
-            max(point.y() for point in points) + stroke_pad,
-        )
-
-    x = _finite_float(element.get("x"))
-    y = _finite_float(element.get("y"))
-    width = _finite_float(element.get("width"))
-    height = _finite_float(element.get("height"))
-    if element_type == "text" and (width <= 0 or height <= 0):
-        text_width, text_height = _element_text_dimensions(element)
-        width = max(width, text_width)
-        height = max(height, text_height)
-    min_x = min(x, x + width)
-    max_x = max(x, x + width)
-    min_y = min(y, y + height)
-    max_y = max(y, y + height)
-    if max_x <= min_x and max_y <= min_y:
-        return None
-    stroke_pad = max(_finite_float(element.get("strokeWidth"), 1.0), 1.0)
-    return _SceneBounds(
-        min_x - stroke_pad,
-        min_y - stroke_pad,
-        max_x + stroke_pad,
-        max_y + stroke_pad,
-    )
-
-
-def _scene_content_bounds(elements: list[Mapping[str, Any]]) -> _SceneBounds | None:
-    bounds = [bounds for element in elements if (bounds := _element_bounds(element)) is not None]
-    if not bounds:
-        return None
-    return _SceneBounds(
-        min(item.min_x for item in bounds),
-        min(item.min_y for item in bounds),
-        max(item.max_x for item in bounds),
-        max(item.max_y for item in bounds),
-    )
-
-
-def _excalidraw_color(value: Any, fallback: str, opacity: float = 1.0) -> QColor:
-    text = str(value or "").strip()
-    if not text or text.lower() == "transparent":
-        text = fallback
-    color = QColor(text)
-    if not color.isValid():
-        color = QColor(fallback)
-    color.setAlphaF(max(0.0, min(1.0, color.alphaF() * opacity)))
-    return color
-
-
-def _element_opacity(element: Mapping[str, Any]) -> float:
-    return max(0.0, min(1.0, _finite_float(element.get("opacity"), 100.0) / 100.0))
-
-
-def _element_pen(element: Mapping[str, Any]) -> QPen:
-    stroke_color = str(element.get("strokeColor") or "").strip()
-    if stroke_color.lower() == "transparent":
-        return QPen(Qt.PenStyle.NoPen)
-    pen = QPen(_excalidraw_color(stroke_color, "#1e1e1e", _element_opacity(element)))
-    pen.setWidthF(max(_finite_float(element.get("strokeWidth"), 1.0), 1.0))
-    pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-    pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
-    return pen
-
-
-def _element_brush(element: Mapping[str, Any]) -> QBrush:
-    background = str(element.get("backgroundColor") or "").strip()
-    if not background or background.lower() == "transparent":
-        return QBrush(Qt.BrushStyle.NoBrush)
-    return QBrush(_excalidraw_color(background, "transparent", _element_opacity(element)))
-
-
-def _element_rect(element: Mapping[str, Any]) -> QRectF:
-    x = _finite_float(element.get("x"))
-    y = _finite_float(element.get("y"))
-    width = _finite_float(element.get("width"))
-    height = _finite_float(element.get("height"))
-    if str(element.get("type") or "").strip().lower() == "text" and (width <= 0 or height <= 0):
-        text_width, text_height = _element_text_dimensions(element)
-        width = max(width, text_width)
-        height = max(height, text_height)
-    return QRectF(min(x, x + width), min(y, y + height), abs(width), abs(height))
-
-
-def _draw_linear_element(painter: QPainter, element: Mapping[str, Any]) -> None:
-    points = _element_points(element)
-    if len(points) < 2:
-        return
-    path = QPainterPath(points[0])
-    for point in points[1:]:
-        path.lineTo(point)
-    painter.drawPath(path)
-
-    if str(element.get("type") or "").strip().lower() != "arrow":
-        return
-    start = points[-2]
-    end = points[-1]
-    dx = end.x() - start.x()
-    dy = end.y() - start.y()
-    length = math.hypot(dx, dy)
-    if length <= 0:
-        return
-    unit_x = dx / length
-    unit_y = dy / length
-    head_length = max(12.0, min(24.0, length * 0.25))
-    wing = head_length * 0.45
-    base = QPointF(end.x() - unit_x * head_length, end.y() - unit_y * head_length)
-    normal_x = -unit_y
-    normal_y = unit_x
-    painter.drawPolygon(
-        QPolygonF(
-            [
-                end,
-                QPointF(base.x() + normal_x * wing, base.y() + normal_y * wing),
-                QPointF(base.x() - normal_x * wing, base.y() - normal_y * wing),
-            ]
-        )
-    )
-
-
-def _draw_shape_element(painter: QPainter, element: Mapping[str, Any]) -> None:
-    element_type = str(element.get("type") or "").strip().lower()
-    if element_type in {"line", "arrow", "freedraw"}:
-        _draw_linear_element(painter, element)
-        return
-
-    rect = _element_rect(element)
-    if rect.width() <= 0 or rect.height() <= 0:
-        return
-
-    angle = _finite_float(element.get("angle"))
-    painter.save()
-    if angle:
-        center = rect.center()
-        painter.translate(center)
-        painter.rotate(math.degrees(angle))
-        painter.translate(-center)
-
-    if element_type == "ellipse":
-        painter.drawEllipse(rect)
-    elif element_type == "diamond":
-        center = rect.center()
-        painter.drawPolygon(
-            QPolygonF(
-                [
-                    QPointF(center.x(), rect.top()),
-                    QPointF(rect.right(), center.y()),
-                    QPointF(center.x(), rect.bottom()),
-                    QPointF(rect.left(), center.y()),
-                ]
-            )
-        )
-    elif element_type == "text":
-        font_size = max(_finite_float(element.get("fontSize"), 20.0), 8.0)
-        font = QFont("Virgil")
-        font.setPixelSize(round(font_size))
-        painter.setFont(font)
-        painter.setBrush(QBrush(Qt.BrushStyle.NoBrush))
-        painter.drawText(rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, str(element.get("text") or ""))
-    else:
-        radius = min(rect.width(), rect.height(), 18.0) * 0.18
-        painter.drawRoundedRect(rect, radius, radius)
-    painter.restore()
-
-
-def _fallback_preview_payload_from_scene(scene_state: Mapping[str, Any]) -> dict[str, Any]:
-    elements = _excalidraw_scene_elements(scene_state)
-    bounds = _scene_content_bounds(elements)
-    if bounds is None:
-        return {}
-
-    width = _FALLBACK_PREVIEW_WIDTH
-    height = _FALLBACK_PREVIEW_HEIGHT
-    image = QImage(width, height, QImage.Format.Format_ARGB32)
-    app_state = scene_state.get("appState")
-    background = "#ffffff"
-    if isinstance(app_state, Mapping):
-        background = str(app_state.get("viewBackgroundColor") or background)
-    image.fill(_excalidraw_color(background, "#ffffff"))
-
-    painter = QPainter(image)
-    try:
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-        available_width = max(width - _FALLBACK_PREVIEW_PADDING * 2.0, 1.0)
-        available_height = max(height - _FALLBACK_PREVIEW_PADDING * 2.0, 1.0)
-        scale = min(available_width / bounds.width, available_height / bounds.height, 3.0)
-        content_width = bounds.width * scale
-        content_height = bounds.height * scale
-        offset_x = (width - content_width) / 2.0 - bounds.min_x * scale
-        offset_y = (height - content_height) / 2.0 - bounds.min_y * scale
-        painter.translate(offset_x, offset_y)
-        painter.scale(scale, scale)
-        for element in elements:
-            painter.setPen(_element_pen(element))
-            painter.setBrush(_element_brush(element))
-            _draw_shape_element(painter, element)
-    finally:
-        painter.end()
-
-    buffer = QByteArray()
-    device = QBuffer(buffer)
-    if not device.open(QIODevice.OpenModeFlag.WriteOnly):
-        return {}
-    if not image.save(device, "PNG"):
-        return {}
-    payload = bytes(buffer)
-    app_name = ""
-    if isinstance(app_state, Mapping):
-        app_name = str(app_state.get("name") or "").strip()
-    return {
-        "dataURL": f"data:image/png;base64,{base64.b64encode(payload).decode('ascii')}",
-        "width": width,
-        "height": height,
-        "name": f"{app_name or 'excalidraw'}-preview.png",
-        "scene_state": copy.deepcopy(dict(scene_state)),
-    }
-
-
 class _FullscreenWebSurfaceBridge(WebSurfaceBridge):
-    preview_export_finished = pyqtSignal("QVariantMap", name="previewExportFinished")
+    """Revision gate and persistence endpoint for the host snapshot controller."""
+
+    snapshot_changed = pyqtSignal(name="snapshotChanged")
+    close_requested = pyqtSignal(name="closeRequested")
+    close_ready = pyqtSignal()
+    reload_requested = pyqtSignal()
 
     def __init__(
         self,
         initial_state: dict[str, Any] | None = None,
         parent: QObject | None = None,
         *,
-        preview_persist_callback: Callable[[dict[str, Any]], None] | None = None,
+        preview_persist_callback: Callable[[dict[str, Any]], bool] | None = None,
+        state_persist_callback: Callable[[dict[str, Any]], bool] | None = None,
+        state_verify_callback: Callable[[dict[str, Any]], bool] | None = None,
+        session_id: str = "",
         artifact_service: "WebSurfaceArtifactService",
         artifact_scope: str,
     ) -> None:
         if artifact_service is None:
             raise ValueError("Fullscreen Web artifact storage is required.")
-        super().__init__(
-            initial_state,
-            parent,
-            artifact_service=artifact_service,
-            artifact_scope=artifact_scope,
-        )
+        super().__init__(initial_state, parent, artifact_service=artifact_service, artifact_scope=artifact_scope)
         self._preview_persist_callback = preview_persist_callback
+        self._state_persist_callback = state_persist_callback
+        self._state_verify_callback = state_verify_callback
+        self._session_id = session_id
+        self._active = True
+        self._editor_started = False
+        self._renderer_stopped = False
+        self._received_revision = 0
+        self._scene_revision = 0
+        self._saved_revision = 0
+        self._snapshot_revision = -1
+        self._active_attempt = ""
+        self._snapshot_state = "empty"
+        self._closing = False
 
-    @pyqtSlot(result="QVariantMap")
-    @pyqtSlot(str, result="QVariantMap")
-    @pyqtSlot("QVariant", result="QVariantMap")
-    def export_preview(self, payload: Any = None) -> dict[str, Any]:
-        self._save_state_from_preview_payload(payload)
-        result = copy.deepcopy(super().export_preview(payload))
-        result = self._result_with_preview_payload(result, payload)
-        if result.get("ok") is True and self._preview_persist_callback is not None:
-            self._preview_persist_callback(result)
-        self.preview_export_finished.emit(result)
-        return result
+    @pyqtProperty(str, notify=snapshot_changed)
+    def snapshot_state(self) -> str:
+        return self._snapshot_state
 
-    def _save_state_from_preview_payload(self, payload: Any) -> None:
-        if not isinstance(payload, Mapping):
+    @pyqtProperty(bool, notify=snapshot_changed)
+    def closing(self) -> bool:
+        return self._closing
+
+    @pyqtSlot(int)
+    def note_revision(self, revision: int) -> None:
+        if not self._active or revision <= self._scene_revision:
             return
-        scene_state = payload["scene_state"] if "scene_state" in payload else payload.get("sceneState")
-        if isinstance(scene_state, Mapping):
-            self.save_state(scene_state)
+        self._scene_revision = revision
+        self._active_attempt = ""
+        self._publish_snapshot_state("updating")
 
-    @staticmethod
-    def _result_with_preview_payload(result: dict[str, Any], payload: Any) -> dict[str, Any]:
-        if not isinstance(payload, Mapping):
+    @pyqtSlot("QVariant", result=bool)
+    def save_scene(self, payload: Any) -> bool:
+        if not self._active or not isinstance(payload, Mapping) or payload.get("revision") != self._scene_revision:
+            return False
+        if not super().save_state(payload.get("scene_state")):
+            self._publish_snapshot_state("error", self.last_error)
+            return False
+        self._received_revision = self._scene_revision
+        return self._acknowledge_saved_scene()
+
+    @pyqtSlot("QVariant", result=bool)
+    def save_state(self, payload: Any) -> bool:
+        # Direct native callers also invalidate the snapshot; the host uses
+        # save_scene so a delayed save can never roll a newer revision back.
+        if not self._active:
+            return False
+        previous = self.load_state()
+        if not super().save_state(payload):
+            return False
+        if self.load_state() != previous:
+            self.note_revision(self._scene_revision + 1)
+        self._received_revision = self._scene_revision
+        return self._acknowledge_saved_scene()
+
+    def _acknowledge_saved_scene(self) -> bool:
+        if self._state_persist_callback is not None and self._state_persist_callback(self.load_state()) is not True:
+            self._publish_snapshot_state("error", "Drawing could not be saved to the node. Keep the editor open and retry.")
+            return False
+        self._saved_revision = self._received_revision
+        self.snapshot_changed.emit()
+        return True
+
+    def _drawing_is_saved(self) -> bool:
+        return self._active and self._saved_revision == self._scene_revision and (
+            self._state_verify_callback is None or self._state_verify_callback(self.load_state()) is True
+        )
+
+    @pyqtSlot("QVariant")
+    def snapshot_status(self, payload: Any) -> None:
+        if not self._active or not isinstance(payload, Mapping) or payload.get("revision") != self._scene_revision:
+            return
+        state = str(payload.get("state") or "")
+        if state not in {"updating", "error", "closing"}:
+            return
+        self._closing = state == "closing" or bool(payload.get("closing"))
+        self._active_attempt = str(payload.get("attempt") or "") if state != "error" else ""
+        self._publish_snapshot_state("updating" if state == "closing" else state, str(payload.get("error") or ""))
+
+    def _publish_snapshot_state(self, state: str, error: str = "") -> None:
+        if not self._active:
+            return
+        self._snapshot_state = state
+        if state == "error":
+            self._closing = False
+            self._set_error(error or "Preview unavailable. Retry the preview before closing.")
+        else:
+            self._clear_error()
+        if self._preview_persist_callback is not None:
+            self._preview_persist_callback({"status": state, "error": error, "session_id": self._session_id})
+        self.snapshot_changed.emit()
+
+    @pyqtSlot("QVariant", result="QVariantMap")
+    def commit_snapshot(self, payload: Any = None) -> dict[str, Any]:
+        if (
+            not self._active
+            or not isinstance(payload, Mapping)
+            or payload.get("revision") != self._scene_revision
+            or not self._drawing_is_saved()
+            or not self._active_attempt
+            or payload.get("attempt") != self._active_attempt
+        ):
+            return {"ok": False, "stale": True, "error": "Snapshot no longer matches the saved drawing."}
+        elements = self.load_state().get("elements", [])
+        if not board_scene_digest(self.load_state()) or not isinstance(elements, list):
+            return {"ok": False, "error": "Drawing data is invalid. Repair it before exporting a preview."}
+        empty = not any(isinstance(element, Mapping) and not element.get("isDeleted") for element in elements)
+        if payload.get("empty") is True and empty:
+            result = {"ok": True, "empty": True}
+            if not self._accept_preview_result(result):
+                result = {"ok": False, "error": "Empty drawing state could not be saved to the node."}
+        else:
+            result = super().export_preview(payload)
+        if result.get("ok") is not True:
+            self._publish_snapshot_state("error", str(result.get("error") or "Preview could not be stored."))
             return result
-        payload_copy = copy.deepcopy(dict(payload))
-        scene_state = payload_copy["scene_state"] if "scene_state" in payload_copy else payload_copy.get("sceneState")
-        if isinstance(scene_state, Mapping) and "scene_state" not in result and "sceneState" not in result:
-            result["scene_state"] = copy.deepcopy(dict(scene_state))
-        if payload_copy and "host_payload" not in result and "hostPayload" not in result:
-            result["host_payload"] = payload_copy
+        self._snapshot_revision = self._scene_revision
+        self._snapshot_state = "empty" if result.get("empty") else "ready"
+        result.update(revision=self._scene_revision, status=self._snapshot_state, scene_sha256=board_scene_digest(self.load_state()))
+        self.snapshot_changed.emit()
         return result
 
-    def artifact_ref_resolves(self, artifact_ref: str) -> bool:
-        service = self._artifact_service
-        if service is None:
+    def _accept_preview_result(self, result: dict[str, Any]) -> bool:
+        if not self._drawing_is_saved():
             return False
-        try:
-            store = service.store
-            resolved_path = store.resolve_staged_path(
-                artifact_ref
-            ) or store.resolve_managed_path(artifact_ref)
-        except Exception:  # noqa: BLE001
+        result.update(revision=self._scene_revision, status="empty" if result.get("empty") else "ready", scene_sha256=board_scene_digest(self.load_state()))
+        return self._preview_persist_callback is None or self._preview_persist_callback(result) is True
+
+    @pyqtSlot()
+    def request_close(self) -> None:
+        if self._active:
+            self.close_requested.emit()
+
+    @pyqtSlot("QVariant", result=bool)
+    def finish_close(self, result: Any) -> bool:
+        if (
+            not self._active
+            or not isinstance(result, Mapping)
+            or result.get("ok") is not True
+            or result.get("revision") != self._scene_revision
+            or self._snapshot_revision != self._scene_revision
+            or not self._drawing_is_saved()
+            or self._snapshot_state not in {"empty", "ready"}
+        ):
+            error = str(result.get("error") or "The latest drawing needs a preview. Retry before closing.") if isinstance(result, Mapping) else "Preview unavailable. Retry before closing."
+            self._publish_snapshot_state("error", error)
             return False
-        return bool(resolved_path is not None and resolved_path.exists())
+        self._closing = False
+        self.close_ready.emit()
+        return True
+
+    @pyqtSlot(str)
+    def host_unavailable(self, error: str) -> None:
+        self._publish_snapshot_state("error", error)
+
+    @pyqtSlot(result=bool)
+    def start_editor(self) -> bool:
+        if not self._active:
+            return False
+        self._editor_started = True
+        return True
+
+    @pyqtSlot(str, result=bool)
+    def recover_unstarted_editor(self, action: str) -> bool:
+        if not self._active or (self._editor_started and not self._renderer_stopped) or action not in {"close", "reload"}:
+            self.host_unavailable("The editor connection is unavailable. Keep the editor open to preserve any pending drawing changes.")
+            return False
+        if self._renderer_stopped and self._received_revision > self._saved_revision:
+            if not self._acknowledge_saved_scene():
+                return False
+        if action == "reload":
+            self.reload_requested.emit()
+        else:
+            self.close_ready.emit()
+        return True
+
+    @pyqtSlot()
+    def editor_stopped(self) -> None:
+        if not self._active:
+            return
+        self._renderer_stopped = True
+        self._active_attempt = ""
+        self._publish_snapshot_state("error", "The editor stopped. Reopen the saved drawing to continue. Any edits that never reached the drawing connection cannot be recovered.")
+
+    @pyqtSlot("QVariant", result=bool)
+    def finish_without_preview(self, payload: Any) -> bool:
+        if not isinstance(payload, Mapping) or payload.get("revision") != self._scene_revision or not self._drawing_is_saved():
+            self.host_unavailable("Drawing save has not been acknowledged. Keep the editor open and retry.")
+            return False
+        action = payload.get("action")
+        if action not in {"close", "reload"}:
+            return False
+        self._publish_snapshot_state("error", "Preview unavailable. Open the editor to retry.")
+        if action == "reload":
+            self.reload_requested.emit()
+        else:
+            self.close_ready.emit()
+        return True
+
+    def deactivate(self) -> None:
+        if not self._active:
+            return
+        if self._snapshot_state == "updating":
+            self._publish_snapshot_state("error", "Preview update was interrupted. Open the editor to retry.")
+        self._active = False
+        retire_board_snapshot_session(self._session_id)
+        self._preview_persist_callback = None
+        self._state_persist_callback = None
+        self._state_verify_callback = None
+        for signal in (self.close_ready, self.close_requested, self.reload_requested):
+            try:
+                signal.disconnect()
+            except (TypeError, RuntimeError):
+                pass
 
 
 class ContentFullscreenBridge(QObject):
@@ -604,7 +455,6 @@ class ContentFullscreenBridge(QObject):
         self._web_surface_bridge: WebSurfaceBridge | None = None
         self._web_surface_bridge_node_id = ""
         self._web_surface_bridge_artifact_scope = ""
-        self._web_surface_bridge_initial_state: dict[str, Any] = {}
         self._last_error = ""
         self._tabular_preview_provider: TabularPreviewProvider | None = None
         self._tabular_preview_worker_pool = None
@@ -1107,6 +957,8 @@ class ContentFullscreenBridge(QObject):
     def request_open_node(self, node_id: str) -> bool:
         if self._terminal:
             return False
+        if self._keep_active_web_editor(node_id):
+            return str(node_id or "").strip() == self._node_id
         resolution = self._resolve_candidate(node_id)
         if resolution.candidate is None:
             self._close_with_error(resolution.error)
@@ -1118,11 +970,20 @@ class ContentFullscreenBridge(QObject):
     def request_open_node_with_state(self, node_id: str, state: dict[str, Any]) -> bool:
         if self._terminal:
             return False
+        if self._keep_active_web_editor(node_id):
+            return str(node_id or "").strip() == self._node_id
         resolution = self._resolve_candidate(node_id)
         if resolution.candidate is None:
             self._close_with_error(resolution.error)
             return False
         self._open_candidate(resolution.candidate, runtime_state=normalize_media_video_state(state))
+        return True
+
+    def _keep_active_web_editor(self, node_id: str) -> bool:
+        if not self._open or self._content_kind != "web_editor" or self._web_surface_bridge is None:
+            return False
+        if str(node_id or "").strip() != self._node_id:
+            self._web_surface_bridge._set_error("Close this drawing editor before opening another item. Retry the preview if needed.")
         return True
 
     @pyqtSlot(str, result=bool)
@@ -1151,8 +1012,12 @@ class ContentFullscreenBridge(QObject):
     def request_close(self) -> None:
         if self._terminal:
             return
-        if self._open and self._content_kind == "web_editor":
-            self._persist_web_editor_state()
+        if self._open and self._content_kind == "web_editor" and self._web_surface_bridge is not None:
+            self._web_surface_bridge.request_close()
+            return
+        self._complete_close()
+
+    def _complete_close(self) -> None:
         self._clear_tabular_preview_jobs()
         self._set_state(
             open_=False,
@@ -1307,16 +1172,6 @@ class ContentFullscreenBridge(QObject):
     @pyqtSlot(str, result=bool)
     def can_open_node(self, node_id: str) -> bool:
         return not self._terminal and self._resolve_candidate(node_id).candidate is not None
-
-    @pyqtSlot("QVariant")
-    def finish_web_editor_close(self, preview_result: Any = None) -> None:
-        if self._terminal:
-            return
-        if self._open and self._content_kind == "web_editor":
-            preview_result = self._materialize_web_editor_preview_result(preview_result)
-            self._persist_web_editor_state_from_preview_result(preview_result)
-            self._persist_web_editor_preview_result(preview_result)
-        self.request_close()
 
     @pyqtSlot("QVariantMap", result="QVariantMap")
     def request_tabular_window(self, request: dict[str, Any]) -> dict[str, Any]:
@@ -1593,14 +1448,14 @@ class ContentFullscreenBridge(QObject):
         if self._terminal:
             return
         if self._open:
-            self.request_close()
+            self._complete_close()
 
     def _on_nodes_changed(self, *_args: object) -> None:
         if self._terminal or not self._open:
             return
         resolution = self._resolve_candidate(self._node_id)
         if resolution.candidate is None:
-            self.request_close()
+            self._complete_close()
             return
         self._open_candidate(resolution.candidate)
 
@@ -1748,7 +1603,6 @@ class ContentFullscreenBridge(QObject):
             self._web_surface_bridge is not None
             and self._web_surface_bridge_node_id == normalized_node_id
             and self._web_surface_bridge_artifact_scope == artifact_scope
-            and self._web_surface_bridge.load_state() == normalized_state
         ):
             return False
         self._clear_web_surface_bridge()
@@ -1767,15 +1621,18 @@ class ContentFullscreenBridge(QObject):
         bridge = _FullscreenWebSurfaceBridge(
             normalized_state,
             parent=self,
-            preview_persist_callback=self._persist_web_editor_preview_result,
+            preview_persist_callback=lambda result: self._persist_web_editor_preview_result(bridge, result),
+            state_persist_callback=lambda state: self._persist_web_editor_state(bridge, state),
+            state_verify_callback=lambda state: self._web_editor_state_matches(bridge, state),
+            session_id=register_board_snapshot_session(self._current_model().project.workspaces[candidate.workspace_id], normalized_node_id),
             artifact_service=artifact_service,
             artifact_scope=artifact_scope,
         )
-        bridge.state_changed.connect(self._persist_web_editor_state)
+        bridge.close_ready.connect(self._complete_close)
+        bridge.reload_requested.connect(self._reload_web_editor)
         self._web_surface_bridge = bridge
         self._web_surface_bridge_node_id = normalized_node_id
         self._web_surface_bridge_artifact_scope = artifact_scope
-        self._web_surface_bridge_initial_state = copy.deepcopy(normalized_state)
         return True
 
     def _clear_web_surface_bridge(self) -> bool:
@@ -1784,15 +1641,11 @@ class ContentFullscreenBridge(QObject):
             self._web_surface_bridge_node_id = ""
             self._web_surface_bridge_artifact_scope = ""
             return False
-        try:
-            bridge.state_changed.disconnect(self._persist_web_editor_state)
-        except (TypeError, RuntimeError):
-            pass
+        bridge.deactivate()
         bridge.deleteLater()
         self._web_surface_bridge = None
         self._web_surface_bridge_node_id = ""
         self._web_surface_bridge_artifact_scope = ""
-        self._web_surface_bridge_initial_state = {}
         return True
 
     @staticmethod
@@ -1803,51 +1656,55 @@ class ContentFullscreenBridge(QObject):
             if part
         )
 
-    def _persist_web_editor_state(self) -> None:
-        bridge = self._web_surface_bridge
-        if bridge is None or not self._open or self._content_kind != "web_editor" or not self._node_id:
+    def _reload_web_editor(self) -> None:
+        resolution = self._resolve_candidate(self._node_id)
+        if resolution.candidate is None:
+            self._complete_close()
             return
-        self._set_node_property(self._node_id, EXCALIDRAW_STATE_PROPERTY, bridge.load_state())
+        self._clear_web_surface_bridge()
+        self._open_candidate(resolution.candidate)
 
-    def _materialize_web_editor_preview_result(self, preview_result: Any) -> Any:
-        if self._preview_ref_from_export_result(preview_result):
-            return preview_result
-        payload = self._preview_payload_from_export_result(preview_result)
-        bridge = self._web_surface_bridge
-        if bridge is None:
-            return preview_result
-        if payload:
-            materialized_result = bridge.export_preview(copy.deepcopy(payload))
-            if self._preview_ref_from_export_result(materialized_result):
-                return materialized_result
-        if self._should_keep_current_web_editor_preview_ref(preview_result):
-            return preview_result
-        fallback_payload = self._fallback_preview_payload_for_close(preview_result)
-        if not fallback_payload:
-            return preview_result
-        fallback_result = bridge.export_preview(fallback_payload)
-        if self._preview_ref_from_export_result(fallback_result):
-            return fallback_result
-        return preview_result
+    def _web_editor_owner_active(self, bridge: _FullscreenWebSurfaceBridge) -> bool:
+        return (
+            not self._terminal and self._open and self._content_kind == "web_editor"
+            and self._web_surface_bridge is bridge
+            and self._active_workspace_id_provider() == self._workspace_id
+        )
 
-    def _persist_web_editor_state_from_preview_result(self, preview_result: Any) -> None:
-        scene_state = self._scene_state_from_export_result(preview_result)
-        if not isinstance(scene_state, Mapping):
-            return
-        bridge = self._web_surface_bridge
-        if bridge is not None and bridge.save_state(copy.deepcopy(dict(scene_state))):
-            self._persist_web_editor_state()
-            return
-        if self._open and self._content_kind == "web_editor" and self._node_id:
-            self._set_node_property(self._node_id, EXCALIDRAW_STATE_PROPERTY, copy.deepcopy(dict(scene_state)))
+    def _web_editor_state_matches(self, bridge: _FullscreenWebSurfaceBridge, state: dict[str, Any]) -> bool:
+        digest = board_scene_digest(state)
+        return self._web_editor_owner_active(bridge) and bool(digest) and board_scene_digest(
+            self._current_web_editor_node_properties().get(EXCALIDRAW_STATE_PROPERTY, {})
+        ) == digest
 
-    def _persist_web_editor_preview_result(self, preview_result: Any) -> None:
-        if not self._open or self._content_kind != "web_editor" or not self._node_id:
-            return
-        preview_ref = self._preview_ref_from_export_result(preview_result)
-        if not preview_ref:
-            return
-        self._set_node_property(self._node_id, EXCALIDRAW_PREVIEW_REF_PROPERTY, preview_ref)
+    def _persist_web_editor_state(self, bridge: _FullscreenWebSurfaceBridge, state: dict[str, Any]) -> bool:
+        if not self._web_editor_owner_active(bridge):
+            return False
+        if not self._set_node_property(self._node_id, EXCALIDRAW_STATE_PROPERTY, state):
+            return False
+        return self._web_editor_state_matches(bridge, state)
+
+    def _persist_web_editor_preview_result(self, bridge: _FullscreenWebSurfaceBridge, preview_result: Any) -> bool:
+        if not self._web_editor_owner_active(bridge) or not isinstance(preview_result, Mapping):
+            return False
+        status = str(preview_result.get("status") or "")
+        if status == "empty" and preview_result.get("ok") is True:
+            preview_ref = {"status": "empty", "scene_sha256": preview_result["scene_sha256"]}
+        elif preview_result.get("ok") is True:
+            preview_ref = self._preview_ref_from_export_result(preview_result)
+        elif status in {"updating", "error"}:
+            previous = self._current_web_editor_node_properties().get(EXCALIDRAW_PREVIEW_REF_PROPERTY)
+            preview_ref = copy.deepcopy(dict(previous)) if isinstance(previous, Mapping) else {}
+            preview_ref.update(status=status, error=str(preview_result.get("error") or ""))
+            if status == "updating":
+                preview_ref["session_id"] = str(preview_result.get("session_id") or "")
+            else:
+                preview_ref.pop("session_id", None)
+        else:
+            return False
+        if not self._set_node_property(self._node_id, EXCALIDRAW_PREVIEW_REF_PROPERTY, preview_ref):
+            return False
+        return self._web_editor_owner_active(bridge) and self._current_web_editor_node_properties().get(EXCALIDRAW_PREVIEW_REF_PROPERTY) == preview_ref
 
     def _web_page_browser_state_persistence_enabled(self) -> bool:
         return web_page_viewer_browser_state_persistence_enabled(
@@ -1912,48 +1769,6 @@ class ContentFullscreenBridge(QObject):
         node = nodes.get(self._node_id) if isinstance(nodes, Mapping) else None
         properties = getattr(node, "properties", None)
         return properties if isinstance(properties, Mapping) else {}
-
-    def _current_web_editor_preview_ref_value(self) -> Any:
-        return self._current_web_editor_node_properties().get(EXCALIDRAW_PREVIEW_REF_PROPERTY)
-
-    def _should_keep_current_web_editor_preview_ref(self, preview_result: Any) -> bool:
-        current_preview_ref = self._current_web_editor_preview_ref_value()
-        if not self._has_preview_ref_value(current_preview_ref):
-            return False
-        if not self._current_web_editor_preview_ref_resolves(current_preview_ref):
-            return False
-        return not self._web_editor_scene_changed_since_open(preview_result)
-
-    def _web_editor_scene_changed_since_open(self, preview_result: Any) -> bool:
-        scene_state = self._scene_state_from_export_result(preview_result)
-        bridge = self._web_surface_bridge
-        if not isinstance(scene_state, Mapping) and bridge is not None:
-            loaded_state = bridge.load_state()
-            if isinstance(loaded_state, Mapping):
-                scene_state = loaded_state
-        if not isinstance(scene_state, Mapping):
-            return False
-        return copy.deepcopy(dict(scene_state)) != self._web_surface_bridge_initial_state
-
-    def _current_web_editor_preview_ref_resolves(self, value: Any) -> bool:
-        artifact_ref = self._artifact_ref_from_preview_ref_value(value)
-        if not artifact_ref:
-            return True
-        bridge = self._web_surface_bridge
-        if bridge is None:
-            return False
-        return bridge.artifact_ref_resolves(artifact_ref)
-
-    def _fallback_preview_payload_for_close(self, preview_result: Any) -> dict[str, Any]:
-        scene_state = self._scene_state_from_export_result(preview_result)
-        bridge = self._web_surface_bridge
-        if not isinstance(scene_state, Mapping) and bridge is not None:
-            loaded_state = bridge.load_state()
-            if isinstance(loaded_state, Mapping):
-                scene_state = loaded_state
-        if not isinstance(scene_state, Mapping):
-            return {}
-        return _fallback_preview_payload_from_scene(scene_state)
 
     def _persist_video_fullscreen_state(self, node_id: str, state: Mapping[str, Any]) -> None:
         normalized = normalize_media_video_state(state)
@@ -2231,6 +2046,7 @@ class ContentFullscreenBridge(QObject):
             "artifact_ref": artifact_ref,
             "mime_type": str(preview_result.get("mime_type") or "image/png"),
             "status": "ready",
+            "scene_sha256": str(preview_result.get("scene_sha256") or ""),
         }
         for key in ("width", "height", "size"):
             value = _positive_int(preview_result.get(key))
@@ -2241,50 +2057,6 @@ class ContentFullscreenBridge(QObject):
             preview_ref["sha256"] = sha256
         return preview_ref
 
-    @staticmethod
-    def _has_preview_ref_value(value: Any) -> bool:
-        if isinstance(value, Mapping):
-            return any(
-                str(value.get(key) or "").strip()
-                for key in ("artifact_ref", "preview_ref", "uri", "ref", "path")
-            )
-        return bool(str(value or "").strip())
-
-    @staticmethod
-    def _artifact_ref_from_preview_ref_value(value: Any) -> str:
-        if isinstance(value, Mapping):
-            for key in ("artifact_ref", "preview_ref", "ref", "uri"):
-                text = str(value.get(key) or "").strip()
-                if parse_artifact_ref(text) is not None:
-                    return text
-            return ""
-        text = str(value or "").strip()
-        return text if parse_artifact_ref(text) is not None else ""
-
-    @staticmethod
-    def _preview_payload_from_export_result(preview_result: Any) -> dict[str, Any]:
-        if not isinstance(preview_result, Mapping):
-            return {}
-        payload = preview_result.get("host_payload") or preview_result.get("hostPayload")
-        if isinstance(payload, Mapping):
-            return dict(payload)
-        if preview_result.get("dataURL") or preview_result.get("data_url") or preview_result.get("previewDataURL"):
-            return dict(preview_result)
-        return {}
-
-    @staticmethod
-    def _scene_state_from_export_result(preview_result: Any) -> Mapping[str, Any] | None:
-        if not isinstance(preview_result, Mapping):
-            return None
-        scene_state = preview_result["scene_state"] if "scene_state" in preview_result else preview_result.get("sceneState")
-        if isinstance(scene_state, Mapping):
-            return scene_state
-        payload = preview_result.get("host_payload") or preview_result.get("hostPayload")
-        if isinstance(payload, Mapping):
-            scene_state = payload["scene_state"] if "scene_state" in payload else payload.get("sceneState")
-            if isinstance(scene_state, Mapping):
-                return scene_state
-        return None
 
 
 __all__ = ["ContentFullscreenBridge"]

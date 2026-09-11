@@ -19,6 +19,7 @@ Use this for local web assets, the web host, Chromium website viewer nodes, Exca
 - Rebuild Excalidraw host assets with the repo script when web host sources change.
 - Keep web viewer node metadata aligned with QML/web bridge surfaces.
 - Validate generated assets do not introduce remote URL references.
+- Board snapshots follow [Excalidraw Web Host And Real Editor](../feature_routes/excalidraw_web_host_real_editor.md): one host controller exports bounded PNGs, a revision-gated WebChannel endpoint persists them, and the canvas displays only current images through native QML. Keep export, storage, and load failures visible; do not add browser-backed metadata previews or handwritten drawing renderers.
 
 ## Focused Verification
 ```powershell

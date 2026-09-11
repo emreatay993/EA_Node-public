@@ -163,7 +163,6 @@ FocusScope {
         ? root.localDisplayMode
         : root._displayModeFromPayload()
     property string localDisplayMode: ""
-    property bool webEditorClosePending: false
     property bool pdfViewerReleased: false
     property bool pdfSearchOpen: false
     property string pdfSearchText: ""
@@ -196,9 +195,7 @@ FocusScope {
             root._resetMailReaderControls();
             root.webPageBorrowSyncPending = false;
             root.localDisplayMode = "";
-            root.webEditorClosePending = false;
             root._resetPdfReaderControls();
-            webEditorCloseTimeout.stop();
         }
     }
 
@@ -225,9 +222,7 @@ FocusScope {
             root._destroyMailWebEngineView();
             root._resetMailReaderControls();
             root.webPageBorrowSyncPending = false;
-            root.webEditorClosePending = false;
             root._resetPdfReaderControls();
-            webEditorCloseTimeout.stop();
         } else {
             root._scheduleBorrowedWebPageHostSync();
             root._syncMailWebEnginePreview();
@@ -391,7 +386,7 @@ FocusScope {
         if (!root.bridgeRef)
             return;
         if (root.contentKind === "web_editor") {
-            root._requestWebEditorClose();
+            root.bridgeRef.request_close();
             return;
         }
         if (root._usesBorrowedWebEngine()) {
@@ -497,28 +492,6 @@ FocusScope {
         if (!wasActive || !host || !host.releaseFullscreenWebEngine)
             return false;
         return Boolean(host.releaseFullscreenWebEngine());
-    }
-
-    function _requestWebEditorClose() {
-        if (root.webEditorClosePending)
-            return;
-        root.webEditorClosePending = true;
-        webEditorCloseTimeout.restart();
-        if (!webEditorHost.requestClosePreviewExport())
-            root._finishWebEditorClose({"ok": false, "error": "Preview export is unavailable."});
-    }
-
-    function _finishWebEditorClose(previewResult) {
-        if (!root.webEditorClosePending && root.bridgeOpen)
-            return;
-        root.webEditorClosePending = false;
-        webEditorCloseTimeout.stop();
-        if (root.bridgeRef && root.bridgeRef.finish_web_editor_close) {
-            root.bridgeRef.finish_web_editor_close(previewResult || ({}));
-            return;
-        }
-        if (root.bridgeRef && root.bridgeRef.request_close)
-            root.bridgeRef.request_close();
     }
 
     function _normalizedPayloadFitMode() {
@@ -1175,15 +1148,6 @@ FocusScope {
     }
 
     Connections {
-        target: root.webSurfaceBridge
-        enabled: root.webEditorClosePending
-
-        function onPreviewExportFinished(result) {
-            root._finishWebEditorClose(result || ({}));
-        }
-    }
-
-    Connections {
         target: root.graphCanvasCommandBridgeRef
 
         function onManagedArtifactRenameReleaseRequested(nodeId) {
@@ -1193,13 +1157,6 @@ FocusScope {
                 return;
             root.requestClose();
         }
-    }
-
-    Timer {
-        id: webEditorCloseTimeout
-        interval: 10000
-        repeat: false
-        onTriggered: root._finishWebEditorClose({"ok": false, "error": "Preview export timed out."})
     }
 
     Rectangle {
@@ -1274,7 +1231,9 @@ FocusScope {
                 ShellButton {
                     id: closeButton
                     objectName: "contentFullscreenCloseButton"
-                    text: "Close"
+                    text: root.contentKind === "web_editor" && root.webSurfaceBridge
+                        ? (root.webSurfaceBridge.closing ? "Saving preview..." : (root.webSurfaceBridge.has_error ? "Retry and close" : "Close"))
+                        : "Close"
                     tooltipText: TooltipCopy.text(tooltipCopyBridge, "fullscreen.close")
                     onClicked: root.requestClose()
                 }
@@ -2102,9 +2061,6 @@ FocusScope {
                 payload: root.webEditorPayload
                 webSurfaceBridge: root.webSurfaceBridge
                 themePalette: root.themePalette
-                onClosePreviewExportResult: function(result) {
-                    root._finishWebEditorClose(result || ({}));
-                }
             }
 
             Item {

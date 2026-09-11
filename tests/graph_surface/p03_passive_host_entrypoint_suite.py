@@ -163,13 +163,84 @@ class LockedPlaceholderGraphHostTests(GraphSurfaceInputContractTestBase):
 
 
 class ExcalidrawWebBoardPassiveGraphHostTests(GraphSurfaceInputContractTestBase):
+    def test_board_snapshot_native_image_rejects_missing_corrupt_and_outdated_sources(self) -> None:
+        self._run_qml_probe(
+            "board-snapshot-native-states",
+            '''
+            import tempfile
+            import time
+            from pathlib import Path
+            from PyQt6.QtCore import QUrl
+            from PyQt6.QtQml import QQmlComponent
+            from ea_node_editor.ui.media_preview_provider import LocalMediaPreviewImageProvider
+            from tests.web_snapshot_test_support import png_bytes
+
+            provider = LocalMediaPreviewImageProvider()
+            engine.addImageProvider("local-media-preview", provider)
+            component = QQmlComponent(engine)
+            component.setData(b"""
+                import QtQuick 2.15
+                Item {
+                    width: 340; height: 220
+                    property alias ref: stub.previewRef
+                    property alias count: stub.boardElementCount
+                    QtObject {
+                        id: stub
+                        property var previewRef: ({})
+                        property int boardElementCount: 0
+                        property var host: null
+                        property bool fullscreenAvailable: true
+                        property color viewportFillColor: "#202228"
+                        property color panelBorderColor: "#4a4f5a"
+                        property color captionTextColor: "#ffffff"
+                        property color hintTextColor: "#bbbbbb"
+                        function _requestContentFullscreen() { return true; }
+                    }
+                    GraphWebBoardPreviewViewport { anchors.fill: parent; surface: stub }
+                }
+            """, QUrl.fromLocalFile(str(Path("ea_node_editor/ui_qml/components/graph/passive/__test__.qml").resolve())))
+            root = component.create()
+            assert root is not None, [error.toString() for error in component.errors()]
+            viewport = root.findChild(QObject, "graphNodeWebBoardPreviewViewport")
+            image = root.findChild(QObject, "graphNodeWebBoardExportedPreviewImage")
+            with tempfile.TemporaryDirectory() as directory:
+                png = Path(directory) / "valid.png"
+                png.write_bytes(png_bytes(120, 80))
+                corrupt = Path(directory) / "corrupt.png"
+                corrupt.write_bytes(b"corrupt PNG")
+                cases = [
+                    (1, {"uri": str(png), "status": "ready", "current": True}, "image"),
+                    (1, {"uri": str(png), "status": "updating", "current": False}, "updating"),
+                    (1, {"uri": str(png), "status": "error", "current": False}, "error"),
+                    (0, {}, "empty"),
+                    (1, {"uri": str(Path(directory) / "missing.png"), "status": "ready", "current": True}, "error"),
+                    (1, {"uri": str(corrupt), "status": "ready", "current": True}, "error"),
+                ]
+                for count, ref, expected in cases:
+                    root.setProperty("count", count)
+                    root.setProperty("ref", ref)
+                    deadline = time.monotonic() + 2
+                    while time.monotonic() < deadline:
+                        app.processEvents()
+                        time.sleep(.01)
+                        if str(viewport.property("previewMode")) == expected:
+                            break
+                    assert str(viewport.property("previewMode")) == expected
+                    assert bool(image.property("visible")) == (expected == "image")
+                    if expected in {"updating", "empty"}:
+                        assert str(viewport.property("previewImageSource")) == ""
+                root.deleteLater()
+                engine.deleteLater()
+                app.processEvents()
+            ''',
+        )
+
     def test_excalidraw_web_board_fallback_is_passive_and_preserves_host_gestures(self) -> None:
         self._run_qml_probe(
             "excalidraw-web-board-passive-fallback-host",
             """
             from PyQt6.QtCore import pyqtSlot
 
-            engine.rootContext().setContextProperty("graphWebBoardForceFallback", True)
 
             class ContentFullscreenBridgeStub(QObject):
                 def __init__(self):
@@ -227,17 +298,17 @@ class ExcalidrawWebBoardPassiveGraphHostTests(GraphSurfaceInputContractTestBase)
 
             loader = host.findChild(QObject, "graphNodeSurfaceLoader")
             surface = host.findChild(QObject, "graphNodeWebBoardSurface")
-            fallback = host.findChild(QObject, "graphNodeWebBoardFallbackPanel")
+            fallback = host.findChild(QObject, "graphNodeWebBoardSnapshotState")
             fullscreen_button = host.findChild(QObject, "graphNodeWebBoardFullscreenButton")
             assert loader is not None
             assert surface is not None
             assert fallback is not None
             assert fullscreen_button is not None
             assert str(loader.property("loadedSurfaceKey")) == "web_excalidraw_board"
-            assert str(surface.property("previewMode")) == "fallback"
+            assert str(surface.property("previewMode")) == "error"
             assert bool(fallback.property("visible")) is True
             assert bool(fullscreen_button.property("enabled")) is True
-            assert str(surface.property("webEngineFallbackReason")).startswith("Qt WebEngine preview is disabled")
+            assert host.findChild(QObject, "graphNodeWebBoardWebEngineView") is None
 
             committed = []
             host.inlinePropertyCommitted.connect(lambda node_id, key, value: committed.append((node_id, key, variant_value(value))))
@@ -254,7 +325,7 @@ class ExcalidrawWebBoardPassiveGraphHostTests(GraphSurfaceInputContractTestBase)
             assert events["opened"] == ["excalidraw_surface_host_test"]
 
             embedded_rects = variant_list(loader.property("embeddedInteractiveRects"))
-            assert len(embedded_rects) == 1
+            assert len(embedded_rects) == 2
             button_rect = embedded_rects[0]
             assert rect_field(button_rect, "width") >= 24.0
             assert rect_field(button_rect, "height") >= 24.0

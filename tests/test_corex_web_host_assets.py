@@ -200,14 +200,14 @@ def test_asset_resolver_returns_local_excalidraw_host_entrypoint_and_generated_b
     assert "EXCALIDRAW_ASSET_PATH" in asset_setup_text
     assert "webSurfaceBridge" in script_text
     assert "load_state" in script_text
-    assert "save_state" in script_text
+    assert "save_scene" in script_text
     assert "asset_request" in script_text
-    assert "export_preview" in script_text
+    assert "commit_snapshot" in script_text
     assert "corexExcalidrawHost" in script_text
     assert "gridModeEnabled" in script_text
     assert "scrollToContent" in script_text
-    assert "Excalidraw preview export timed out" in script_text
-    assert "fallback_reason" in script_text
+    assert "Preview export timed out" in script_text
+    assert "fallback_reason" not in script_text
     qwebchannel_script_text = qwebchannel_script_path.read_text(encoding="utf-8")
     assert "var QWebChannel" in qwebchannel_script_text
     assert "qwebchannel.js" in script_text
@@ -298,13 +298,14 @@ def test_excalidraw_host_frames_initial_content_after_webengine_mount() -> None:
     assert "api.scrollToContent?.(undefined, { animate: false })" in host_source_text
 
 
-def test_excalidraw_host_exports_canvas_preview_fallback_when_library_export_fails() -> None:
+def test_excalidraw_host_uses_only_bounded_library_snapshot_exports() -> None:
     host_source_text = (PROJECT_ROOT / "web" / "excalidraw_host" / "src" / "main.tsx").read_text(encoding="utf-8")
 
-    assert "PREVIEW_EXPORT_TIMEOUT_MS" in host_source_text
-    assert "createCanvasPreviewPayload" in host_source_text
-    assert 'canvas.toDataURL("image/png")' in host_source_text
-    assert "fallback_reason" in host_source_text
+    assert "maxWidthOrHeight: PREVIEW_MAX_EDGE" in host_source_text
+    assert "const PREVIEW_MAX_EDGE = 2048" in host_source_text
+    assert "createCanvasPreviewPayload" not in host_source_text
+    assert "fallback_reason" not in host_source_text
+    assert "SnapshotController" in host_source_text
 
 
 def test_packaged_web_asset_globs_cover_current_excalidraw_host_bundle() -> None:

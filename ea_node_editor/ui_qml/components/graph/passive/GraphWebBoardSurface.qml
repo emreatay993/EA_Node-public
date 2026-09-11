@@ -18,12 +18,7 @@ GraphShared.GraphSurfaceBase {
         boardElementCount + " elements",
         boardFileCount + " files"
     ]
-    readonly property bool webEnginePreviewAllowed: !(typeof graphWebBoardForceFallback !== "undefined"
-        && Boolean(graphWebBoardForceFallback))
-    readonly property bool webEngineAvailable: previewViewport.webEngineAvailable
     readonly property string previewMode: previewViewport.previewMode
-    readonly property string webEngineFallbackReason: previewViewport.webEngineFallbackReason
-    readonly property string previewDataUrl: previewViewport.previewDataUrl
     readonly property bool blocksHostInteraction: false
     readonly property var overlayViewportRect: Qt.rect(
         previewViewport.x,
@@ -54,7 +49,8 @@ GraphShared.GraphSurfaceBase {
     readonly property real contentTopMargin: host ? Number(host.surfaceMetrics.body_top || 30) : 30
     readonly property real contentBottomMargin: host ? Number(host.surfaceMetrics.body_bottom_margin || 10) : 10
     readonly property var embeddedInteractiveRects: SurfaceControlGeometry.combineRectLists([
-        fullscreenButton.embeddedInteractiveRects
+        fullscreenButton.embeddedInteractiveRects,
+        previewViewport.embeddedInteractiveRects
     ])
     readonly property bool fullscreenAvailable: host ? Boolean(host.surfaceFullscreenAvailable) : false
     readonly property var surfaceActions: {

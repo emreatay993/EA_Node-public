@@ -7,6 +7,7 @@ import {
 } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
 import "./styles.css";
+import { SnapshotController, type SnapshotResult } from "./snapshot-controller";
 
 type JsonObject = Record<string, unknown>;
 type SceneState = {
@@ -18,9 +19,14 @@ type SceneState = {
 
 type BridgeObject = {
   load_state?: (callback: (value: unknown) => void) => unknown;
-  save_state?: (payload: unknown, callback?: (value: unknown) => void) => unknown;
+  save_scene?: (payload: unknown, callback?: (value: unknown) => void) => unknown;
+  note_revision?: (revision: number) => void;
+  snapshot_status?: (payload: unknown) => void;
+  finish_close?: (payload: unknown, callback?: (value: unknown) => void) => unknown;
+  finish_without_preview?: (payload: unknown, callback?: (value: unknown) => void) => unknown;
+  start_editor?: (callback?: (value: unknown) => void) => unknown;
   asset_request?: (assetId: string, callback?: (value: unknown) => void) => unknown;
-  export_preview?: (payload?: unknown, callback?: (value: unknown) => void) => unknown;
+  commit_snapshot?: (payload?: unknown, callback?: (value: unknown) => void) => unknown;
   scene_state?: unknown;
   last_error?: string;
 };
@@ -34,22 +40,19 @@ type QWebChannelConstructor = new (
   callback: (channel: QWebChannelInstance) => void,
 ) => unknown;
 
-type PreviewExportResult = JsonObject & {
-  ok: boolean;
-};
-
 type ExcalidrawApi = {
   refresh?: () => void;
   scrollToContent?: (target?: unknown, opts?: JsonObject) => void;
 };
 
 type HostApi = {
-  version: string;
   bridgeReady: () => boolean;
   flushSave: () => Promise<boolean>;
   getSceneState: () => SceneState;
-  exportPreview: (options?: JsonObject) => Promise<PreviewExportResult>;
-  requestPreviewExport: (options?: JsonObject) => Promise<PreviewExportResult>;
+  requestClose: () => void;
+  retryPreview: () => void;
+  closeWithoutPreview: () => void;
+  reloadEditor: () => void;
 };
 
 declare global {
@@ -57,7 +60,6 @@ declare global {
     qt?: { webChannelTransport?: unknown };
     QWebChannel?: QWebChannelConstructor;
     corexExcalidrawHost?: HostApi;
-    corexExcalidrawExportPreview?: (options?: JsonObject) => Promise<PreviewExportResult>;
   }
 }
 
@@ -68,19 +70,15 @@ const EMPTY_SCENE: SceneState = Object.freeze({
   files: {},
 });
 
-const SAVE_DEBOUNCE_MS = 350;
 const WEBCHANNEL_SCRIPT_URL = "qwebchannel.js";
 const WEBCHANNEL_SCRIPT_ID = "corex-qtwebchannel-script";
 const WEBCHANNEL_TRANSPORT_TIMEOUT_MS = 2500;
 const WEBCHANNEL_SCRIPT_LOAD_TIMEOUT_MS = 2500;
 const WEBCHANNEL_BRIDGE_TIMEOUT_MS = 5000;
-const BRIDGE_CALL_TIMEOUT_MS = 750;
+const BRIDGE_CALL_TIMEOUT_MS = 15000;
 const WEBCHANNEL_POLL_MS = 50;
 const INITIAL_CONTENT_FRAME_ATTEMPTS = 20;
-const PREVIEW_EXPORT_TIMEOUT_MS = 3500;
-const FALLBACK_PREVIEW_MAX_WIDTH = 960;
-const FALLBACK_PREVIEW_MAX_HEIGHT = 540;
-const FALLBACK_PREVIEW_PADDING = 32;
+const PREVIEW_MAX_EDGE = 2048;
 const DOCUMENT_APP_STATE_KEYS = [
   "gridModeEnabled",
   "gridSize",
@@ -164,7 +162,8 @@ function documentSceneState(scene: SceneState): SceneState {
       scene.files as Parameters<typeof serializeAsJSON>[2],
       "local",
     );
-    return coerceSceneState(JSON.parse(serialized));
+    const document = coerceSceneState(JSON.parse(serialized));
+    return { ...document, appState: documentAppState(document.appState) };
   } catch {
     return fallbackDocumentSceneState(scene);
   }
@@ -318,9 +317,9 @@ function bridgeCall<T>(
       }
       resolve(value as T);
     };
-    timeoutId = window.setTimeout(() => {
-      finish(undefined);
-    }, BRIDGE_CALL_TIMEOUT_MS);
+    if (!["save_scene", "commit_snapshot", "finish_close", "finish_without_preview"].includes(methodName)) {
+      timeoutId = window.setTimeout(() => finish(undefined), BRIDGE_CALL_TIMEOUT_MS);
+    }
     try {
       const result = (method as (...params: unknown[]) => unknown).apply(bridge, [
         ...args,
@@ -338,8 +337,8 @@ function bridgeCall<T>(
 async function loadInitialScene(bridge: BridgeObject | null): Promise<SceneState> {
   const loaded =
     (await bridgeCall<unknown>(bridge, "load_state")) ??
-    bridge?.scene_state ??
-    EMPTY_SCENE;
+    bridge?.scene_state;
+  if (!isRecord(loaded)) throw new Error("Drawing could not be loaded. Reopen the editor to retry.");
   return hydrateArtifactFiles(normalizeSceneState(loaded), bridge);
 }
 
@@ -429,230 +428,8 @@ function imageSizeFromDataUrl(dataUrl: string): Promise<{ width: number; height:
   });
 }
 
-function finiteNumber(value: unknown, fallback = 0): number {
-  const numberValue = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(numberValue) ? numberValue : fallback;
-}
-
-function textValue(value: unknown, fallback = ""): string {
-  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
-}
-
-function elementPoints(element: JsonObject): Array<[number, number]> {
-  if (!Array.isArray(element.points)) {
-    return [];
-  }
-  return element.points
-    .filter((point): point is unknown[] => Array.isArray(point) && point.length >= 2)
-    .map((point) => [finiteNumber(point[0]), finiteNumber(point[1])]);
-}
-
-function elementBounds(element: JsonObject): { minX: number; minY: number; maxX: number; maxY: number } {
-  const x = finiteNumber(element.x);
-  const y = finiteNumber(element.y);
-  const width = Math.max(1, finiteNumber(element.width, 1));
-  const height = Math.max(1, finiteNumber(element.height, 1));
-  let minX = x;
-  let minY = y;
-  let maxX = x + width;
-  let maxY = y + height;
-  for (const [pointX, pointY] of elementPoints(element)) {
-    minX = Math.min(minX, x + pointX);
-    minY = Math.min(minY, y + pointY);
-    maxX = Math.max(maxX, x + pointX);
-    maxY = Math.max(maxY, y + pointY);
-  }
-  return { minX, minY, maxX, maxY };
-}
-
-function sceneContentBounds(elements: unknown[]): { minX: number; minY: number; maxX: number; maxY: number } {
-  const visibleElements = elements.filter(
-    (element): element is JsonObject => isRecord(element) && element.isDeleted !== true,
-  );
-  if (visibleElements.length === 0) {
-    return { minX: 0, minY: 0, maxX: 640, maxY: 360 };
-  }
-  const first = elementBounds(visibleElements[0]);
-  return visibleElements.slice(1).reduce((bounds, element) => {
-    const next = elementBounds(element);
-    return {
-      minX: Math.min(bounds.minX, next.minX),
-      minY: Math.min(bounds.minY, next.minY),
-      maxX: Math.max(bounds.maxX, next.maxX),
-      maxY: Math.max(bounds.maxY, next.maxY),
-    };
-  }, first);
-}
-
-function fallbackCanvasSize(bounds: { minX: number; minY: number; maxX: number; maxY: number }): {
-  width: number;
-  height: number;
-  scale: number;
-} {
-  const contentWidth = Math.max(1, bounds.maxX - bounds.minX);
-  const contentHeight = Math.max(1, bounds.maxY - bounds.minY);
-  const scale = Math.min(
-    2,
-    (FALLBACK_PREVIEW_MAX_WIDTH - FALLBACK_PREVIEW_PADDING * 2) / contentWidth,
-    (FALLBACK_PREVIEW_MAX_HEIGHT - FALLBACK_PREVIEW_PADDING * 2) / contentHeight,
-  );
-  return {
-    width: Math.max(320, Math.ceil(contentWidth * scale + FALLBACK_PREVIEW_PADDING * 2)),
-    height: Math.max(180, Math.ceil(contentHeight * scale + FALLBACK_PREVIEW_PADDING * 2)),
-    scale,
-  };
-}
-
-function drawLinearElement(context: CanvasRenderingContext2D, element: JsonObject): void {
-  const x = finiteNumber(element.x);
-  const y = finiteNumber(element.y);
-  const points = elementPoints(element);
-  if (points.length === 0) {
-    return;
-  }
-  context.beginPath();
-  context.moveTo(x + points[0][0], y + points[0][1]);
-  for (const [pointX, pointY] of points.slice(1)) {
-    context.lineTo(x + pointX, y + pointY);
-  }
-  context.stroke();
-  if (element.type !== "arrow" || points.length < 2) {
-    return;
-  }
-  const [fromX, fromY] = points[points.length - 2];
-  const [toX, toY] = points[points.length - 1];
-  const angle = Math.atan2(toY - fromY, toX - fromX);
-  const arrowLength = 14;
-  context.beginPath();
-  context.moveTo(x + toX, y + toY);
-  context.lineTo(
-    x + toX - arrowLength * Math.cos(angle - Math.PI / 6),
-    y + toY - arrowLength * Math.sin(angle - Math.PI / 6),
-  );
-  context.moveTo(x + toX, y + toY);
-  context.lineTo(
-    x + toX - arrowLength * Math.cos(angle + Math.PI / 6),
-    y + toY - arrowLength * Math.sin(angle + Math.PI / 6),
-  );
-  context.stroke();
-}
-
-function drawFallbackElement(context: CanvasRenderingContext2D, element: JsonObject): void {
-  if (element.isDeleted === true) {
-    return;
-  }
-  const x = finiteNumber(element.x);
-  const y = finiteNumber(element.y);
-  const width = Math.max(1, finiteNumber(element.width, 1));
-  const height = Math.max(1, finiteNumber(element.height, 1));
-  const type = textValue(element.type);
-  const strokeColor = textValue(element.strokeColor, "#1e1e1e");
-  const backgroundColor = textValue(element.backgroundColor, "transparent");
-  const opacity = Math.max(0, Math.min(1, finiteNumber(element.opacity, 100) / 100));
-  context.save();
-  context.globalAlpha = opacity;
-  context.strokeStyle = strokeColor;
-  context.fillStyle = backgroundColor;
-  context.lineWidth = Math.max(1, finiteNumber(element.strokeWidth, 1));
-  context.lineCap = "round";
-  context.lineJoin = "round";
-
-  if (backgroundColor && backgroundColor !== "transparent") {
-    if (type === "ellipse") {
-      context.beginPath();
-      context.ellipse(x + width / 2, y + height / 2, width / 2, height / 2, 0, 0, Math.PI * 2);
-      context.fill();
-    } else if (type === "diamond") {
-      context.beginPath();
-      context.moveTo(x + width / 2, y);
-      context.lineTo(x + width, y + height / 2);
-      context.lineTo(x + width / 2, y + height);
-      context.lineTo(x, y + height / 2);
-      context.closePath();
-      context.fill();
-    } else if (type === "rectangle") {
-      context.fillRect(x, y, width, height);
-    }
-  }
-
-  if (type === "ellipse") {
-    context.beginPath();
-    context.ellipse(x + width / 2, y + height / 2, width / 2, height / 2, 0, 0, Math.PI * 2);
-    context.stroke();
-  } else if (type === "diamond") {
-    context.beginPath();
-    context.moveTo(x + width / 2, y);
-    context.lineTo(x + width, y + height / 2);
-    context.lineTo(x + width / 2, y + height);
-    context.lineTo(x, y + height / 2);
-    context.closePath();
-    context.stroke();
-  } else if (type === "line" || type === "arrow" || type === "freedraw") {
-    drawLinearElement(context, element);
-  } else if (type === "text") {
-    context.fillStyle = strokeColor;
-    context.font = `${Math.max(8, finiteNumber(element.fontSize, 20))}px sans-serif`;
-    context.textBaseline = "top";
-    context.fillText(textValue(element.text, ""), x, y);
-  } else {
-    context.strokeRect(x, y, width, height);
-  }
-  context.restore();
-}
-
-function createCanvasPreviewPayload(scene: SceneState, options: JsonObject, reason: string): JsonObject {
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-  if (!context) {
-    throw new Error("Canvas preview export is unavailable.");
-  }
-  const bounds = sceneContentBounds(scene.elements);
-  const canvasSize = fallbackCanvasSize(bounds);
-  canvas.width = canvasSize.width;
-  canvas.height = canvasSize.height;
-  context.fillStyle = textValue(scene.appState.viewBackgroundColor, "#ffffff");
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  context.translate(
-    (canvas.width - (bounds.maxX - bounds.minX) * canvasSize.scale) / 2 - bounds.minX * canvasSize.scale,
-    (canvas.height - (bounds.maxY - bounds.minY) * canvasSize.scale) / 2 - bounds.minY * canvasSize.scale,
-  );
-  context.scale(canvasSize.scale, canvasSize.scale);
-  for (const element of scene.elements) {
-    if (isRecord(element)) {
-      drawFallbackElement(context, element);
-    }
-  }
-  return {
-    ok: true,
-    type: "excalidraw_preview",
-    mime_type: "image/png",
-    width: canvas.width,
-    height: canvas.height,
-    data_url: canvas.toDataURL("image/png"),
-    scene_state: scene,
-    options,
-    fallback_reason: reason,
-  };
-}
-
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timeoutId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
-    promise.then(
-      (value) => {
-        window.clearTimeout(timeoutId);
-        resolve(value);
-      },
-      (error) => {
-        window.clearTimeout(timeoutId);
-        reject(error);
-      },
-    );
-  });
-}
-
-async function createExcalidrawPreviewPayload(scene: SceneState, options: JsonObject): Promise<JsonObject> {
-  const blob = await withTimeout(exportToBlob({
+async function createExcalidrawPreviewPayload(scene: SceneState): Promise<JsonObject> {
+  const blob = await exportToBlob({
     elements: scene.elements as never[],
     appState: {
       ...scene.appState,
@@ -666,7 +443,8 @@ async function createExcalidrawPreviewPayload(scene: SceneState, options: JsonOb
     },
     files: scene.files,
     mimeType: "image/png",
-  }), PREVIEW_EXPORT_TIMEOUT_MS, "Excalidraw preview export timed out.");
+    maxWidthOrHeight: PREVIEW_MAX_EDGE,
+  });
   const dataUrl = await dataUrlFromBlob(blob);
   const size = await imageSizeFromDataUrl(dataUrl);
   return {
@@ -676,155 +454,65 @@ async function createExcalidrawPreviewPayload(scene: SceneState, options: JsonOb
     width: size.width,
     height: size.height,
     data_url: dataUrl,
-    scene_state: scene,
-    options,
-  };
-}
-
-async function createPreviewPayload(scene: SceneState, options: JsonObject): Promise<JsonObject> {
-  try {
-    return await createExcalidrawPreviewPayload(scene, options);
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error);
-    return createCanvasPreviewPayload(scene, options, reason);
-  }
-}
-
-function normalizePreviewResult(
-  hostPayload: JsonObject,
-  bridgeResponse: unknown,
-): PreviewExportResult {
-  if (isRecord(bridgeResponse)) {
-    return {
-      ...bridgeResponse,
-      ok: bridgeResponse.ok === true,
-      host_payload: hostPayload,
-    };
-  }
-  return {
-    ...hostPayload,
-    ok: true,
   };
 }
 
 function App(): React.ReactElement {
-  const [bridge, setBridge] = useState<BridgeObject | null>(null);
   const [initialScene, setInitialScene] = useState<SceneState | null>(null);
   const [status, setStatus] = useState("Loading local Excalidraw editor...");
-  const latestScene = useRef<SceneState>(EMPTY_SCENE);
-  const pendingScene = useRef<SceneState | null>(null);
-  const saveTimer = useRef<number | undefined>(undefined);
+  const [readOnly, setReadOnly] = useState(false);
+  const controller = useRef<SnapshotController<SceneState> | null>(null);
   const initialContentFramed = useRef(false);
-
-  const saveScene = useCallback(
-    async (scene: SceneState): Promise<boolean> => {
-      pendingScene.current = null;
-      const result = await bridgeCall<boolean>(bridge, "save_state", scene);
-      return result !== false;
-    },
-    [bridge],
-  );
-
-  const flushSave = useCallback(async (): Promise<boolean> => {
-    if (saveTimer.current !== undefined) {
-      window.clearTimeout(saveTimer.current);
-      saveTimer.current = undefined;
-    }
-    const scene = pendingScene.current;
-    if (!scene) {
-      return true;
-    }
-    return saveScene(scene);
-  }, [saveScene]);
-
-  const exportPreview = useCallback(
-    async (options: JsonObject = {}): Promise<PreviewExportResult> => {
-      const scene = latestScene.current;
-      await flushSave();
-      try {
-        const hostPayload = await createPreviewPayload(scene, options);
-        const bridgeResponse = await bridgeCall<JsonObject>(
-          bridge,
-          "export_preview",
-          hostPayload,
-        );
-        return normalizePreviewResult(hostPayload, bridgeResponse);
-      } catch (error) {
-        return {
-          ok: false,
-          error: error instanceof Error ? error.message : String(error),
-          scene_state: scene,
-          host_payload: {
-            scene_state: scene,
-            options,
-          },
-        };
-      }
-    },
-    [bridge, flushSave],
-  );
 
   useEffect(() => {
     let cancelled = false;
     resolveBridge()
-      .then(async (resolvedBridge) => {
-        if (cancelled) {
-          return;
-        }
-        setBridge(resolvedBridge);
-        const scene = await loadInitialScene(resolvedBridge);
-        if (cancelled) {
-          return;
-        }
-        latestScene.current = scene;
+      .then(async (bridge) => {
+        if (cancelled) return;
+        if (!bridge) throw new Error("The drawing connection is unavailable. Reopen the editor to retry.");
+        const scene = await loadInitialScene(bridge);
+        if (cancelled) return;
+        if ((await bridgeCall<boolean>(bridge, "start_editor")) !== true) throw new Error("The drawing connection is unavailable. Reopen the editor to retry.");
+        if (cancelled) return;
+        const snapshots = new SnapshotController(scene, {
+          save: async (scene_state, revision) => (await bridgeCall<boolean>(bridge, "save_scene", { scene_state, revision })) === true,
+          render: createExcalidrawPreviewPayload,
+          persist: async (payload) => (await bridgeCall<SnapshotResult>(bridge, "commit_snapshot", payload)) ?? { ok: false, error: "Preview storage did not respond." },
+          changed: (revision) => bridge.note_revision?.(revision),
+          status: (payload) => bridge.snapshot_status?.(payload),
+          close: async (result) => (await bridgeCall<boolean>(bridge, "finish_close", result)) === true,
+          recover: async (payload) => (await bridgeCall<boolean>(bridge, "finish_without_preview", payload)) === true,
+          lock: setReadOnly,
+          display: setStatus,
+        });
+        controller.current = snapshots;
+        window.corexExcalidrawHost = {
+          bridgeReady: () => true,
+          flushSave: () => snapshots.flushSave(),
+          getSceneState: () => snapshots.getScene(),
+          requestClose: () => snapshots.requestClose(),
+          retryPreview: () => snapshots.retry(),
+          closeWithoutPreview: () => { void snapshots.recover("close"); },
+          reloadEditor: () => { void snapshots.recover("reload"); },
+        };
         setInitialScene(scene);
-        setStatus(
-          resolvedBridge
-            ? "Connected to local COREX bridge."
-            : "Running without a Qt WebChannel bridge; close-save fallback active.",
-        );
+        setStatus("Connected to local COREX bridge.");
       })
       .catch((error: unknown) => {
-        if (cancelled) {
-          return;
-        }
-        setInitialScene(EMPTY_SCENE);
-        setStatus(error instanceof Error ? error.message : String(error));
+        if (!cancelled) setStatus(error instanceof Error ? error.message : String(error));
       });
     return () => {
       cancelled = true;
-      if (saveTimer.current !== undefined) {
-        window.clearTimeout(saveTimer.current);
-      }
+      controller.current?.dispose();
+      controller.current = null;
+      delete window.corexExcalidrawHost;
     };
   }, []);
 
-  useEffect(() => {
-    window.corexExcalidrawHost = {
-      version: "p01-real-excalidraw-host",
-      bridgeReady: () => bridge !== null,
-      flushSave,
-      getSceneState: () => latestScene.current,
-      exportPreview,
-      requestPreviewExport: exportPreview,
-    };
-    window.corexExcalidrawExportPreview = exportPreview;
-  }, [bridge, exportPreview, flushSave]);
-
   const onChange = useCallback(
     (elements: readonly unknown[], appState: JsonObject, files: JsonObject) => {
-      const scene = sceneFromEditorChange(elements, appState, files);
-      latestScene.current = scene;
-      pendingScene.current = scene;
-      if (saveTimer.current !== undefined) {
-        window.clearTimeout(saveTimer.current);
-      }
-      saveTimer.current = window.setTimeout(() => {
-        saveTimer.current = undefined;
-        void saveScene(scene);
-      }, SAVE_DEBOUNCE_MS);
-    },
-    [saveScene],
+      controller.current?.change(sceneFromEditorChange(elements, appState, files));
+    }, [],
   );
 
   const onExcalidrawApi = useCallback(
@@ -853,6 +541,7 @@ function App(): React.ReactElement {
         {status}
       </div>
       <Excalidraw
+        viewModeEnabled={readOnly}
         initialData={{
           elements: initialScene.elements as never[],
           appState: initialScene.appState,
